@@ -1,1 +1,355 @@
 
+<!DOCTYPE html>
+<html lang="el">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="google-site-verification" content="tC0bBVVHTu_CbZkph7Mg3M_4JpugQFdEg09THhHmeMU" />
+    
+	<meta name="description" content="Το GameCenter (app) διαχειρίζεται, παρακολουθεί και παρουσιάζει στο web, εθνικά - τοπικά πρωταθλήματα μπάσκετ, τουρνουά που διοργανώνουν συλλόγοι μπάσκετ, οργανώνοντας τις κατηγορίες, ομίλους, βαθμολογίες και ρόστερ. Πρόκειται για ένα web app απόλυτα συμβατό σε υπολογιστές και κινητές συσκευές στην διεύθυνση gamecenter-2018.appspot.com" />
+	<meta name="keywords" content="GameCenter, basketball, games, results, ranking, rosters, players, champions" />
+	<meta name="language" content="greek" />
+	<meta name="author" content="GameCenter" />
+	<meta name="web_author" content="Λazaros" />
+    <!-- link rel="icon" href="../favicon.ico"   -->
+
+    <title>GameCenter | Κατηγορίες, όμιλοι πρωταθλήματος</title>
+    <link href="https://fonts.googleapis.com/css?family=Fira+Sans:100,300" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+    <link href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" rel="stylesheet" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous" />
+    <!-- Custom styles for this template -->    
+    <link href="../../css/main.css" rel="stylesheet" />
+
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+ 	 <!-- script src="https://www.google.com/jsapi" type="text/javascript" /   --> <!--  OLD style katrghuhke apo google -->
+
+
+    <!-- ad automates apo google -->  
+	<!--  script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+	<script>
+	     (adsbygoogle = window.adsbygoogle || []).push({
+	          google_ad_client: "ca-pub-9529818444792202",
+	          enable_page_level_ads: true
+	     });
+	</script.  -->     
+
+    <script type="text/javascript">
+
+		// Load the Visualization API and the piechart package.
+		google.charts.load('current', {'packages':['corechart']});
+
+		// Set a callback to run when the Google Visualization API is loaded.
+		google.charts.setOnLoadCallback(drawchart);	 	 
+
+		//--- google.load("visualization", "1"); ---- OLD style katrghuhke apo google 
+
+
+	    function getQueryVariable(variable){
+	       var query = window.location.search.substring(1);
+	       var vars = query.split("&");
+	       for (var i=0;i<vars.length;i++) {
+	               var pair = vars[i].split("=");
+	               if(pair[0] == variable){return pair[1];}
+	       }
+	       return(false);
+	   }
+
+		
+		function drawchart(){						
+
+		   	document.getElementById("diorganvsh-title").innerHTML = decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos"));
+		   
+
+		    emploutiseMenuApoPerametrous();  
+			drawDiorganvseis();		
+		};
+
+
+
+	    function drawDiorganvseis() {
+    		var queryString; 
+    		var strQueryForURI;
+
+    		if(getQueryVariable("pPowerPrvtathlhmatos")){
+    			strQueryForURI = 'select * order by B,D,F';	
+    			/* όταν έχει παράμετρο που έρχεται από εξω  χρησιμοποιούμε παρακάτω κώδικα σε σχόλιο */
+	 			//strQueryForURI = 'select * where H="'+decodeURIComponent(getQueryVariable("pPower")) +'" order by D,B';
+			}else{
+		 		strQueryForURI = 'select * order by B,D,F';		
+			}
+
+			queryString = encodeURIComponent(strQueryForURI);
+      		var query = new google.visualization.Query(
+          	'https://docs.google.com/spreadsheets/d/'+getQueryVariable("pPowerPrvtathlhmatos") +'/gviz/tq?gid=6&headers=1&tq=' + queryString);
+
+      		query.send(handle_DrawDiorganvseis_DataQueryResponse);      		
+    	}
+
+
+	    function handle_DrawDiorganvseis_DataQueryResponse(response) {
+	    	
+	      if (response.isError()) {
+	        alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+	        return;
+	      }
+	    	var data = response.getDataTable();
+	 		var posesEggrafes = data.getNumberOfRows();
+	 		var html=[];
+
+	 		// Καταργεί το loader spin
+			document.getElementById("list-diorganvsevn-id").innerHTML = "";
+
+			for (var row=0; row<posesEggrafes; row++){
+
+				var iA = document.createElement('a');
+				iA.id = 'diorganvsh-a-'+row;
+				iA.href='gameCenter_3_programma-agvnvn-apotelesmata-bathmologia.html'+
+					'?pNameDiorganvtriaArxh='+	decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
+					'&pPowerDiorganvtriaArxh='+	decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) +
+					'&pNamePrvtathlhmatos='+	decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) +
+					'&pPowerPrvtathlhmatos='+	decodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos")) +
+					'&pNameKathgoriasOmilou='+	data.getFormattedValue(row, 4) +	
+					'&pPowerKathgoriasOmilou='+ data.getFormattedValue(row, 8);
+				
+				
+				iA.className = 'list-group-item list-group-item-action flex-column align-items-start';
+				document.getElementById('list-diorganvsevn-id').appendChild(iA);
+				// <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+
+
+				var iLiMedia = document.createElement('li');
+				iLiMedia.id = 'diorganvsh-'+row;
+				iLiMedia.className = 'media';
+				// iLiMedia.innerHTML = data.getFormattedValue(row, 7) +' '+ data.getFormattedValue(row, 0) +' '+ data.getFormattedValue(row, 4); 
+				document.getElementById('diorganvsh-a-'+row).appendChild(iLiMedia);
+
+				var iImg = document.createElement('i');
+				iImg.id = 'diorganvsh-i-'+row;
+				if(isKypello(data.getFormattedValue(row, 2))){
+					iImg.className = 'fas fa-award fa-2x align-self-center mr-3';	
+				}else{
+					iImg.className = 'fas fa-trophy fa-2x align-self-center mr-3';					
+				} 
+				document.getElementById('diorganvsh-'+row).appendChild(iImg);
+
+				var iDiv = document.createElement('div');
+				iDiv.id = 'diorganvsh-div_media-body-'+row;
+				iDiv.className = 'media-body';
+				document.getElementById('diorganvsh-'+row).appendChild(iDiv);				
+
+	 			var iH5 = document.createElement('h5');
+	 			iH5.id = 'diorganvsh-div_media-body-h5-'+row;
+				iH5.className = 'mt-0 mb-1';
+				iH5.innerHTML = data.getFormattedValue(row, 2) /*+' '+ data.getFormattedValue(row, 4)*/; 
+				document.getElementById('diorganvsh-div_media-body-'+row).appendChild(iH5);	
+
+					var iA = document.createElement('a');
+					iA.id = 'diorganvsh-badge-a-'+row;
+					iA.href='gameCenter_3_programma-agvnvn-apotelesmata-bathmologia.html'+
+						'?pNameDiorganvtriaArxh='+	decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
+						'&pPowerDiorganvtriaArxh='+	decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) +
+						'&pNamePrvtathlhmatos='+	decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) +
+						'&pPowerPrvtathlhmatos='+	decodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos")) +
+						'&pNameKathgoriasOmilou='+	data.getFormattedValue(row, 4) +	
+						'&pPowerKathgoriasOmilou='+ data.getFormattedValue(row, 8);			
+					iA.className = 'badge badge-primary  ml-1';
+					if(isKypello(data.getFormattedValue(row, 2))){
+						iA.innerHTML ='Πρωτάθλημα';	
+					}else{
+						iA.innerHTML ='Κύπελλο';					
+					}
+					document.getElementById('diorganvsh-div_media-body-h5-'+row).appendChild(iA);	
+
+					if(data.getFormattedValue(row, 12) !==''){
+						var iA = document.createElement('a');
+						iA.id = 'orismoi-a-'+row;
+						iA.href= 'gameCenter_3_TeamsOfKathgoria.html'+
+							'?pNameDiorganvtriaArxh='+	decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
+							'&pPowerDiorganvtriaArxh='+	decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) +
+							'&pNamePrvtathlhmatos='+	decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) +
+							'&pPowerPrvtathlhmatos='+	decodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos")) +
+							'&pNameKathgoriasOmilou='+	data.getFormattedValue(row, 4) +	
+							'&pPowerKathgoriasOmilou='+ data.getFormattedValue(row, 8);		
+						iA.className ='badge badge-info ml-1';
+						iA.innerHTML ='Ομάδες';
+						document.getElementById('diorganvsh-div_media-body-h5-'+row).appendChild(iA);		
+					}
+					if(data.getFormattedValue(row, 10) !==''){
+						var iA = document.createElement('a');
+						iA.id = 'titloi-a-'+row;
+						iA.href= 'gameCenter_4_TitlesOfCategories.html'+
+							'?pNameDiorganvtriaArxh='+	decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
+							'&pPowerDiorganvtriaArxh='+	decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) +
+							'&pNamePrvtathlhmatos='+	decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) +
+							'&pPowerPrvtathlhmatos='+	decodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos")) +
+							'&pNameKathgorias='+	data.getFormattedValue(row, 2) +	
+							'&pPowerKathgorias='+ data.getFormattedValue(row, 8);		
+						iA.className ='badge badge-secondary ml-1';
+						iA.innerHTML ='Τίτλοι';
+						document.getElementById('diorganvsh-div_media-body-h5-'+row).appendChild(iA);		
+					}
+
+
+	 			var iSpan = document.createElement('span');
+				iSpan.innerHTML = data.getFormattedValue(row, 4); 
+				document.getElementById('diorganvsh-div_media-body-'+row).appendChild(iSpan);	
+			}
+	 	}   
+
+
+		function isKypello(mystr){
+			return   mystr.indexOf('ΚΥΠΕΛΛΟ') ? true : false ;
+		}
+
+
+	    function emploutiseMenuApoPerametrous(){
+
+				var iLi = document.createElement('li');
+				iLi.id = 'iLi-' + decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh"));
+				iLi.className = 'nav-item';
+	    		document.getElementById('ul-navbar-id').appendChild(iLi);	
+
+	    		var iA = document.createElement('a');
+				iA.id = 'ul-navbar-li-a-'+decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh"));
+				iA.className = 'nav-link';				 
+				iA.href='gameCenter_1_Diorganvseis.html'+
+					'?pPower='+decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
+					'&pPowerDiorganvtriaArxh='+decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh"));					
+				iA.innerHTML = decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh"));
+
+				document.getElementById('iLi-' + decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh"))).appendChild(iA);
+			     	
+
+	    }
+
+    </script>
+
+
+
+  </head>
+
+  <body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="80">
+
+    <nav class="navbar navbar-expand-md  navbar-light bg-white fixed-top skia-b">
+      <a class="navbar-brand" href="#"><img width="32px" src="../favicon.ico" alt="GameCenter logo"></a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto" id="ul-navbar-id">
+			<li class="nav-item">
+				<a class="nav-link" href="#">Αρχική <span class="sr-only">(current)</span></a>
+			</li>
+
+        </ul>
+      </div>
+    </nav>
+
+	<div class="jumbotron jumbotron-fluid">
+		<div class="container" id="container-diorganvsh-title">
+			<h1 class="mt-5" id="diorganvsh-title" >Κατηγορίες, όμιλοι</h1>
+		</div>
+	</div>
+
+	<section>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="list-group"> <!-- for list group object -->
+						<ul class="list-unstyled" id="list-diorganvsevn-id"> <!-- for media object -->
+
+							<!--  progress bar for load -->
+							<div class="progress">
+							  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+							</div>
+
+						</ul>
+					</div>
+				</div>
+			</div>			
+		</div>
+	</section>
+
+ 
+
+	<footer class="text-light bg-dark">
+			<div class="container-fluid">
+						<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
+						<!-- 00 1enarxi antapokri for iGameCenter arxikh sym -->				
+				<!--   div class="row">	
+					<div class="col-md-12 pt-5">
+
+						<ins class="adsbygoogle"
+						     style="display:block"
+						     data-ad-client="ca-pub-9529818444792202"
+						     data-ad-slot="5336108283"
+						     data-ad-format="auto"></ins>
+						<script>
+						(adsbygoogle = window.adsbygoogle || []).push({});
+						</script>
+					</div>														
+				</div.  -->	
+				<div class="row">
+					<div class="col-md-12 text-right">
+						<a href="#myPage" title="Πήγαινε την κορυφή"  class="btn btn-outline-info">
+							<i class="fas fa-angle-up  fa-2x"></i>
+						</a>
+					</div>
+				</div>						
+				<div class="row">					
+					<div class="col-md-12 text-center">						
+						 <small><i class="far fa-copyright"></i>GameCenter</small>
+					</div>
+				</div>	
+
+			</div>	
+	</footer>
+
+ 
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+
+    <!-- my JavaScript
+    ================================================== -->
+	<script>
+		$(document).ready(function(){
+			$(".nav-item a, div a[href='#myPage']").on('click', function(event){
+				if(this.hash !==  ""){
+					event.preventDefault();
+
+					var hash = this.hash;
+
+					$('html, body').animate({
+							scrollTop: $(hash).offset().top
+						}, 1000, function(){ 
+							window.location.hash = hash;
+						});
+				}				
+			});
+
+			$(window).scroll(function() {
+			    $(".slideanim").each(function(){
+			      var pos = $(this).offset().top;
+
+			      var winTop = $(window).scrollTop();
+			        if (pos < winTop + 600) {
+			          $(this).addClass("slide");
+			        }
+			    });
+			  });
+
+		});
+	</script>
+
+  
+
+
+
+  </body>
+</html>
