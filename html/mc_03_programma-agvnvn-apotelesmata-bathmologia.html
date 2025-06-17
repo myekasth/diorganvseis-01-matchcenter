@@ -435,16 +435,17 @@
                         // Progress/Regression (AC)
                         var progressValue = standingRow.progressValue;
                         var progressHtml = '';
-                        var progressClass = '';
+                        var progressClasses = []; // Use an array for classes
+
                         if (progressValue > 0) {
                             progressHtml = `⬆️${progressValue}`;
-                            progressClass = 'text-success fw-bold'; // Green for positive
+                            progressClasses.push('text-success', 'fw-bold'); // Add classes to array
                         } else if (progressValue < 0) {
                             progressHtml = `⬇️${Math.abs(progressValue)}`;
-                            progressClass = 'text-danger fw-bold'; // Red for negative
+                            progressClasses.push('text-danger', 'fw-bold'); // Add classes to array
                         } else {
                             progressHtml = `➖`; // Neutral emoji
-                            progressClass = 'text-muted'; // Default color
+                            progressClasses.push('text-muted'); // Add class to array
                         }
 
                         // Apply promotion/relegation styling
@@ -549,7 +550,8 @@
 
                         // Progress/Regression (AC) - Last column
                         var td14 = document.createElement('td');
-                        td14.classList.add('d-none', 'd-md-table-cell', progressClass); // Hide on small, show on md and up
+                        // Use spread operator to add multiple classes from array
+                        td14.classList.add('d-none', 'd-md-table-cell', ...progressClasses); 
                         td14.innerHTML = progressHtml;
                         tr.appendChild(td14);
 
@@ -636,6 +638,8 @@
             const seconds = String(now.getSeconds()).padStart(2, '0');
             const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
             ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
+            // Update the span with the current date/time
+            document.getElementById("currentDateTime").textContent = formattedDateTime;
             contentDiv.appendChild(ekasthDiv);
 
             const versionDiv = document.createElement('div');
@@ -823,6 +827,18 @@
             height: 32px;
             object-fit: contain;
         }
+        /* Style for placeholder when team logo fails to load */
+        .team-logo-placeholder {
+            border: 1px dashed #ccc; /* Example: dashed border */
+            background-color: #f0f0f0; /* Light grey background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 0.7em;
+            text-align: center;
+        }
+
         .score-number {
             font-family: 'Krona One', sans-serif; /* Use Krona One for scores */
         }
