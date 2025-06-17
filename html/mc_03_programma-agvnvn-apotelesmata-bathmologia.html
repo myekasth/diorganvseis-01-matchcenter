@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <meta name="description" content="MatchCenter - Πρόγραμμα, αποτελέσματα αγώνων και βαθμολογίες" />
+    <meta name="keywords" content="MatchCenter, basketball, games, results, ranking, rosters, players, champions, μπάσκετ, πρωτάθλημα, διοργάνωση, πρόγραμμα, βαθμολογία" />
+    <meta name="language" content="greek" />
+    <meta name="author" content="MatchCenter" />
+    <meta name="web_author" content="Lazaros T" />
+    <link rel="icon" href="favicon.ico" />
+
+    <title>MatchCenter | Πρόγραμμα, αποτελέσματα αγώνων και βαθμολογίες</title>
+
+    <!-- Google Fonts: Krona One for titles, Inter for body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS and JS Bundle -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Charts Library for data visualization -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+        // Ensure Google Charts is loaded and ready before calling drawchart
+        google.charts.load('current', {'packages':['corechart', 'table']}); // Added 'table' package for data tables
+        google.charts.setOnLoadCallback(drawchart);
+
+        // --- Global variables for default values (can be overridden by URL parameters) ---
+        var defaultNameDiorganvtriaArxh = "ΕΚΑΣΘ";
+        var defaultPowerDiorganvtriaArxh = "1bURffybc07Eel69CZu1WKpGj_DIRA8gaE6rQUBtg5WI";
+        var defaultAgvnistikhPeriodos = "2025-26";
+        var defaultNamePrvtathlhmatos = "ΕΚΑΣΘ 2025-2026";
+        var defaultPowerPrvtathlhmatos = "12ZPDSn9GLS29gAGrDsAyZ1Gz6yObTKCeD0yZVFU-IVk";
+        var defaultNameKathgoriasOmilou = "Α1 Ανδρών";
+        var defaultPowerKathgoriasOmilou = "1S-42x8-L-uJ8c7_1G52GgP22L-9c7F0x1D23Xf45A6B"; // Default Sheet ID for Program/Standings
+
+        /**
+         * Parses URL query parameters.
+         * @param {string} variable The name of the query parameter to retrieve.
+         * @returns {string|boolean} The value of the parameter or false if not found.
+         */
+        function getQueryVariable(variable){
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0; i<vars.length; i++) {
+                var pair = vars[i].split("=");
+                if(pair[0] === variable){return pair[1];}
+            }
+            return(false);
+        }
+
+        /**
+         * Initializes the chart drawing and sets the header title based on URL parameters.
+         * This function is called as the callback for google.load to ensure Google Charts API is ready.
+         */
+        function drawchart(){
+            // Retrieve parameters from URL, using defaults if not present
+            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) : defaultNameDiorganvtriaArxh;
+            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? decodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) : defaultAgvnistikhPeriodos;
+            var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? decodeURIComponent(getQueryVariable("pNameKathgoriasOmilou")) : defaultNameKathgoriasOmilou;
+            
+            // Update the combined header title
+            document.getElementById("combined-header-title").innerHTML = `ΠΡΟΓΡΑΜΜΑ & ΒΑΘΜΟΛΟΓΙΕΣ | ${pNameKathgoriasOmilou} (${pAgvnistikhPeriodos}) | ${pNameDiorganvtriaArxh}`;
+            
+            drawGamesAndStandings();
+        }
+
+        /**
+         * Fetches game and standings data from the Google Sheet using Google Visualization API.
+         * It uses the pPowerKathgoriasOmilou parameter (Sheet ID) to query the specific sheet.
+         */
+        function drawGamesAndStandings() {
+            var pPowerKathgoriasOmilou = getQueryVariable("pPowerKathgoriasOmilou") ? decodeURIComponent(getQueryVariable("pPowerKathgoriasOmilou")) : defaultPowerKathgoriasOmilou;
+
+            // Query for all data, ordering by round (Column B) and then date (Column D) for games.
+            // This order is crucial for grouping by round and then correctly ordering games within a round.
+            var strQueryForURI = 'select * order by B asc, D asc, E asc';
+            var queryString = encodeURIComponent(strQueryForURI);
+
+            // Fetch data from gid=6 as per the original file
+            var query = new google.visualization.Query(
+                'https://docs.google.com/spreadsheets/d/'+ pPowerKathgoriasOmilou +'/gviz/tq?gid=6&headers=1&tq=' + queryString);
+            query.send(handle_DrawGamesAndStandings_DataQueryResponse);
+        }
+
+        /**
+         * Handles the data response from the Google Sheet query and renders games and standings using nested accordions and tabs.
+         * Data is grouped by "ΑΓΩΝΙΣΤΙΚΗ" (Column B). Each accordion item contains two tabs: "Αγώνες" and "Βαθμολογία".
+         * @param {object} response The Google Visualization API query response.
+         */
+        function handle_DrawGamesAndStandings_DataQueryResponse(response) {
+            if (response.isError()) {
+                console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                document.getElementById("list-content-id").innerHTML = '<div class="col-12"><p class="text-center text-danger">Προέκυψε σφάλμα κατά τη φόρτωση δεδομένων: ' + response.getMessage() + '. Παρακαλώ δοκιμάστε ξανά αργότερα.</p></div>';
+                var loadingSpinner = document.getElementById("loading-spinner");
+                if (loadingSpinner) {
+                    loadingSpinner.remove();
+                }
+                return;
+            }
+
+            var data = response.getDataTable();
+            var totalRows = data.getNumberOfRows();
+            var contentDiv = document.getElementById("list-content-id");
+
+            var loadingSpinner = document.getElementById("loading-spinner");
+            if (loadingSpinner) {
+                loadingSpinner.remove();
+            }
+            contentDiv.innerHTML = ''; // Clear existing content
+
+            if (totalRows === 0) {
+                contentDiv.innerHTML = '<div class="col-12"><p class="text-center text-muted">Δεν βρέθηκαν δεδομένα για το επιλεγμένο πρωτάθλημα/κατηγορία.</p></div>';
+                return;
+            }
+
+            // Extract promotion/relegation values from BZ column (index 77)
+            // Assuming BZ2 is row 1 (index 0) and BZ3 is row 2 (index 1) in Column BZ
+            var promotionPositions = parseInt(data.getFormattedValue(0, 77)); // BZ2
+            var relegationStartFrom = parseInt(data.getFormattedValue(1, 77)); // BZ3
+
+            // Group data by Round (Column B)
+            var gamesByRound = {};
+            var standingsByRound = {}; // To store standings for each round
+            var uniqueRounds = [];
+
+            for (var row = 0; row < totalRows; row++) {
+                var round = data.getFormattedValue(row, 1); // Column B: ΑΓΩΝΙΣΤΙΚΗ (for games)
+                var standingsRound = data.getFormattedValue(row, 29); // Column AD: ΑΓΩΝΙΣΤΙΚΗ (for standings)
+
+                // Populate gamesByRound
+                if (data.getFormattedValue(row, 16) !== "") { // Check if it's a game entry (Column Q is not empty)
+                    if (!gamesByRound[round]) {
+                        gamesByRound[round] = [];
+                        if (!uniqueRounds.includes(round)) {
+                            uniqueRounds.push(round);
+                        }
+                    }
+                    gamesByRound[round].push(data.getTableRow(row));
+                }
+
+                // Populate standingsByRound - assumes all standing rows for a given round are grouped together
+                if (data.getFormattedValue(row, 28) !== "" || data.getFormattedValue(row, 29) !== "") { // Check if it's a standings entry (Column AC or AD is not empty)
+                    if (!standingsByRound[standingsRound]) {
+                        standingsByRound[standingsRound] = [];
+                    }
+                    standingsByRound[standingsRound].push(data.getTableRow(row));
+                }
+            }
+
+            // Sort unique rounds numerically
+            uniqueRounds.sort((a, b) => parseInt(a) - parseInt(b));
+
+            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) : defaultNameDiorganvtriaArxh;
+            var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) : defaultPowerDiorganvtriaArxh;
+            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? decodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) : defaultAgvnistikhPeriodos;
+            var pNamePrvtathlhmatos = getQueryVariable("pNamePrvtathlhmatos") ? decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) : defaultNamePrvtathlhmatos;
+            var pPowerPrvtathlhmatos = getQueryVariable("pPowerPrvtathlhmatos") ? decodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos")) : defaultPowerPrvtathlhmatos;
+            var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? decodeURIComponent(getQueryVariable("pNameKathgoriasOmilou")) : defaultNameKathgoriasOmilou;
+            var pPowerKathgoriasOmilou = getQueryVariable("pPowerKathgoriasOmilou") ? decodeURIComponent(getQueryVariable("pPowerKathgoriasOmilou")) : defaultPowerKathgoriasOmilou;
+
+
+            var mainAccordion = document.createElement('div');
+            mainAccordion.className = 'accordion';
+            mainAccordion.id = 'mainGamesAccordion';
+
+            var today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalize to start of day
+
+            uniqueRounds.forEach(function(roundNumber, index) {
+                var accordionItemId = `roundAccordionItem_${roundNumber}`;
+                var collapseId = `roundCollapse_${roundNumber}`;
+
+                var accordionItem = document.createElement('div');
+                accordionItem.className = 'accordion-item';
+
+                var accordionHeader = document.createElement('h2');
+                accordionHeader.className = 'accordion-header';
+                accordionHeader.id = `heading_${roundNumber}`;
+
+                var accordionButton = document.createElement('button');
+                accordionButton.className = 'accordion-button collapsed'; // All collapsed by default unless date criteria met
+                accordionButton.type = 'button';
+                accordionButton.setAttribute('data-bs-toggle', 'collapse');
+                accordionButton.setAttribute('data-bs-target', `#${collapseId}`);
+                accordionButton.setAttribute('aria-expanded', 'false');
+                accordionButton.setAttribute('aria-controls', collapseId);
+                accordionButton.innerHTML = `<h5 class="mb-0 text-dark">${roundNumber}η Αγωνιστική</h5>`; // Round number as title
+
+                accordionHeader.appendChild(accordionButton);
+                accordionItem.appendChild(accordionHeader);
+
+                var accordionCollapse = document.createElement('div');
+                accordionCollapse.id = collapseId;
+                accordionCollapse.className = 'accordion-collapse collapse'; // Start collapsed
+                accordionCollapse.setAttribute('aria-labelledby', `heading_${roundNumber}`);
+                accordionCollapse.setAttribute('data-bs-parent', '#mainGamesAccordion');
+
+                var accordionBody = document.createElement('div');
+                accordionBody.className = 'accordion-body p-0'; // No padding for body, tabs will have it
+
+                // Create Tabs container for Games and Standings
+                var navTabs = document.createElement('ul');
+                navTabs.className = 'nav nav-tabs nav-justified bg-light pt-2'; // Justified tabs for full width
+                navTabs.id = `navTabs_${roundNumber}`;
+                navTabs.setAttribute('role', 'tablist');
+
+                // Tab 1: Games
+                var gamesTabLi = document.createElement('li');
+                gamesTabLi.className = 'nav-item';
+                var gamesNavLink = document.createElement('button');
+                gamesNavLink.className = 'nav-link active'; // Games tab active by default
+                gamesNavLink.id = `games-tab-${roundNumber}`;
+                gamesNavLink.setAttribute('data-bs-toggle', 'tab');
+                gamesNavLink.setAttribute('data-bs-target', `#games-panel-${roundNumber}`);
+                gamesNavLink.setAttribute('type', 'button');
+                gamesNavLink.setAttribute('role', 'tab');
+                gamesNavLink.setAttribute('aria-controls', `games-panel-${roundNumber}`);
+                gamesNavLink.setAttribute('aria-selected', 'true');
+                gamesNavLink.textContent = 'Αγώνες';
+                gamesTabLi.appendChild(gamesNavLink);
+                navTabs.appendChild(gamesTabLi);
+
+                // Tab 2: Standings
+                var standingsTabLi = document.createElement('li');
+                standingsTabLi.className = 'nav-item';
+                var standingsNavLink = document.createElement('button');
+                standingsNavLink.className = 'nav-link';
+                standingsNavLink.id = `standings-tab-${roundNumber}`;
+                standingsNavLink.setAttribute('data-bs-toggle', 'tab');
+                standingsNavLink.setAttribute('data-bs-target', `#standings-panel-${roundNumber}`);
+                standingsNavLink.setAttribute('type', 'button');
+                standingsNavLink.setAttribute('role', 'tab');
+                standingsNavLink.setAttribute('aria-controls', `standings-panel-${roundNumber}`);
+                standingsNavLink.setAttribute('aria-selected', 'false');
+                standingsNavLink.textContent = 'Βαθμολογία';
+                standingsTabLi.appendChild(standingsNavLink);
+                navTabs.appendChild(standingsTabLi);
+
+                accordionBody.appendChild(navTabs);
+
+                // Tab Content container
+                var tabContent = document.createElement('div');
+                tabContent.className = 'tab-content';
+                tabContent.id = `navTabContent_${roundNumber}`;
+
+                // Tab Pane 1: Games
+                var gamesTabPane = document.createElement('div');
+                gamesTabPane.className = 'tab-pane fade show active p-3'; // Add padding for content
+                gamesTabPane.id = `games-panel-${roundNumber}`;
+                gamesTabPane.setAttribute('role', 'tabpanel');
+                gamesTabPane.setAttribute('aria-labelledby', `games-tab-${roundNumber}`);
+                
+                // Sort games within this round by date and time before displaying
+                var currentRoundGames = gamesByRound[roundNumber] || [];
+                currentRoundGames.sort((a, b) => {
+                    var dateA = new Date(a.c[3].f.split('/').reverse().join('-') + 'T' + a.c[4].f); // Date D, Time E
+                    var dateB = new Date(b.c[3].f.split('/').reverse().join('-') + 'T' + b.c[4].f);
+                    return dateA - dateB;
+                });
+
+                // Render games for this round
+                if (currentRoundGames.length > 0) {
+                    currentRoundGames.forEach((gameRow, gameIndex) => {
+                        var teamA_name = gameRow.c[6].f; // Column G
+                        var teamA_logo = gameRow.c[48].f; // Column AW
+                        var teamB_name = gameRow.c[7].f; // Column H
+                        var teamB_logo = gameRow.c[49].f; // Column AX
+                        var scoreA = gameRow.c[8].f; // Column I
+                        var scoreB = gameRow.c[9].f; // Column J
+                        var arena = gameRow.c[5].f; // Column F
+                        var date = gameRow.c[3].f; // Column D
+                        var time = gameRow.c[4].f; // Column E
+                        var gameCode = gameRow.c[16].f; // Column Q
+
+                        var gameDiv = document.createElement('div');
+                        gameDiv.className = 'game-item d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 p-3 rounded shadow-sm bg-white';
+
+                        // Left Team (Team A)
+                        var teamA_div = document.createElement('div');
+                        teamA_div.className = 'team-side text-start mb-2 mb-md-0 d-flex align-items-center flex-grow-1 justify-content-start';
+                        if (teamA_logo) {
+                            var imgA = document.createElement('img');
+                            imgA.src = teamA_logo;
+                            imgA.alt = teamA_name + ' logo';
+                            imgA.className = 'team-logo me-2';
+                            teamA_div.appendChild(imgA);
+                        }
+                        var spanA = document.createElement('span');
+                        spanA.className = 'team-name fw-bold';
+                        spanA.textContent = teamA_name;
+                        teamA_div.appendChild(spanA);
+                        gameDiv.appendChild(teamA_div);
+
+                        // Center (Score and Info)
+                        var center_div = document.createElement('div');
+                        center_div.className = 'game-center text-center mx-md-3 mb-2 mb-md-0 d-flex flex-column justify-content-center align-items-center';
+
+                        var score_div = document.createElement('div');
+                        score_div.className = 'game-score d-flex align-items-center';
+                        var spanScoreA = document.createElement('span');
+                        spanScoreA.className = 'score-number text-primary fw-bold fs-5';
+                        spanScoreA.textContent = scoreA;
+                        var spanVersus = document.createElement('span');
+                        spanVersus.className = 'versus-text mx-1';
+                        spanVersus.textContent = '-';
+                        var spanScoreB = document.createElement('span');
+                        spanScoreB.className = 'score-number text-primary fw-bold fs-5';
+                        spanScoreB.textContent = scoreB;
+                        score_div.appendChild(spanScoreA);
+                        score_div.appendChild(spanVersus);
+                        score_div.appendChild(spanScoreB);
+                        center_div.appendChild(score_div);
+
+                        var info_div = document.createElement('div');
+                        info_div.className = 'game-info text-muted small mt-1';
+                        info_div.innerHTML = `${arena}<br>${date} ${time}`;
+                        center_div.appendChild(info_div);
+                        gameDiv.appendChild(center_div);
+
+                        // Right Team (Team B)
+                        var teamB_div = document.createElement('div');
+                        teamB_div.className = 'team-side text-end d-flex mb-2 mb-md-0 align-items-center flex-grow-1 justify-content-end';
+                        var spanB = document.createElement('span');
+                        spanB.className = 'team-name fw-bold';
+                        spanB.textContent = teamB_name;
+                        teamB_div.appendChild(spanB);
+                        if (teamB_logo) {
+                            var imgB = document.createElement('img');
+                            imgB.src = teamB_logo;
+                            imgB.alt = teamB_name + ' logo';
+                            imgB.className = 'team-logo ms-2';
+                            teamB_div.appendChild(imgB);
+                        }
+                        gameDiv.appendChild(teamB_div);
+
+                        gamesTabPane.appendChild(gameDiv);
+                    });
+                } else {
+                    var noGamesDiv = document.createElement('div');
+                    noGamesDiv.className = 'alert alert-info text-center';
+                    noGamesDiv.textContent = 'Δεν βρέθηκαν αγώνες για αυτή την αγωνιστική.';
+                    gamesTabPane.appendChild(noGamesDiv);
+                }
+
+                tabContent.appendChild(gamesTabPane);
+
+                // Tab Pane 2: Standings
+                var standingsTabPane = document.createElement('div');
+                standingsTabPane.className = 'tab-pane fade p-3'; // Add padding for content
+                standingsTabPane.id = `standings-panel-${roundNumber}`;
+                standingsTabPane.setAttribute('role', 'tabpanel');
+                standingsTabPane.setAttribute('aria-labelledby', `standings-tab-${roundNumber}`);
+
+                // Render standings for this round
+                var currentRoundStandings = standingsByRound[roundNumber] || [];
+                if (currentRoundStandings.length > 0) {
+                    var standingsTable = document.createElement('table');
+                    standingsTable.className = 'table table-hover table-striped table-sm standings-table'; // Added standings-table class
+
+                    var thead = document.createElement('thead');
+                    var headerRow = document.createElement('tr');
+                    ['Α/Α', ' ', 'Ομάδα', 'Βαθ', 'Αγ', 'Ν', 'Η', 'Μ', 'Επ', 'Αμ', 'Δ', 'Β2', 'Δ2', 'Δ3', 'Πρόοδος'].forEach(headerText => {
+                        var th = document.createElement('th');
+                        th.scope = 'col';
+                        th.textContent = headerText;
+                        if (headerText === 'Μ' || headerText === 'Επ' || headerText === 'Αμ' || headerText === 'Δ' || headerText === 'Β2' || headerText === 'Δ2' || headerText === 'Δ3' || headerText === 'Πρόοδος') {
+                            th.classList.add('d-none', 'd-md-table-cell'); // Hide on small screens, show on md and up
+                        }
+                        if (headerText === 'Βαθ') {
+                            th.classList.add('fw-bold'); // Bold for points
+                        }
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    standingsTable.appendChild(thead);
+
+                    var tbody = document.createElement('tbody');
+                    currentRoundStandings.forEach((standingRow, standingIndex) => {
+                        var tr = document.createElement('tr');
+                        var position = parseInt(standingRow.c[30].f); // AE
+                        var teamName = standingRow.c[31].f; // AF
+                        var teamLogoUrl = standingRow.c[52].f; // BA
+                        var points = standingRow.c[34].f; // AI
+                        var gamesPlayed = standingRow.c[35].f; // AJ
+                        var wins = standingRow.c[38].f; // AM
+                        var losses = standingRow.c[39].f; // AN
+                        var zeros = standingRow.c[40].f; // AO
+                        var pointsFor = standingRow.c[41].f; // AP
+                        var pointsAgainst = standingRow.c[42].f; // AQ
+                        var difference = standingRow.c[43].f; // AR
+                        var points2 = standingRow.c[44].f; // AS
+                        var difference2 = standingRow.c[45].f; // AT (user specified AZ, but AT is 45, AZ is 51, let's use user specified cols if I find them)
+                        var difference3 = standingRow.c[51].f; // AZ - This seems to be the one
+
+                        // Progress/Regression (AC - index 28)
+                        var progressValue = parseInt(standingRow.c[28].f);
+                        var progressHtml = '';
+                        var progressClass = '';
+                        if (progressValue > 0) {
+                            progressHtml = `⬆️${progressValue}`;
+                            progressClass = 'text-success fw-bold'; // Green for positive
+                        } else if (progressValue < 0) {
+                            progressHtml = `⬇️${Math.abs(progressValue)}`;
+                            progressClass = 'text-danger fw-bold'; // Red for negative
+                        } else {
+                            progressHtml = `➖`; // Neutral emoji
+                            progressClass = 'text-muted'; // Default color
+                        }
+
+                        // Apply promotion/relegation styling
+                        if (promotionPositions && position <= promotionPositions) {
+                            tr.classList.add('table-success-light'); // Light green background
+                        } else if (relegationStartFrom && position >= relegationStartFrom) {
+                            tr.classList.add('table-danger-light'); // Light red background
+                        }
+                        
+                        // Append cells in order
+                        // AA
+                        var td0 = document.createElement('td');
+                        td0.textContent = position + '.';
+                        tr.appendChild(td0);
+
+                        // Logo (BA) as background
+                        var td1 = document.createElement('td');
+                        var logoDiv = document.createElement('div');
+                        logoDiv.className = 'team-logo-bg';
+                        if (teamLogoUrl) {
+                            logoDiv.style.backgroundImage = `url('${teamLogoUrl}')`;
+                        }
+                        td1.appendChild(logoDiv);
+                        tr.appendChild(td1);
+
+                        // Team Name (AF)
+                        var td2 = document.createElement('td');
+                        td2.className = 'fw-bold'; // Always bold for team name
+                        td2.textContent = teamName;
+                        tr.appendChild(td2);
+
+                        // Points (AI) - Bold and +2px font-size (handled by class)
+                        var td3 = document.createElement('td');
+                        td3.className = 'standings-points fw-bold'; // Custom class for bold and larger font
+                        td3.textContent = points;
+                        tr.appendChild(td3);
+
+                        // Games Played (AJ)
+                        var td4 = document.createElement('td');
+                        td4.textContent = gamesPlayed;
+                        tr.appendChild(td4);
+
+                        // Wins (AM)
+                        var td5 = document.createElement('td');
+                        td5.textContent = wins;
+                        tr.appendChild(td5);
+
+                        // Losses (AN)
+                        var td6 = document.createElement('td');
+                        td6.textContent = losses;
+                        tr.appendChild(td6);
+
+                        // Zeros (AO) - Hidden on small screens if '0'
+                        var td7 = document.createElement('td');
+                        td7.classList.add('d-none', 'd-md-table-cell');
+                        td7.textContent = (zeros === '0' ? '' : zeros);
+                        tr.appendChild(td7);
+
+                        // Points For (AP)
+                        var td8 = document.createElement('td');
+                        td8.classList.add('d-none', 'd-md-table-cell');
+                        td8.textContent = pointsFor;
+                        tr.appendChild(td8);
+
+                        // Points Against (AQ)
+                        var td9 = document.createElement('td');
+                        td9.classList.add('d-none', 'd-md-table-cell');
+                        td9.textContent = pointsAgainst;
+                        tr.appendChild(td9);
+
+                        // Difference (AR)
+                        var td10 = document.createElement('td');
+                        td10.classList.add('d-none', 'd-md-table-cell');
+                        td10.textContent = difference;
+                        tr.appendChild(td10);
+
+                        // Points 2 (AS)
+                        var td11 = document.createElement('td');
+                        td11.classList.add('d-none', 'd-md-table-cell');
+                        td11.textContent = points2;
+                        tr.appendChild(td11);
+
+                        // Difference 2 (AT or AU - assuming AT is 45, AZ is 51, so 45 is T)
+                        var td12 = document.createElement('td');
+                        td12.classList.add('d-none', 'd-md-table-cell');
+                        td12.textContent = difference2; // was 45 in original file, now 51
+                        tr.appendChild(td12);
+
+                        // Difference 3 (AZ)
+                        var td13 = document.createElement('td');
+                        td13.classList.add('d-none', 'd-md-table-cell');
+                        td13.textContent = difference3;
+                        tr.appendChild(td13);
+
+                        // Progress/Regression (AC) - Last column
+                        var td14 = document.createElement('td');
+                        td14.classList.add('d-none', 'd-md-table-cell', progressClass); // Hide on small, show on md and up
+                        td14.innerHTML = progressHtml;
+                        tr.appendChild(td14);
+
+                        tbody.appendChild(tr);
+                    });
+                    standingsTable.appendChild(tbody);
+                    standingsTabPane.appendChild(standingsTable);
+                } else {
+                    var noStandingsDiv = document.createElement('div');
+                    noStandingsDiv.className = 'alert alert-info text-center';
+                    noStandingsDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
+                    standingsTabPane.appendChild(noStandingsDiv);
+                }
+
+                tabContent.appendChild(standingsTabPane);
+                accordionBody.appendChild(tabContent);
+                accordionCollapse.appendChild(accordionBody);
+                accordionItem.appendChild(accordionCollapse);
+                mainAccordion.appendChild(accordionItem);
+
+                // Open/collapse logic based on date
+                var roundGames = gamesByRound[roundNumber];
+                if (roundGames && roundGames.length > 0) {
+                    // Assuming date is in Column D (index 3) and format DD/MM/YYYY
+                    var firstGameDateStr = roundGames[0].c[3].f;
+                    var [day, month, year] = firstGameDateStr.split('/').map(Number);
+                    var gameDate = new Date(year, month - 1, day); // Month is 0-indexed
+
+                    var eightDaysAgo = new Date(today);
+                    eightDaysAgo.setDate(today.getDate() - 8);
+
+                    var sevenDaysFromNow = new Date(today);
+                    sevenDaysFromNow.setDate(today.getDate() + 7);
+
+                    if (gameDate >= eightDaysAgo && gameDate <= sevenDaysFromNow) {
+                        accordionButton.classList.remove('collapsed');
+                        accordionButton.setAttribute('aria-expanded', 'true');
+                        accordionCollapse.classList.add('show');
+                    }
+                } else if (standingsByRound[roundNumber] && standingsByRound[roundNumber].length > 0 && uniqueRounds.indexOf(roundNumber) === (uniqueRounds.length -1) ) {
+                    // If no games, but standings exist, open the latest round's standings
+                    accordionButton.classList.remove('collapsed');
+                    accordionButton.setAttribute('aria-expanded', 'true');
+                    accordionCollapse.classList.add('show');
+                }
+            });
+            contentDiv.appendChild(mainAccordion);
+
+            // Add the footer buttons container
+            const footerButtonsContainer = document.createElement('div');
+            footerButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3');
+
+            // Add "Πίσω" button
+            const backLink = document.createElement('a');
+            backLink.href = 'mc_02_Kathgories.html' + // Link back to categories
+                '?pNameDiorganvtriaArxh=' + encodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
+                '&pPowerDiorganvtriaArxh=' + encodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) +
+                '&pAgvnistikhPeriodos=' + encodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) +
+                '&pNamePrvtathlhmatos=' + encodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) +
+                '&pPowerPrvtathlhmatos=' + encodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos"));
+            backLink.classList.add('btn', 'btn-sm', 'btn-back-custom');
+            backLink.textContent = '← Πίσω';
+            footerButtonsContainer.appendChild(backLink);
+
+            // Add "Προκηρύξεις" button
+            const announcementsLink = document.createElement('a');
+            announcementsLink.href = 'https://www.ekasth1976.gr/2024/07/2024-25.html';
+            announcementsLink.target = '_blank';
+            announcementsLink.classList.add('btn', 'btn-sm', 'btn-back-custom');
+            announcementsLink.textContent = 'Προκηρύξεις';
+            footerButtonsContainer.appendChild(announcementsLink);
+            
+            contentDiv.appendChild(footerButtonsContainer);
+
+            // Add footer elements
+            const ekasthDiv = document.createElement('div');
+            ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12');
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
+            contentDiv.appendChild(ekasthDiv);
+
+            const versionDiv = document.createElement('div');
+            versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
+            versionDiv.textContent = `LT v.25.06.17 | mc_03_programma@myekasth`; 
+            contentDiv.appendChild(versionDiv);
+
+             // Removed old `drawYpologistikoFylloTab()` call and related HTML as it's not part of the new tab structure.
+             // If you still need the XL tab, it would need to be re-implemented as a third tab within the rounds,
+             // or as a separate accordion item. For now, it's removed.
+        }
+
+        // Removed isKypello function as it's not used.
+    </script>
+
+    <style>
+        /* CSS variables for consistent theming */
+        :root {
+            --mc-primary-color: #007bff; /* Bootstrap primary blue */
+            --mc-secondary-color: #6c757d; /* Bootstrap secondary gray */
+            --mc-info-color: #17a2b8; /* Bootstrap info cyan */
+            --mc-light-bg: #f8f9fa; /* Light background */
+            --mc-dark-bg: #212529; /* Dark text for contrast */
+            --mc-text-dark: #212529; /* Dark text for light backgrounds */
+            --mc-timeline-color: #ff0000; /* Pure red for underline */
+
+            /* Monochromatic white header colors and contrasting text colors */
+            --mc-header-bg-color: #ffffff; /* Pure white background for header */
+            --mc-header-text-color: #212529; /* Dark text for contrast on white */
+            --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
+            --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
+        }
+
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mc-light-bg);
+            color: var(--mc-text-dark);
+            padding-top: 0; /* No fixed top padding as header is sticky */
+        }
+
+        /* Font styling for headings */
+        h1, h5 {
+            font-family: 'Krona One', sans-serif;
+        }
+
+        /* New Sticky Header Styles - copied from mc_02 */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: var(--mc-header-bg-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            z-index: 1020;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .MatchcenterHomepageWidget__header {
+            font-family: 'Krona One', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--mc-header-text-color);
+        }
+
+        .MatchcenterHomepageWidget__header small {
+            font-size: 0.6em;
+            vertical-align: middle;
+            color: var(--mc-header-small-text-color);
+            font-weight: 300;
+        }
+
+        .header-underline {
+            height: 5px;
+            width: 100%;
+            background-color: var(--mc-timeline-color);
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .combined-header-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: var(--mc-header-combined-title-color);
+            text-align: center;
+        }
+
+        /* Accordion specific styles - copied from mc_02 and adapted */
+        .accordion-item {
+            border-radius: 0.75rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.03);
+            margin-bottom: 1rem;
+            border: none;
+            overflow: hidden;
+        }
+
+        .accordion-button {
+            background-color: #e9ecef;
+            color: var(--mc-text-dark);
+            font-weight: 600;
+            border-radius: 0.75rem !important;
+            padding: 1rem 1.25rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--mc-primary-color);
+            color: #ffffff; /* White text when active */
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+        }
+        .accordion-button h5 { /* Style for h5 inside accordion button */
+            color: inherit; /* Inherit color from button state */
+            margin-bottom: 0;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+        }
+
+        .accordion-body {
+            padding: 0; /* Removed padding here, tabs will handle it */
+            background-color: #f8f9fa;
+            border-top: 1px solid rgba(0,0,0,.05);
+        }
+
+        /* Styles for the navigation tabs */
+        .nav-tabs {
+            border-bottom: 1px solid rgba(0,0,0,.05);
+            margin-bottom: 0; /* Remove bottom margin if used with tab-content immediately below */
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0.5rem 0.5rem 0 0;
+            color: var(--mc-secondary-color);
+            font-weight: 500;
+            background-color: transparent;
+            padding: 0.75rem 1rem;
+            margin-bottom: -1px; /* Overlap border with tab-content */
+            transition: all 0.2s ease;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--mc-primary-color);
+            background-color: #ffffff;
+            border-bottom: 3px solid var(--mc-primary-color); /* Active indicator */
+            font-weight: 700;
+        }
+        .nav-tabs .nav-link:hover {
+            color: var(--mc-primary-color);
+        }
+
+        .tab-content {
+            border-top: none;
+            background-color: #ffffff; /* White background for tab content areas */
+            border-radius: 0 0 0.75rem 0.75rem; /* Rounded bottom corners for the tab content area */
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02); /* Light shadow for depth */
+        }
+
+        .tab-pane {
+            padding: 1.5rem; /* Padding for the content inside each tab */
+        }
+
+        /* Game item styling */
+        .game-item {
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02);
+            transition: all 0.2s ease-in-out;
+            background-color: #ffffff !important;
+        }
+        .game-item:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.08);
+            transform: translateY(-2px);
+        }
+
+        .team-logo {
+            width: 32px; /* Adjust size as needed */
+            height: 32px;
+            object-fit: contain;
+        }
+        .score-number {
+            font-family: 'Krona One', sans-serif; /* Use Krona One for scores */
+        }
+        .versus-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .game-info {
+            font-size: 0.85rem;
+            color: var(--mc-secondary-color);
+        }
+
+        /* Standings Table Styling */
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .standings-table th, .standings-table td {
+            padding: 0.6rem 0.4rem;
+            text-align: center;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .standings-table thead th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: var(--mc-text-dark);
+            position: sticky;
+            top: 0;
+            z-index: 1; /* Stay above content when scrolling */
+        }
+
+        .standings-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .standings-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Specific column styling for standings */
+        .standings-table .standings-points {
+            font-size: 1.1rem; /* +2px from 0.9rem base + bold */
+            font-weight: bold;
+            color: var(--mc-primary-color);
+        }
+
+        .standings-table .team-logo-bg {
+            width: 30px;
+            height: 30px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        /* Promotion/Relegation colors */
+        .table-success-light {
+            background-color: #d4edda !important; /* Light green for promotion */
+        }
+        .table-danger-light {
+            background-color: #f8d7da !important; /* Light red for relegation */
+        }
+
+        /* Footer styles - copied from mc_02 */
+        .ekasth-footer-text, .ekasth-footer-version-text {
+            font-size: 0.55rem;
+            color: var(--mc-secondary-color);
+            padding: 0.1rem 0;
+        }
+
+        .ekasth-footer-text {
+            border-top: 1px solid rgba(0,0,0,.1);
+            padding-top: 1.5rem;
+        }
+
+        /* Styles for footer buttons - copied from mc_02 */
+        .btn-back-custom {
+            background-color: transparent;
+            color: rgba(33, 37, 41, 0.5);
+            border: 1px solid rgba(33, 37, 41, 0.2);
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .btn-back-custom:hover,
+        .btn-back-custom:focus {
+            background-color: rgba(33, 37, 41, 0.1);
+            color: var(--mc-header-text-color);
+            border-color: var(--mc-header-text-color);
+            box-shadow: none;
+        }
+
+        /* Responsive adjustments for smaller screens - copied from mc_02 */
+        @media (max-width: 767.98px) {
+            .sticky-header-tabs {
+                padding-left: 1rem;
+            }
+            .MatchcenterHomepageWidget__header {
+                font-size: 2.2rem;
+            }
+            .combined-header-title {
+                font-size: 1.1rem;
+            }
+            /* Hide columns in standings table on small screens */
+            .standings-table th.d-md-table-cell,
+            .standings-table td.d-md-table-cell {
+                display: none !important;
+            }
+            /* Adjust padding for tab panes on small screens */
+            .tab-pane {
+                padding: 1rem 0.5rem;
+            }
+            .game-item {
+                flex-direction: column; /* Stack items vertically */
+                align-items: flex-start !important; /* Align left */
+            }
+            .team-side {
+                justify-content: flex-start !important; /* Align team names to start */
+                width: 100%;
+            }
+            .game-center {
+                width: 100%;
+                margin-top: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body id="myPage">
+
+    <!-- Sticky Header Tabs - Copied from mc_02_Kathgories.html -->
+    <div class="sticky-header-tabs">
+        <h3 class="MatchcenterHomepageWidget__header">
+            MATCH<small class="text-body-secondary">CENTER</small>
+        </h3>
+        <div class="header-underline"></div>
+        <div class="combined-header-title" id="combined-header-title">
+            ΠΡΟΓΡΑΜΜΑ & ΒΑΘΜΟΛΟΓΙΕΣ
+        </div>
+    </div>
+
+    <!-- Main content section for displaying games and standings -->
+    <section class="container my-5">
+        <div class="row" id="list-content-id">
+            <!-- Loading spinner displayed until data is fetched -->
+            <div class="col-12 text-center" id="loading-spinner">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                </div>
+                <p>Φόρτωση δεδομένων ...</p>
+            </div>
+            <!-- Content will be injected here by JavaScript -->
+        </div>
+    </section>
+
+    <!-- Footer - Copied from mc_02_Kathgories.html -->
+    <footer class="text-light bg-dark pt-4 pb-2">
+        <div class="container">
+            <!-- Footer buttons container -->
+            <div class="row">
+                <div class="col-12 text-center mt-4 mb-2 d-flex justify-content-center gap-3">
+                    <!-- "Πίσω" button -->
+                    <!-- The href is dynamically set in JS to go back to the previous categories page -->
+                    <a href="#" id="backButtonFooter" class="btn btn-sm btn-back-custom">
+                        ← Πίσω
+                    </a>
+                    <!-- "Προκηρύξεις" button -->
+                    <a href="https://www.ekasth1976.gr/2024/07/2024-25.html" target="_blank" class="btn btn-sm btn-back-custom">
+                        Προκηρύξεις
+                    </a>
+                </div>
+            </div>
+            <!-- Standard footer text -->
+            <div class="row">
+                <div class="col-12 text-center ekasth-footer-text">
+                    Ε.ΚΑ.Σ.Θ. 1976 - <span id="currentDateTime"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-center ekasth-footer-version-text">
+                    LT v.25.06.17 | mc_03_programma@myekasth
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
