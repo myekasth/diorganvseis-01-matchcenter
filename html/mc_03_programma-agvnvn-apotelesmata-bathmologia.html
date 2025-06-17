@@ -215,6 +215,15 @@
             var today = new Date();
             today.setHours(0, 0, 0, 0); // Normalize to start of day
 
+            // Function to truncate team names for mobile
+            function truncateTeamName(name) {
+                // Check if screen width is less than 768px (Bootstrap's md breakpoint)
+                if (window.innerWidth < 768) {
+                    return name.substring(0, 5); // Return first 5 characters
+                }
+                return name; // Return full name for larger screens
+            }
+
             uniqueRounds.forEach(function(roundNumber, index) {
                 var accordionItemId = `roundAccordionItem_${roundNumber}`;
                 var collapseId = `roundCollapse_${roundNumber}`;
@@ -310,9 +319,11 @@
                 // Render games for this round
                 if (currentRoundGames.length > 0) {
                     currentRoundGames.forEach((gameRow, gameIndex) => {
-                        var teamA_name = gameRow.teamA_name;
+                        // Apply truncation based on screen size
+                        var teamA_name_display = truncateTeamName(gameRow.teamA_name);
+                        var teamB_name_display = truncateTeamName(gameRow.teamB_name);
+
                         var teamA_logo = gameRow.teamA_logo;
-                        var teamB_name = gameRow.teamB_name;
                         var teamB_logo = gameRow.teamB_logo;
                         var scoreA = gameRow.scoreA;
                         var scoreB = gameRow.scoreB;
@@ -322,51 +333,61 @@
                         // var gameCode = gameRow.gameCode; // Not directly used in rendering now
 
                         var gameDiv = document.createElement('div');
-                        // Modified game-item classes for fixed width distribution
                         gameDiv.className = 'game-item d-flex flex-column flex-md-row align-items-center mb-3 p-3 rounded shadow-sm bg-white';
 
-                        // Left Team (Team A)
+                        // Left Team (Team A) - Team name only
                         var teamA_div = document.createElement('div');
-                        // Added `flex-grow-0 flex-shrink-0` and `team-side-left` for specific styling
                         teamA_div.className = 'team-side team-side-left text-start mb-2 mb-md-0 d-flex align-items-center';
-                        if (teamA_logo) {
-                            var imgA = document.createElement('img');
-                            imgA.src = teamA_logo;
-                            imgA.alt = teamA_name + ' logo';
-                            imgA.className = 'team-logo me-2';
-                            // Add onerror to img element
-                            imgA.onerror = function() {
-                                this.onerror=null; // Prevent infinite loop
-                                this.src=DEFAULT_LOGO_URL; // Set default image on error
-                            };
-                            teamA_div.appendChild(imgA);
-                        }
                         var spanA = document.createElement('span');
                         spanA.className = 'team-name fw-bold';
-                        spanA.textContent = teamA_name;
+                        spanA.textContent = teamA_name_display; // Use truncated name
                         teamA_div.appendChild(spanA);
                         gameDiv.appendChild(teamA_div);
 
-                        // Center (Score and Info)
+                        // Center (Score, Logos, and Info)
                         var center_div = document.createElement('div');
-                        // Added `flex-grow-0 flex-shrink-0` and `game-center-fixed` for specific styling
                         center_div.className = 'game-center game-center-fixed text-center mx-md-3 mb-2 mb-md-0 d-flex flex-column justify-content-center align-items-center';
 
-                        var score_div = document.createElement('div');
-                        score_div.className = 'game-score d-flex align-items-center';
+                        var score_logos_container = document.createElement('div');
+                        score_logos_container.className = 'score-logos-container d-flex align-items-center justify-content-center';
+
+                        // Team A Score and Logo
+                        var teamA_score_logo_div = document.createElement('div');
+                        teamA_score_logo_div.className = 'team-score-logo team-score-logo-A d-flex align-items-center';
                         var spanScoreA = document.createElement('span');
                         spanScoreA.className = 'score-number text-primary fw-bold fs-5';
                         spanScoreA.textContent = scoreA;
+                        teamA_score_logo_div.appendChild(spanScoreA);
+                        var imgA = document.createElement('img');
+                        imgA.src = teamA_logo;
+                        imgA.alt = teamA_name_display + ' logo';
+                        imgA.className = 'team-logo-small ms-2';
+                        imgA.onerror = function() { this.onerror=null; this.src=DEFAULT_LOGO_URL; };
+                        teamA_score_logo_div.appendChild(imgA);
+                        score_logos_container.appendChild(teamA_score_logo_div);
+
+                        // Versus Text
                         var spanVersus = document.createElement('span');
-                        spanVersus.className = 'versus-text mx-1';
+                        spanVersus.className = 'versus-text mx-2';
                         spanVersus.textContent = '-';
+                        score_logos_container.appendChild(spanVersus);
+
+                        // Team B Logo and Score
+                        var teamB_score_logo_div = document.createElement('div');
+                        teamB_score_logo_div.className = 'team-score-logo team-score-logo-B d-flex align-items-center';
+                        var imgB = document.createElement('img');
+                        imgB.src = teamB_logo;
+                        imgB.alt = teamB_name_display + ' logo';
+                        imgB.className = 'team-logo-small me-2';
+                        imgB.onerror = function() { this.onerror=null; this.src=DEFAULT_LOGO_URL; };
+                        teamB_score_logo_div.appendChild(imgB);
                         var spanScoreB = document.createElement('span');
                         spanScoreB.className = 'score-number text-primary fw-bold fs-5';
                         spanScoreB.textContent = scoreB;
-                        score_div.appendChild(spanScoreA);
-                        score_div.appendChild(spanVersus);
-                        score_div.appendChild(spanScoreB);
-                        center_div.appendChild(score_div);
+                        teamB_score_logo_div.appendChild(spanScoreB);
+                        score_logos_container.appendChild(teamB_score_logo_div);
+
+                        center_div.appendChild(score_logos_container);
 
                         var info_div = document.createElement('div');
                         info_div.className = 'game-info text-muted small mt-1';
@@ -374,26 +395,13 @@
                         center_div.appendChild(info_div);
                         gameDiv.appendChild(center_div);
 
-                        // Right Team (Team B)
+                        // Right Team (Team B) - Team name only
                         var teamB_div = document.createElement('div');
-                        // Added `flex-grow-0 flex-shrink-0` and `team-side-right` for specific styling
                         teamB_div.className = 'team-side team-side-right text-end d-flex mb-2 mb-md-0 align-items-center';
                         var spanB = document.createElement('span');
                         spanB.className = 'team-name fw-bold';
-                        spanB.textContent = teamB_name;
+                        spanB.textContent = teamB_name_display; // Use truncated name
                         teamB_div.appendChild(spanB);
-                        if (teamB_logo) {
-                            var imgB = document.createElement('img');
-                            imgB.src = teamB_logo;
-                            imgB.alt = teamB_name + ' logo';
-                            imgB.className = 'team-logo ms-2';
-                            // Add onerror to img element
-                            imgB.onerror = function() {
-                                this.onerror=null; // Prevent infinite loop
-                                this.src=DEFAULT_LOGO_URL; // Set default image on error
-                            };
-                            teamB_div.appendChild(imgB);
-                        }
                         gameDiv.appendChild(teamB_div);
 
                         gamesTabPane.appendChild(gameDiv);
@@ -547,7 +555,7 @@
                     var noStandingsDiv = document.createElement('div');
                     noGamesDiv.className = 'alert alert-info text-center';
                     noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
-                    standingsTabPane.appendChild(noGamesDiv);
+                    standingsTabPane.appendChild(noStandingsDiv);
                 }
 
                 tabContent.appendChild(standingsTabPane);
@@ -794,50 +802,21 @@
             box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02);
             transition: all 0.2s ease-in-out;
             background-color: #ffffff !important;
-            /* Added for fixed width distribution */
-            flex-wrap: nowrap; /* Prevent wrapping on desktop */
-            justify-content: center; /* Center content horizontally within the game-item */
+            flex-wrap: nowrap; /* Ensure items stay on one line on desktop */
+            justify-content: center; /* Center overall content */
         }
         .game-item:hover {
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,.08);
             transform: translateY(-2px);
         }
 
-        .team-logo {
-            width: 32px; /* Adjust size as needed */
-            height: 32px;
-            object-fit: contain;
-        }
-        /* Style for placeholder when team logo fails to load */
-        .team-logo-placeholder {
-            border: 1px dashed #ccc; /* Example: dashed border */
-            background-color: #f0f0f0; /* Light grey background */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #888;
-            font-size: 0.7em;
-            text-align: center;
-        }
-
-        .score-number {
-            font-family: 'Krona One', sans-serif; /* Use Krona One for scores */
-        }
-        .versus-text {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        .game-info {
-            font-size: 0.85rem;
-            color: var(--mc-secondary-color);
-        }
-
-        /* Specific styles for game-item sections */
-        .team-side-left {
+        /* Responsive flex basis for the three main game-item sections */
+        .team-side-left, .team-side-right {
             flex-basis: 40%;
             flex-grow: 0;
             flex-shrink: 0;
-            justify-content: flex-start !important; /* Ensure left alignment */
+            /* Added padding-left/right to ensure text doesn't touch edges */
+            padding: 0 1rem; /* Adjust as needed */
         }
 
         .game-center-fixed {
@@ -849,11 +828,38 @@
             justify-content: center !important;
         }
 
-        .team-side-right {
-            flex-basis: 40%;
-            flex-grow: 0;
-            flex-shrink: 0;
-            justify-content: flex-end !important; /* Ensure right alignment */
+        .team-logo-small {
+            width: 24px; /* Smaller logo for center section */
+            height: 24px;
+            object-fit: contain;
+        }
+        
+        .score-logos-container {
+            /* This container ensures scores and logos are grouped and centered within game-center-fixed */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%; /* Take full width of its parent to help centering */
+        }
+
+        .team-score-logo {
+            display: flex;
+            align-items: center;
+            /* No flex-grow/shrink here, their content dictates size */
+        }
+
+        .score-number {
+            font-family: 'Krona One', sans-serif;
+            /* Increased font size for better visibility */
+            font-size: 1.25rem; /* Slightly larger for scores */
+        }
+        .versus-text {
+            font-size: 1.5rem; /* Larger for the hyphen */
+            font-weight: bold;
+        }
+        .game-info {
+            font-size: 0.85rem;
+            color: var(--mc-secondary-color);
         }
 
         /* Standings Table Styling */
@@ -864,8 +870,7 @@
         }
 
         .standings-table th, .standings-table td {
-            /* Adjusted padding for smaller row height */
-            padding: 0.4rem 0.4rem; /* Reduced from 0.6rem to 0.4rem top/bottom padding */
+            padding: 0.4rem 0.4rem;
             text-align: center;
             vertical-align: middle;
             border-bottom: 1px solid #f0f0f0;
@@ -877,7 +882,7 @@
             color: var(--mc-text-dark);
             position: sticky;
             top: 0;
-            z-index: 1; /* Stay above content when scrolling */
+            z-index: 1;
         }
 
         .standings-table tbody tr:last-child td {
@@ -888,13 +893,11 @@
             background-color: #f5f5f5;
         }
 
-        /* Specific column styling for standings */
         .standings-table .standings-points {
-            font-size: 1.1rem; /* +2px from 0.9rem base + bold */
+            font-size: 1.1rem;
             font-weight: bold;
             color: var(--mc-primary-color);
         }
-        /* Align team name in standings table to left */
         .standings-table .text-start {
             text-align: left !important;
         }
@@ -912,26 +915,24 @@
 
         /* Promotion/Relegation colors */
         .table-success-light {
-            background-color: #d4edda !important; /* Light green for promotion zone background */
+            background-color: #d4edda !important;
         }
         .table-danger-light {
-            background-color: #f8d7da !important; /* Light red for relegation zone background */
+            background-color: #f8d7da !important;
         }
-        /* New border styles for promotion/relegation lines */
         .promotion-border-bottom {
-            border-bottom: 3px solid #28a745 !important; /* Green border for promotion bottom line */
+            border-bottom: 3px solid #28a745 !important;
         }
         .relegation-border-top {
-            border-top: 3px solid #dc3545 !important; /* Red border for relegation top line */
+            border-top: 3px solid #dc3545 !important;
         }
 
         /* Hide cell content for empty values (keep cell background) */
-        /* Changed to target only cells with empty string or '0' as content */
         .hide-empty-value {
-            color: transparent; /* Makes text transparent */
+            color: transparent;
         }
 
-        /* Footer styles - copied from mc_02 */
+        /* Footer styles */
         .ekasth-footer-text, .ekasth-footer-version-text {
             font-size: 0.55rem;
             color: var(--mc-secondary-color);
@@ -943,7 +944,6 @@
             padding-top: 1.5rem;
         }
 
-        /* Styles for footer buttons - copied from mc_02 */
         .btn-back-custom {
             background-color: transparent;
             color: rgba(33, 37, 41, 0.5);
@@ -985,27 +985,28 @@
             }
             .game-item {
                 flex-direction: column; /* Stack items vertically */
-                align-items: flex-start !important; /* Align left */
+                align-items: flex-start !important; /* Align left by default for column */
+                flex-wrap: wrap; /* Allow wrapping on mobile */
             }
-            .team-side {
-                /* On small screens, let them take full width */
-                flex-basis: auto;
-                width: 100%;
-                justify-content: flex-start !important; /* Align team names to start */
-            }
-            .game-center {
-                /* On small screens, let it take full width */
-                flex-basis: auto;
-                width: 100%;
-                margin-top: 0.5rem;
-                margin-bottom: 0.5rem;
-            }
-            /* Reset specific flex properties for mobile to default flex-column behavior */
-            .team-side-left,
-            .team-side-right,
-            .game-center-fixed {
+            .team-side-left, .team-side-right, .game-center-fixed {
+                flex-basis: auto; /* Revert to auto on mobile */
+                width: 100%; /* Take full width on mobile */
+                padding: 0 0.5rem; /* Adjust padding for mobile */
                 flex-grow: 1; /* Allow them to grow */
                 flex-shrink: 1; /* Allow them to shrink */
+            }
+            /* Ensure alignment for team names remains flex-start on mobile */
+            .team-side-left, .team-side-right {
+                justify-content: flex-start !important;
+            }
+            /* Center the score/logo block horizontally in the center div on mobile */
+            .game-center-fixed .score-logos-container {
+                justify-content: center !important;
+            }
+
+            .game-center {
+                margin-top: 0.5rem;
+                margin-bottom: 0.5rem;
             }
         }
     </style>
@@ -1013,7 +1014,7 @@
 
 <body id="myPage">
 
-    <!-- Sticky Header Tabs - Copied from mc_02_Kathgories.html -->
+    <!-- Sticky Header Tabs -->
     <div class="sticky-header-tabs">
         <h3 class="MatchcenterHomepageWidget__header">
             MATCH<small class="text-body-secondary">CENTER</small>
@@ -1038,14 +1039,13 @@
         </div>
     </section>
 
-    <!-- Footer - Copied from mc_02_Kathgories.html -->
+    <!-- Footer -->
     <footer class="text-light bg-dark pt-4 pb-2">
         <div class="container">
             <!-- Footer buttons container -->
             <div class="row">
                 <div class="col-12 text-center mt-4 mb-2 d-flex justify-content-center gap-3">
                     <!-- "Πίσω" button -->
-                    <!-- The href is dynamically set in JS to go back to the previous categories page -->
                     <a href="#" id="backButtonFooter" class="btn btn-sm btn-back-custom">
                         ← Πίσω
                     </a>
