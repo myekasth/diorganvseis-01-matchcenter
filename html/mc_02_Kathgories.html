@@ -269,7 +269,7 @@
                                 '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
                                 '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.teamsSheetId);
                             linkOmades.className = 'btn btn-info btn-sm';
-                            linkOmades.innerHTML = '👥 Ομάδες';
+                            linkOmades.innerHTML = '� Ομάδες';
                             buttonsDiv.appendChild(linkOmades);
                         }
 
@@ -307,16 +307,26 @@
             }
             containerDiv.appendChild(mainAccordion);
             
-            // Add the "Προκηρύξεις" button before the footer
-            const announcementsBtnDiv = document.createElement('div');
-            announcementsBtnDiv.classList.add('col-12', 'text-center', 'mt-4', 'mb-2'); // Centered with margins
+            // Create a div to hold both footer buttons, making it a flex container
+            const footerButtonsContainer = document.createElement('div');
+            footerButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3'); // Centered with spacing
+
+            // Add the "Πίσω" button
+            const backLink = document.createElement('a');
+            backLink.href = '../index.html';
+            backLink.classList.add('btn', 'btn-sm', 'btn-back-custom'); // Use the same custom styling
+            backLink.textContent = '← Πίσω';
+            footerButtonsContainer.appendChild(backLink);
+
+            // Add the "Προκηρύξεις" button
             const announcementsLink = document.createElement('a');
             announcementsLink.href = 'https://www.ekasth1976.gr/2024/07/2024-25.html';
             announcementsLink.target = '_blank'; // Open in new tab
-            announcementsLink.classList.add('btn', 'btn-sm', 'btn-announcements-custom'); // Custom styling
+            announcementsLink.classList.add('btn', 'btn-sm', 'btn-back-custom'); // Use the same custom styling for "Προκηρύξεις"
             announcementsLink.textContent = 'Προκηρύξεις';
-            announcementsBtnDiv.appendChild(announcementsLink);
-            containerDiv.appendChild(announcementsBtnDiv);
+            footerButtonsContainer.appendChild(announcementsLink);
+            
+            containerDiv.appendChild(footerButtonsContainer); // Append the new container to main div
 
             // Add the footer elements after all cards and the new button have been processed
             const ekasthDiv = document.createElement('div');
@@ -530,15 +540,16 @@
             padding-top: 1.5rem;
         }
 
-        /* Styles for the Back button */
+        /* Styles for the Back and Announcements buttons (now sharing the same style) */
         .btn-back-custom {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
             background-color: transparent; /* Initially transparent */
             color: rgba(33, 37, 41, 0.5); /* Semi-transparent dark grey */
             border: 1px solid rgba(33, 37, 41, 0.2); /* Very subtle border */
             transition: all 0.3s ease; /* Smooth transition for hover effects */
+            padding: 0.5rem 1rem; /* Standard padding for these buttons */
+            border-radius: 0.5rem; /* Standard border-radius */
+            font-size: 0.85rem; /* Standard font-size */
+            text-decoration: none; /* No underline */
         }
 
         .btn-back-custom:hover,
@@ -549,49 +560,23 @@
             box-shadow: none; /* Remove default Bootstrap focus shadow if any */
         }
 
-        /* Styles for the "Προκηρύξεις" button */
-        .btn-announcements-custom {
-            background-color: transparent;
-            color: var(--mc-secondary-color); /* Subtle grey color */
-            border: 1px solid var(--mc-secondary-color); /* Subtle border */
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            text-decoration: none; /* Ensure no underline by default */
-        }
-
-        .btn-announcements-custom:hover,
-        .btn-announcements-custom:focus {
-            background-color: var(--mc-info-color); /* Info blue on hover */
-            color: var(--mc-text-light); /* White text on hover */
-            border-color: var(--mc-info-color);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Slight shadow on hover */
-            text-decoration: none;
-        }
-
         /* Responsive adjustments for smaller screens */
         @media (max-width: 767.98px) {
             .sticky-header-tabs {
-                /* Add significant left padding to make space for the back button */
-                padding-left: 5rem; /* ~80px, assuming button width + margin */
+                /* Remove padding-left as the button is no longer here */
+                padding-left: 1rem;
             }
-            /* Reverted font-size for header titles to keep them consistent */
+            /* Ensure header titles remain consistent in size */
             .MatchcenterHomepageWidget__header {
-                font-size: 2.2rem; /* Keep consistent size */
+                font-size: 2.2rem;
             }
             .combined-header-title {
-                font-size: 1.1rem; /* Keep consistent size */
+                font-size: 1.1rem;
             }
 
-            /* Adjust the 'Πίσω' button for smaller screens */
-            .btn-back-custom {
-                font-size: 0.65rem; /* Significantly smaller font size */
-                padding: 0.2rem 0.4rem; /* Reduced padding */
-                top: 0.7rem; /* Adjust position slightly */
-                left: 0.7rem; /* Adjust position slightly */
-                /* If only arrow is desired, add: text-indent: -9999px; overflow: hidden; width: 30px; */
-            }
+            /* Adjust 'Πίσω' and 'Προκηρύξεις' buttons for smaller screens if needed,
+               but the shared styling should generally work well.
+               If you want only the arrow on "Πίσω" on small screens, you'd need specific JS/CSS to toggle text. */
         }
     </style>
 </head>
@@ -609,10 +594,7 @@
         <div class="combined-header-title" id="combined-header-title">
             ΚΑΤΗΓΟΡΙΕΣ, ΟΜΙΛΟΙ
         </div>
-        <!-- Back button to return to the main championships page -->
-        <a href="../index.html" class="btn btn-sm btn-back-custom">
-            ← Πίσω
-        </a>
+        <!-- The back button is moved to the footer, removed from here -->
     </div>
 
     <!-- Main content section for displaying categories -->
