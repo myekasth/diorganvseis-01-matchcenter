@@ -125,32 +125,65 @@
             var promotionPositions = parseInt(data.getFormattedValue(0, 77)); // BZ2
             var relegationStartFrom = parseInt(data.getFormattedValue(1, 77)); // BZ3
 
-            // Group data by Round (Column B)
+            // Group data by Round (Column B for games, Column AD for standings)
             var gamesByRound = {};
             var standingsByRound = {}; // To store standings for each round
             var uniqueRounds = [];
 
             for (var row = 0; row < totalRows; row++) {
-                var round = data.getFormattedValue(row, 1); // Column B: ΑΓΩΝΙΣΤΙΚΗ (for games)
-                var standingsRound = data.getFormattedValue(row, 29); // Column AD: ΑΓΩΝΙΣΤΙΚΗ (for standings)
+                var roundForGame = data.getFormattedValue(row, 1); // Column B: ΑΓΩΝΙΣΤΙΚΗ (for games)
+                var roundForStanding = data.getFormattedValue(row, 29); // Column AD: ΑΓΩΝΙΣΤΙΚΗ (for standings)
 
                 // Populate gamesByRound
                 if (data.getFormattedValue(row, 16) !== "") { // Check if it's a game entry (Column Q is not empty)
-                    if (!gamesByRound[round]) {
-                        gamesByRound[round] = [];
-                        if (!uniqueRounds.includes(round)) {
-                            uniqueRounds.push(round);
+                    if (!gamesByRound[roundForGame]) {
+                        gamesByRound[roundForGame] = [];
+                        if (!uniqueRounds.includes(roundForGame)) {
+                            uniqueRounds.push(roundForGame);
                         }
                     }
-                    gamesByRound[round].push(data.getTableRow(row));
+                    // Create an object for each game row
+                    const gameData = {
+                        round: roundForGame,
+                        date: data.getFormattedValue(row, 3), // Column D
+                        time: data.getFormattedValue(row, 4), // Column E
+                        arena: data.getFormattedValue(row, 5), // Column F
+                        teamA_name: data.getFormattedValue(row, 6), // Column G
+                        teamB_name: data.getFormattedValue(row, 7), // Column H
+                        scoreA: data.getFormattedValue(row, 8), // Column I
+                        scoreB: data.getFormattedValue(row, 9), // Column J
+                        gameCode: data.getFormattedValue(row, 16), // Column Q
+                        teamA_logo: data.getFormattedValue(row, 48), // Column AW
+                        teamB_logo: data.getFormattedValue(row, 49)  // Column AX
+                    };
+                    gamesByRound[roundForGame].push(gameData);
                 }
 
                 // Populate standingsByRound - assumes all standing rows for a given round are grouped together
                 if (data.getFormattedValue(row, 28) !== "" || data.getFormattedValue(row, 29) !== "") { // Check if it's a standings entry (Column AC or AD is not empty)
-                    if (!standingsByRound[standingsRound]) {
-                        standingsByRound[standingsRound] = [];
+                    if (!standingsByRound[roundForStanding]) {
+                        standingsByRound[roundForStanding] = [];
                     }
-                    standingsByRound[standingsRound].push(data.getTableRow(row));
+                    // Create an object for each standing row
+                    const standingData = {
+                        round: roundForStanding,
+                        position: parseInt(data.getFormattedValue(row, 30)), // AE
+                        teamName: data.getFormattedValue(row, 31), // AF
+                        points: data.getFormattedValue(row, 34), // AI
+                        gamesPlayed: data.getFormattedValue(row, 35), // AJ
+                        wins: data.getFormattedValue(row, 38), // AM
+                        losses: data.getFormattedValue(row, 39), // AN
+                        zeros: data.getFormattedValue(row, 40), // AO
+                        pointsFor: data.getFormattedValue(row, 41), // AP
+                        pointsAgainst: data.getFormattedValue(row, 42), // AQ
+                        difference: data.getFormattedValue(row, 43), // AR
+                        points2: data.getFormattedValue(row, 44), // AS
+                        difference2: data.getFormattedValue(row, 45), // AT
+                        difference3: data.getFormattedValue(row, 51), // AZ
+                        progressValue: parseInt(data.getFormattedValue(row, 28)), // AC
+                        teamLogoUrl: data.getFormattedValue(row, 52) // BA
+                    };
+                    standingsByRound[roundForStanding].push(standingData);
                 }
             }
 
@@ -260,24 +293,24 @@
                 // Sort games within this round by date and time before displaying
                 var currentRoundGames = gamesByRound[roundNumber] || [];
                 currentRoundGames.sort((a, b) => {
-                    var dateA = new Date(a.c[3].f.split('/').reverse().join('-') + 'T' + a.c[4].f); // Date D, Time E
-                    var dateB = new Date(b.c[3].f.split('/').reverse().join('-') + 'T' + b.c[4].f);
+                    var dateA = new Date(a.date.split('/').reverse().join('-') + 'T' + a.time);
+                    var dateB = new Date(b.date.split('/').reverse().join('-') + 'T' + b.time);
                     return dateA - dateB;
                 });
 
                 // Render games for this round
                 if (currentRoundGames.length > 0) {
                     currentRoundGames.forEach((gameRow, gameIndex) => {
-                        var teamA_name = gameRow.c[6].f; // Column G
-                        var teamA_logo = gameRow.c[48].f; // Column AW
-                        var teamB_name = gameRow.c[7].f; // Column H
-                        var teamB_logo = gameRow.c[49].f; // Column AX
-                        var scoreA = gameRow.c[8].f; // Column I
-                        var scoreB = gameRow.c[9].f; // Column J
-                        var arena = gameRow.c[5].f; // Column F
-                        var date = gameRow.c[3].f; // Column D
-                        var time = gameRow.c[4].f; // Column E
-                        var gameCode = gameRow.c[16].f; // Column Q
+                        var teamA_name = gameRow.teamA_name;
+                        var teamA_logo = gameRow.teamA_logo;
+                        var teamB_name = gameRow.teamB_name;
+                        var teamB_logo = gameRow.teamB_logo;
+                        var scoreA = gameRow.scoreA;
+                        var scoreB = gameRow.scoreB;
+                        var arena = gameRow.arena;
+                        var date = gameRow.date;
+                        var time = gameRow.time;
+                        // var gameCode = gameRow.gameCode; // Not directly used in rendering now
 
                         var gameDiv = document.createElement('div');
                         gameDiv.className = 'game-item d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 p-3 rounded shadow-sm bg-white';
@@ -384,23 +417,23 @@
                     var tbody = document.createElement('tbody');
                     currentRoundStandings.forEach((standingRow, standingIndex) => {
                         var tr = document.createElement('tr');
-                        var position = parseInt(standingRow.c[30].f); // AE
-                        var teamName = standingRow.c[31].f; // AF
-                        var teamLogoUrl = standingRow.c[52].f; // BA
-                        var points = standingRow.c[34].f; // AI
-                        var gamesPlayed = standingRow.c[35].f; // AJ
-                        var wins = standingRow.c[38].f; // AM
-                        var losses = standingRow.c[39].f; // AN
-                        var zeros = standingRow.c[40].f; // AO
-                        var pointsFor = standingRow.c[41].f; // AP
-                        var pointsAgainst = standingRow.c[42].f; // AQ
-                        var difference = standingRow.c[43].f; // AR
-                        var points2 = standingRow.c[44].f; // AS
-                        var difference2 = standingRow.c[45].f; // AT (user specified AZ, but AT is 45, AZ is 51, let's use user specified cols if I find them)
-                        var difference3 = standingRow.c[51].f; // AZ - This seems to be the one
+                        var position = standingRow.position;
+                        var teamName = standingRow.teamName;
+                        var teamLogoUrl = standingRow.teamLogoUrl;
+                        var points = standingRow.points;
+                        var gamesPlayed = standingRow.gamesPlayed;
+                        var wins = standingRow.wins;
+                        var losses = standingRow.losses;
+                        var zeros = standingRow.zeros;
+                        var pointsFor = standingRow.pointsFor;
+                        var pointsAgainst = standingRow.pointsAgainst;
+                        var difference = standingRow.difference;
+                        var points2 = standingRow.points2;
+                        var difference2 = standingRow.difference2;
+                        var difference3 = standingRow.difference3;
 
-                        // Progress/Regression (AC - index 28)
-                        var progressValue = parseInt(standingRow.c[28].f);
+                        // Progress/Regression (AC)
+                        var progressValue = standingRow.progressValue;
                         var progressHtml = '';
                         var progressClass = '';
                         if (progressValue > 0) {
@@ -432,6 +465,14 @@
                         var logoDiv = document.createElement('div');
                         logoDiv.className = 'team-logo-bg';
                         if (teamLogoUrl) {
+                            // Add an onerror handler for the image
+                            const img = new Image();
+                            img.src = teamLogoUrl;
+                            img.onerror = function() {
+                                // Fallback: If image fails to load, remove background image
+                                logoDiv.style.backgroundImage = 'none';
+                                logoDiv.classList.add('team-logo-placeholder'); // Add a placeholder class for potential styling
+                            };
                             logoDiv.style.backgroundImage = `url('${teamLogoUrl}')`;
                         }
                         td1.appendChild(logoDiv);
@@ -494,10 +535,10 @@
                         td11.textContent = points2;
                         tr.appendChild(td11);
 
-                        // Difference 2 (AT or AU - assuming AT is 45, AZ is 51, so 45 is T)
+                        // Difference 2 (AT)
                         var td12 = document.createElement('td');
                         td12.classList.add('d-none', 'd-md-table-cell');
-                        td12.textContent = difference2; // was 45 in original file, now 51
+                        td12.textContent = difference2;
                         tr.appendChild(td12);
 
                         // Difference 3 (AZ)
@@ -533,7 +574,7 @@
                 var roundGames = gamesByRound[roundNumber];
                 if (roundGames && roundGames.length > 0) {
                     // Assuming date is in Column D (index 3) and format DD/MM/YYYY
-                    var firstGameDateStr = roundGames[0].c[3].f;
+                    var firstGameDateStr = roundGames[0].date; // Use the parsed 'date' property
                     var [day, month, year] = firstGameDateStr.split('/').map(Number);
                     var gameDate = new Date(year, month - 1, day); // Month is 0-indexed
 
