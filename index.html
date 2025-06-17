@@ -20,8 +20,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
 
     <!-- Bootstrap 5 CSS and JS Bundle -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     
     <!-- Google Charts Library for data visualization -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -56,7 +56,8 @@
          */
         function drawchart(){
             var pPower = getQueryVariable("pPower") ? decodeURIComponent(getQueryVariable("pPower")) : defaultPower;
-            document.getElementById("diorganvsh-title").innerHTML = "Διοργανώσεις " + pPower;
+            // Update the combined title with the organizing authority
+            document.getElementById("combined-header-title").innerHTML = `ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ ${pPower}`;
             drawDiorganvseis();
         }
 
@@ -205,28 +206,7 @@
             containerDiv.appendChild(versionDiv); // Append to containerDiv
         }
 
-        // Vanilla JavaScript for smooth scrolling (only for the initial nav-link)
-        document.addEventListener('DOMContentLoaded', function() {
-            const scrollLinks = document.querySelectorAll('.navbar-nav .nav-link[href="#myPage"]');
-
-            scrollLinks.forEach(link => {
-                link.addEventListener('click', function(event) {
-                    if (this.hash !== "") {
-                        event.preventDefault();
-                        const hash = this.hash;
-                        const targetElement = document.querySelector(hash);
-
-                        if (targetElement) {
-                            targetElement.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'start'
-                            });
-                            // window.history.pushState(null, null, hash); // Optional: update URL hash
-                        }
-                    }
-                });
-            });
-        });
+        // Removed the smooth scrolling JavaScript as the navbar is no longer present.
     </script>
 
     <style>
@@ -236,9 +216,15 @@
             --mc-secondary-color: #6c757d; /* Bootstrap secondary gray */
             --mc-info-color: #17a2b8; /* Bootstrap info cyan */
             --mc-light-bg: #f8f9fa; /* Light background */
-            --mc-dark-bg: #343a40; /* Dark background */
-            --mc-text-light: #fff; /* Light text for dark backgrounds */
+            --mc-dark-bg: #212529; /* Dark text for contrast */
             --mc-text-dark: #212529; /* Dark text for light backgrounds */
+            --mc-timeline-color: #ff4500; /* Orange-red for underline */
+
+            /* Monochromatic white header colors and contrasting text colors */
+            --mc-header-bg-color: #ffffff; /* Pure white background for header */
+            --mc-header-text-color: #212529; /* Dark text for contrast on white */
+            --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
+            --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
         }
 
         /* Base body styling */
@@ -246,7 +232,7 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--mc-light-bg);
             color: var(--mc-text-dark);
-            padding-top: 56px; /* Adjust for fixed navbar */
+            padding-top: 0px; /* Adjusted to 0px as requested */
         }
 
         /* Font styling for headings */
@@ -254,23 +240,54 @@
             font-family: 'Krona One', sans-serif;
         }
 
-        /* Navbar shadow for depth */
-        .navbar {
-            box-shadow: 0 2px 4px rgba(0,0,0,.05);
+        /* New Sticky Header Styles */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: var(--mc-header-bg-color); /* Monochromatic white background */
+            box-shadow: 0 2px 8px rgba(0,0,0,.1); /* Lighter shadow for 3D effect on white */
+            z-index: 1020; /* Ensures header stays on top */
+            padding: 1rem; /* General padding for the sticky header content */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Header section styling */
-        .header-section {
-            background-color: var(--mc-primary-color);
-            color: var(--mc-text-light);
-            padding: 3rem 0;
-            margin-bottom: 2rem;
-            text-align: center;
+        .MatchcenterHomepageWidget__header {
+            font-family: 'Krona One', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem; /* Space below the main header */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--mc-header-text-color); /* Dark text for contrast */
         }
 
-        .header-section h1 {
-            font-size: 2.5rem;
+        .MatchcenterHomepageWidget__header small {
+            font-size: 0.6em; /* Adjust size of "CENTER" */
+            vertical-align: middle;
+            color: var(--mc-header-small-text-color); /* Secondary gray for smaller text */
+            font-weight: 300;
+        }
+
+        /* New style for the red line below the main header */
+        .header-underline {
+            height: 5px; /* Updated height */
+            width: 100%; /* Occupy full width of the sticky area */
+            background-color: #ff0000; /* Updated to pure red */
+            margin-top: 0.5rem; /* Space above the line */
+            margin-bottom: 1rem; /* Space below the line, to separate it from the combined title */
+        }
+
+        /* Combined header title for "ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ [diorganvtria arxh]" */
+        .combined-header-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
             margin-bottom: 0;
+            color: var(--mc-header-combined-title-color); /* Darker gray for contrast */
+            text-align: center;
         }
 
         /* Card styling for championship entries */
@@ -316,9 +333,9 @@
 
         /* Footer specific styles */
         .ekasth-footer-text, .ekasth-footer-version-text {
-            font-size: 0.85rem;
+            font-size: 0.55rem; /* Updated font-size */
             color: var(--mc-secondary-color);
-            padding: 0.5rem 0;
+            padding: 0.1rem 0; /* Updated padding */
         }
 
         .ekasth-footer-text {
@@ -330,30 +347,18 @@
 
 <body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="80">
 
-    <!-- Fixed-top navigation bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">MatchCenter</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#myPage">Αρχική</a>
-                    </li>
-                    </ul>
-            </div>
+    <!-- New Sticky Header Tabs -->
+    <div class="sticky-header-tabs">
+        <h3 class="MatchcenterHomepageWidget__header">
+            MATCH<small class="text-body-secondary">CENTER</small>
+        </h3>
+        <!-- New div for the orange-red line below the main header -->
+        <div class="header-underline"></div>
+        <!-- Combined header title with dynamic organizing authority -->
+        <div class="combined-header-title" id="combined-header-title">
+            ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ
         </div>
-    </nav>
-
-    <!-- Header section with championship title and description -->
-    <header class="header-section">
-        <div class="container">
-            <h1 id="diorganvsh-title">Διοργανώσεις, πρωταθλήματα</h1>
-            <p class="lead">Επιλέξτε μια αγωνιστική περίοδο για να δείτε τις κατηγορίες και τους ομίλους των πρωταθλημάτων.</p>
-        </div>
-    </header>
+    </div>
 
     <!-- Main content section for displaying championships -->
     <section class="container my-5">
