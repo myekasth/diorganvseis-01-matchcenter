@@ -339,7 +339,7 @@
                         var teamA_div = document.createElement('div');
                         teamA_div.className = 'team-side team-side-left text-start mb-2 mb-md-0 d-flex align-items-center';
                         
-                        // New div for logo background on the left side
+                        // New div for logo background on the left side - placed BEFORE team name
                         var logoA_bg_div = document.createElement('div');
                         logoA_bg_div.className = 'team-logo-container team-logo-container-left';
                         if (teamA_logo) {
@@ -397,7 +397,7 @@
                         spanB.textContent = teamB_name_display; // Use truncated name
                         teamB_div.appendChild(spanB);
 
-                        // New div for logo background on the right side
+                        // New div for logo background on the right side - placed AFTER team name
                         var logoB_bg_div = document.createElement('div');
                         logoB_bg_div.className = 'team-logo-container team-logo-container-right';
                         if (teamB_logo) {
@@ -644,7 +644,7 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
-            versionDiv.textContent = `LT v.25.06.17 | mc_02_kathgories @ myekasth`; // Updated version string as requested
+            versionDiv.textContent = `LT v.25.06.17 | mc_03_programma-agvnvn-apotelesmata-bathmologia @ myekasth`; // Updated version string as requested
             contentDiv.appendChild(versionDiv);
             // --- End of dynamically added footer content ---
         }
@@ -848,14 +848,14 @@
         }
 
         .team-logo-container-left {
-            /* For left side (home team), show the right half of the logo */
-            background-position: center right; /* Align right side of logo to center of container */
+            /* For left side (home team), show the left half of the logo */
+            background-position: center left; /* Align left side of logo to center of container */
             margin-right: 0.5rem; /* Space between logo and team name */
         }
 
         .team-logo-container-right {
-            /* For right side (away team), show the left half of the logo */
-            background-position: center left; /* Align left side of logo to center of container */
+            /* For right side (away team), show the right half of the logo */
+            background-position: center right; /* Align right side of logo to center of container */
             margin-left: 0.5rem; /* Space between team name and logo */
         }
         
