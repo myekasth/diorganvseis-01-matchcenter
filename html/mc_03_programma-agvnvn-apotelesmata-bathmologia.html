@@ -515,40 +515,76 @@
                                     cellContent = standingRow.losses;
                                     break;
                                 case 'zeros':
-                                    cellContent = (standingRow.zeros === '0' || standingRow.zeros === '' ? '' : standingRow.zeros);
+                                    cellContent = standingRow.zeros;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'pointsFor':
                                     cellContent = standingRow.pointsFor;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'pointsAgainst':
                                     cellContent = standingRow.pointsAgainst;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'defensePoints': // AR
                                     cellContent = standingRow.defensePoints;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'overallDifference': // AS - NEW
                                     cellContent = standingRow.overallDifference;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'b1_val': // AT
                                     cellContent = standingRow.b1_val;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'b2_val': // AU
                                     cellContent = standingRow.b2_val;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'dpIs_val': // AV
                                     cellContent = standingRow.dpIs_val;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'keIs_val': // AW
                                     cellContent = standingRow.keIs_val;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'dpOl_val': // AX
                                     cellContent = standingRow.dpOl_val;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'keOl_val': // AY
                                     cellContent = standingRow.keOl_val;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'klir_val': // AZ
                                     cellContent = standingRow.klir_val;
+                                    if (cellContent === '0' || cellContent === '') {
+                                        td.classList.add('hide-zero-value');
+                                    }
                                     break;
                                 case 'progressValue': // AC
                                     let progressHtml = '';
@@ -937,6 +973,11 @@
         }
         .relegation-border-top {
             border-top: 3px solid #dc3545 !important; /* Red border for relegation top line */
+        }
+
+        /* Hide cell content for zero values */
+        .hide-zero-value {
+            visibility: hidden;
         }
 
         /* Footer styles - copied from mc_02 */
