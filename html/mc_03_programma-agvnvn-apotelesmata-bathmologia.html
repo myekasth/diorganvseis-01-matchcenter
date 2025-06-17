@@ -391,7 +391,8 @@
 
                         // Right Team (Team B) - Team name and Logo background div
                         var teamB_div = document.createElement('div');
-                        teamB_div.className = 'team-side team-side-right d-flex mb-2 mb-md-0 align-items-center'; // Removed text-end
+                        // Added justify-content-end for right alignment of contents within this flex container
+                        teamB_div.className = 'team-side team-side-right d-flex mb-2 mb-md-0 align-items-center justify-content-end';
                         var spanB = document.createElement('span');
                         spanB.className = 'team-name fw-bold';
                         spanB.textContent = teamB_name_display; // Use truncated name
