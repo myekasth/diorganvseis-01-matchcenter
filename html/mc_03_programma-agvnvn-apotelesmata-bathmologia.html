@@ -39,6 +39,8 @@
         var defaultPowerPrvtathlhmatos = "12ZPDSn9GLS29gAGrDsAyZ1Gz6yObTKCeD0yZVFU-IVk";
         var defaultNameKathgoriasOmilou = "Α1 Ανδρών";
         var defaultPowerKathgoriasOmilou = "1S-42x8-L-uJ8c7_1G52GgP22L-9c7F0x1D23Xf45A6B"; // Default Sheet ID for Program/Standings
+        // Default logo URL if no logo is provided in the spreadsheet
+        const DEFAULT_LOGO_URL = "https://lh3.googleusercontent.com/-_r1FEKyvfIA/V5o9rF6kKLI/AAAAAAABNFE/p_lq6O0AKQ8CNJJRJ0jotUb4jGsUthdqgCCo/s36/white-repo-circle.png";
 
         /**
          * Parses URL query parameters.
@@ -153,8 +155,8 @@
                         scoreA: data.getFormattedValue(row, 8), // Column I
                         scoreB: data.getFormattedValue(row, 9), // Column J
                         gameCode: data.getFormattedValue(row, 16), // Column Q
-                        teamA_logo: data.getFormattedValue(row, 48), // Column AW
-                        teamB_logo: data.getFormattedValue(row, 49)  // Column AX
+                        teamA_logo: data.getFormattedValue(row, 53) || DEFAULT_LOGO_URL, // Column BB (index 53) or default
+                        teamB_logo: data.getFormattedValue(row, 54) || DEFAULT_LOGO_URL  // Column BC (index 54) or default
                     };
                     gamesByRound[roundForGame].push(gameData);
                 }
@@ -181,7 +183,7 @@
                         difference2: data.getFormattedValue(row, 45), // AT
                         difference3: data.getFormattedValue(row, 51), // AZ
                         progressValue: parseInt(data.getFormattedValue(row, 28)), // AC
-                        teamLogoUrl: data.getFormattedValue(row, 52) // BA
+                        teamLogoUrl: data.getFormattedValue(row, 52) || DEFAULT_LOGO_URL // BA (index 52) or default
                     };
                     standingsByRound[roundForStanding].push(standingData);
                 }
@@ -323,6 +325,11 @@
                             imgA.src = teamA_logo;
                             imgA.alt = teamA_name + ' logo';
                             imgA.className = 'team-logo me-2';
+                            // Add onerror to img element
+                            imgA.onerror = function() {
+                                this.onerror=null; // Prevent infinite loop
+                                this.src=DEFAULT_LOGO_URL; // Set default image on error
+                            };
                             teamA_div.appendChild(imgA);
                         }
                         var spanA = document.createElement('span');
@@ -369,6 +376,11 @@
                             imgB.src = teamB_logo;
                             imgB.alt = teamB_name + ' logo';
                             imgB.className = 'team-logo ms-2';
+                            // Add onerror to img element
+                            imgB.onerror = function() {
+                                this.onerror=null; // Prevent infinite loop
+                                this.src=DEFAULT_LOGO_URL; // Set default image on error
+                            };
                             teamB_div.appendChild(imgB);
                         }
                         gameDiv.appendChild(teamB_div);
@@ -409,6 +421,10 @@
                         if (headerText === 'Βαθ') {
                             th.classList.add('fw-bold'); // Bold for points
                         }
+                        // Align 'Ομάδα' header to left
+                        if (headerText === 'Ομάδα') {
+                            th.classList.add('text-start'); 
+                        }
                         headerRow.appendChild(th);
                     });
                     thead.appendChild(headerRow);
@@ -438,14 +454,14 @@
                         var progressClasses = []; // Use an array for classes
 
                         if (progressValue > 0) {
-                            progressHtml = `⬆️${progressValue}`;
-                            progressClasses.push('text-success', 'fw-bold'); // Add classes to array
+                            progressHtml = `▲ ${progressValue}`; // Up arrow with value
+                            progressClasses.push('text-success', 'fw-bold');
                         } else if (progressValue < 0) {
-                            progressHtml = `⬇️${Math.abs(progressValue)}`;
-                            progressClasses.push('text-danger', 'fw-bold'); // Add classes to array
+                            progressHtml = `▼ ${Math.abs(progressValue)}`; // Down arrow with absolute value
+                            progressClasses.push('text-danger', 'fw-bold');
                         } else {
-                            progressHtml = `➖`; // Neutral emoji
-                            progressClasses.push('text-muted'); // Add class to array
+                            progressHtml = `—`; // Em dash for neutral
+                            progressClasses.push('text-muted');
                         }
 
                         // Apply promotion/relegation styling
@@ -466,22 +482,21 @@
                         var logoDiv = document.createElement('div');
                         logoDiv.className = 'team-logo-bg';
                         if (teamLogoUrl) {
-                            // Add an onerror handler for the image
-                            const img = new Image();
-                            img.src = teamLogoUrl;
-                            img.onerror = function() {
-                                // Fallback: If image fails to load, remove background image
-                                logoDiv.style.backgroundImage = 'none';
-                                logoDiv.classList.add('team-logo-placeholder'); // Add a placeholder class for potential styling
+                            // Add an onerror handler for the background image
+                            const dummyImg = new Image();
+                            dummyImg.src = teamLogoUrl;
+                            dummyImg.onerror = function() {
+                                logoDiv.style.backgroundImage = 'none'; // Remove background image on error
+                                logoDiv.classList.add('team-logo-placeholder'); // Add a placeholder class
                             };
                             logoDiv.style.backgroundImage = `url('${teamLogoUrl}')`;
                         }
                         td1.appendChild(logoDiv);
                         tr.appendChild(td1);
 
-                        // Team Name (AF)
+                        // Team Name (AF) - Aligned left
                         var td2 = document.createElement('td');
-                        td2.className = 'fw-bold'; // Always bold for team name
+                        td2.className = 'fw-bold text-start'; // Always bold, now aligned left
                         td2.textContent = teamName;
                         tr.appendChild(td2);
 
@@ -887,6 +902,10 @@
             font-size: 1.1rem; /* +2px from 0.9rem base + bold */
             font-weight: bold;
             color: var(--mc-primary-color);
+        }
+        /* Align team name in standings table to left */
+        .standings-table .text-start {
+            text-align: left !important;
         }
 
         .standings-table .team-logo-bg {
