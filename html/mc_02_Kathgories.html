@@ -11,7 +11,7 @@
     <meta name="web_author" content="Lazaros T" />
     <link rel="icon" href="favicon.ico" />
 
-    <title>Κατηγορίες, Όμιλοι Πρωταθλημάτων</title>
+    <title>Κατηγορίες,Όμιλοι Πρωταθλημάτων</title>
 
     <!-- Google Fonts: Krona One for titles, Inter for body text -->
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -245,7 +245,7 @@
 
                         // Link to Program/Results/Standings (mc_03_programma-agvnvn-apotelesmata-bathmologia.html)
                         var linkProgramma = document.createElement('a');
-                        linkProgramma.href = 'mc_03_programma-agvnvn-apotelesmata-bathmologia.html' +
+                        linkProgramma.href = 'mc_03_programma-agvnvn-apotelesmata-bathmologia.html' + // Assuming this is also in html subfolder
                             '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
                             '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
                             '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
@@ -254,13 +254,13 @@
                             '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
                             '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.sheetIdForNextLevel);
                         linkProgramma.className = 'btn btn-primary btn-sm';
-                        linkProgramma.innerHTML = '🏀 Πρόγραμμα & Βαθμολογία';
+                        linkProgramma.innerHTML = '� Πρόγραμμα & Βαθμολογία';
                         buttonsDiv.appendChild(linkProgramma);
 
                         // Link to Teams of Category (mc_03_TeamsOfKathgoria.html) if teamsSheetId exists
                         if(item.teamsSheetId !== ''){
                             var linkOmades = document.createElement('a');
-                            linkOmades.href = 'mc_03_TeamsOfKathgoria.html' +
+                            linkOmades.href = 'mc_03_TeamsOfKathgoria.html' + // Assuming this is also in html subfolder
                                 '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
                                 '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
                                 '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
@@ -568,6 +568,20 @@
             border-color: var(--mc-info-color);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Slight shadow on hover */
             text-decoration: none;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767.98px) {
+            .sticky-header-tabs {
+                /* Add significant left padding to make space for the back button */
+                padding-left: 5rem; /* ~80px, assuming button width + margin */
+            }
+            .MatchcenterHomepageWidget__header {
+                font-size: 1.8rem; /* Slightly smaller font to prevent overflow on very narrow screens */
+            }
+            .combined-header-title {
+                font-size: 0.9rem; /* Slightly smaller font for secondary title */
+            }
         }
     </style>
 </head>
