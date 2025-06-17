@@ -82,7 +82,7 @@
 
             // Query for all data, ordering by round (Column B) and then date (Column D) for games.
             // This order is crucial for grouping by round and then correctly ordering games within a round.
-            var strQueryForURI = 'select * order by B asc, D asc, E asc';
+            var strQueryForURI = 'select *';
             var queryString = encodeURIComponent(strQueryForURI);
 
             // Fetch data from gid=6 as per the original file
