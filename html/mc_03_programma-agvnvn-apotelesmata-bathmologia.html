@@ -391,7 +391,7 @@
 
                         // Right Team (Team B) - Team name and Logo background div
                         var teamB_div = document.createElement('div');
-                        teamB_div.className = 'team-side team-side-right text-end d-flex mb-2 mb-md-0 align-items-center';
+                        teamB_div.className = 'team-side team-side-right d-flex mb-2 mb-md-0 align-items-center'; // Removed text-end
                         var spanB = document.createElement('span');
                         spanB.className = 'team-name fw-bold';
                         spanB.textContent = teamB_name_display; // Use truncated name
@@ -564,7 +564,7 @@
                     var noStandingsDiv = document.createElement('div');
                     noGamesDiv.className = 'alert alert-info text-center';
                     noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
-                    standingsTabPane.appendChild(noStandingsDiv);
+                    standingsTabPane.appendChild(noGamesDiv);
                 }
 
                 tabContent.appendChild(standingsTabPane);
@@ -839,8 +839,8 @@
 
         /* New styles for logo containers in left/right sections */
         .team-logo-container {
-            width: 40px; /* Fixed width for logo area */
-            height: 100%; /* Take full height of its parent (team-side) */
+            width: 50px; /* Fixed width for logo area, updated from 40px */
+            height: 50px; /* Fixed height for logo area, updated from 100% */
             background-size: cover; /* Fill the area while maintaining aspect ratio */
             background-repeat: no-repeat;
             display: flex; /* Use flex to help align content if needed */
@@ -856,7 +856,7 @@
         .team-logo-container-right {
             /* For right side (away team), show the right half of the logo */
             background-position: center right; /* Align right side of logo to center of container */
-            margin-left: 0.5rem; /* Space between team name and logo */
+            margin-left: 0; /* Removed margin-left to make it 'stick' to the team name */
         }
         
         .score-logos-container {
