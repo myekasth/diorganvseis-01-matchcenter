@@ -11,6 +11,7 @@
     <meta name="web_author" content="Lazaros T" />
     <link rel="icon" href="../favicon.ico" />
 
+
     <title>MatchCenter | Πρόγραμμα, αποτελέσματα αγώνων και βαθμολογίες</title>
 
     <!-- Google Fonts: Krona One for titles, Inter for body text -->
@@ -476,124 +477,39 @@
                         // Loop through headers to create cells in correct order
                         standingsHeaders.forEach(headerInfo => {
                             var td = document.createElement('td');
-                            let cellContent = '';
-                            let additionalClasses = [];
+                            let cellValue = standingRow[headerInfo.property]; // Get the raw value from standingRow object
 
                             switch (headerInfo.property) {
-                                case 'position':
-                                    cellContent = standingRow.position + '.';
-                                    break;
                                 case 'teamLogoUrl':
                                     var logoDiv = document.createElement('div');
                                     logoDiv.className = 'team-logo-bg';
-                                    if (standingRow.teamLogoUrl) {
+                                    if (cellValue) { // cellValue is the URL
                                         const dummyImg = new Image();
-                                        dummyImg.src = standingRow.teamLogoUrl;
+                                        dummyImg.src = cellValue;
                                         dummyImg.onerror = function() {
                                             logoDiv.style.backgroundImage = 'none';
                                             logoDiv.classList.add('team-logo-placeholder');
                                         };
-                                        logoDiv.style.backgroundImage = `url('${standingRow.teamLogoUrl}')`;
+                                        logoDiv.style.backgroundImage = `url('${cellValue}')`;
                                     }
                                     td.appendChild(logoDiv); // Append div directly to td
                                     break;
                                 case 'teamName':
-                                    cellContent = standingRow.teamName;
                                     td.classList.add('fw-bold', 'text-start'); // Always bold, aligned left
+                                    td.textContent = cellValue;
                                     break;
                                 case 'points':
-                                    cellContent = standingRow.points;
                                     td.classList.add('standings-points', 'fw-bold');
+                                    td.textContent = cellValue;
                                     break;
-                                case 'gamesPlayed':
-                                    cellContent = standingRow.gamesPlayed;
-                                    break;
-                                case 'wins':
-                                    cellContent = standingRow.wins;
-                                    break;
-                                case 'losses':
-                                    cellContent = standingRow.losses;
-                                    break;
-                                case 'zeros':
-                                    cellContent = standingRow.zeros;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'pointsFor':
-                                    cellContent = standingRow.pointsFor;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'pointsAgainst':
-                                    cellContent = standingRow.pointsAgainst;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'defensePoints': // AR
-                                    cellContent = standingRow.defensePoints;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'overallDifference': // AS - NEW
-                                    cellContent = standingRow.overallDifference;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'b1_val': // AT
-                                    cellContent = standingRow.b1_val;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'b2_val': // AU
-                                    cellContent = standingRow.b2_val;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'dpIs_val': // AV
-                                    cellContent = standingRow.dpIs_val;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'keIs_val': // AW
-                                    cellContent = standingRow.keIs_val;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'dpOl_val': // AX
-                                    cellContent = standingRow.dpOl_val;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'keOl_val': // AY
-                                    cellContent = standingRow.keOl_val;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'klir_val': // AZ
-                                    cellContent = standingRow.klir_val;
-                                    if (cellContent === '0' || cellContent === '') {
-                                        td.classList.add('hide-zero-value');
-                                    }
-                                    break;
-                                case 'progressValue': // AC
+                                case 'progressValue': // This is a special case for arrows/numbers
                                     let progressHtml = '';
                                     let progressClasses = [];
-                                    if (standingRow.progressValue > 0) {
-                                        progressHtml = `▲ ${standingRow.progressValue}`;
+                                    if (cellValue > 0) {
+                                        progressHtml = `▲ ${cellValue}`;
                                         progressClasses.push('text-success', 'fw-bold');
-                                    } else if (standingRow.progressValue < 0) {
-                                        progressHtml = `▼ ${Math.abs(standingRow.progressValue)}`;
+                                    } else if (cellValue < 0) {
+                                        progressHtml = `▼ ${Math.abs(cellValue)}`;
                                         progressClasses.push('text-danger', 'fw-bold');
                                     } else {
                                         progressHtml = `—`;
@@ -602,6 +518,16 @@
                                     td.innerHTML = progressHtml;
                                     td.classList.add(...progressClasses);
                                     break;
+                                default: // Handle all other numeric/text fields
+                                    if (cellValue === '0') {
+                                        td.textContent = '0'; // Explicitly show '0' if the value is '0'
+                                    } else if (cellValue === '') {
+                                        td.textContent = ''; // Empty text content
+                                        td.classList.add('hide-zero-value'); // Apply class to hide only text
+                                    } else {
+                                        td.textContent = cellValue; // Show any other value
+                                    }
+                                    break;
                             }
                             
                             // Add generic classes for visibility if defined in headerInfo
@@ -609,11 +535,6 @@
                                 td.classList.add(...headerInfo.class.split(' '));
                             }
                             
-                            // Only set textContent if it's not handled by innerHTML for progress or appended for logoDiv
-                            if (headerInfo.property !== 'progressValue' && headerInfo.property !== 'teamLogoUrl') {
-                                td.textContent = cellContent;
-                            }
-
                             tr.appendChild(td);
                         });
                         tbody.appendChild(tr);
@@ -622,8 +543,8 @@
                     standingsTabPane.appendChild(standingsTable);
                 } else {
                     var noStandingsDiv = document.createElement('div');
-                    noStandingsDiv.className = 'alert alert-info text-center';
-                    noStandingsDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
+                    noGamesDiv.className = 'alert alert-info text-center';
+                    noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
                     standingsTabPane.appendChild(noStandingsDiv);
                 }
 
@@ -975,9 +896,9 @@
             border-top: 3px solid #dc3545 !important; /* Red border for relegation top line */
         }
 
-        /* Hide cell content for zero values */
+        /* Hide cell content for empty values (keep cell background) */
         .hide-zero-value {
-            visibility: hidden;
+            color: transparent; /* Makes text transparent */
         }
 
         /* Footer styles - copied from mc_02 */
