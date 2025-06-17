@@ -82,7 +82,9 @@
 
             // Query for all data, ordering by round (Column B) and then date (Column D) for games.
             // This order is crucial for grouping by round and then correctly ordering games within a round.
-            var strQueryForURI = 'select *';
+            // Removed 'order by B asc, D asc, E asc' from here to allow sorting within the JS after grouping.
+            // It will fetch all data and then process it.
+            var strQueryForURI = 'select * ';
             var queryString = encodeURIComponent(strQueryForURI);
 
             // Fetch data from gid=6 as per the original file
@@ -162,7 +164,8 @@
                 }
 
                 // Populate standingsByRound - assumes all standing rows for a given round are grouped together
-                if (data.getFormattedValue(row, 28) !== "" || data.getFormattedValue(row, 29) !== "") { // Check if it's a standings entry (Column AC or AD is not empty)
+                // We ensure it's a valid standing entry and not just a header/empty row
+                if (roundForStanding !== "" && parseInt(data.getFormattedValue(row, 30)) > 0) { // Check if AE (position) is a valid number
                     if (!standingsByRound[roundForStanding]) {
                         standingsByRound[roundForStanding] = [];
                     }
@@ -180,10 +183,15 @@
                         pointsAgainst: data.getFormattedValue(row, 42), // AQ
                         difference: data.getFormattedValue(row, 43), // AR
                         points2: data.getFormattedValue(row, 44), // AS
-                        difference2: data.getFormattedValue(row, 45), // AT
-                        difference3: data.getFormattedValue(row, 51), // AZ
+                        b1_val: data.getFormattedValue(row, 45), // AT (new property for B1)
+                        b2_val: data.getFormattedValue(row, 46), // AU (new property for B2)
+                        dpIs_val: data.getFormattedValue(row, 47), // AV (new property for ΔΠ ΙΣ)
+                        keIs_val: data.getFormattedValue(row, 48), // AW (new property for ΚΕ ΙΣ)
+                        dpOl_val: data.getFormattedValue(row, 49), // AX (new property for ΔΠ ΟΛ)
+                        keOl_val: data.getFormattedValue(row, 50), // AY (new property for ΚΕ ΟΛ)
+                        klir_val: data.getFormattedValue(row, 51), // AZ (new property for ΚΛΗΡ)
                         progressValue: parseInt(data.getFormattedValue(row, 28)), // AC
-                        teamLogoUrl: data.getFormattedValue(row, 52) || DEFAULT_LOGO_URL // BA (index 52) or default
+                        teamLogoUrl: data.getFormattedValue(row, 52) || DEFAULT_LOGO_URL // BA
                     };
                     standingsByRound[roundForStanding].push(standingData);
                 }
@@ -411,19 +419,35 @@
 
                     var thead = document.createElement('thead');
                     var headerRow = document.createElement('tr');
-                    ['Α/Α', ' ', 'Ομάδα', 'Βαθ', 'Αγ', 'Ν', 'Η', 'Μ', 'Επ', 'Αμ', 'Δ', 'Β2', 'Δ2', 'Δ3', 'Πρόοδος'].forEach(headerText => {
+                    // Updated column headers and their order based on user's request
+                    const standingsHeaders = [
+                        { text: 'Α/Α', class: '' },
+                        { text: ' ', class: '' }, // Logo column
+                        { text: 'Ομάδες', class: 'text-start' }, // Align left
+                        { text: 'Βαθ', class: 'fw-bold' },
+                        { text: 'Αγών', class: '' },
+                        { text: 'Nικ', class: '' },
+                        { text: 'Ηττ', class: '' },
+                        { text: 'Μ', class: 'd-none d-md-table-cell' },
+                        { text: 'ΑΦ', class: 'd-none d-md-table-cell' },
+                        { text: 'Επίθ', class: 'd-none d-md-table-cell' },
+                        { text: 'Αμυν', class: 'd-none d-md-table-cell' },
+                        { text: 'B1', class: 'd-none d-md-table-cell' },
+                        { text: 'B2', class: 'd-none d-md-table-cell' },
+                        { text: 'ΔΠ ΙΣ', class: 'd-none d-md-table-cell' },
+                        { text: 'ΚΕ ΙΣ', class: 'd-none d-md-table-cell' },
+                        { text: 'ΔΠ ΟΛ', class: 'd-none d-md-table-cell' },
+                        { text: 'ΚΕ ΟΛ', class: 'd-none d-md-table-cell' },
+                        { text: 'ΚΛΗΡ', class: 'd-none d-md-table-cell' },
+                        { text: 'Πρόοδος', class: 'd-none d-md-table-cell' }
+                    ];
+
+                    standingsHeaders.forEach(headerInfo => {
                         var th = document.createElement('th');
                         th.scope = 'col';
-                        th.textContent = headerText;
-                        if (headerText === 'Μ' || headerText === 'Επ' || headerText === 'Αμ' || headerText === 'Δ' || headerText === 'Β2' || headerText === 'Δ2' || headerText === 'Δ3' || headerText === 'Πρόοδος') {
-                            th.classList.add('d-none', 'd-md-table-cell'); // Hide on small screens, show on md and up
-                        }
-                        if (headerText === 'Βαθ') {
-                            th.classList.add('fw-bold'); // Bold for points
-                        }
-                        // Align 'Ομάδα' header to left
-                        if (headerText === 'Ομάδα') {
-                            th.classList.add('text-start'); 
+                        th.textContent = headerInfo.text;
+                        if (headerInfo.class) {
+                            th.classList.add(...headerInfo.class.split(' '));
                         }
                         headerRow.appendChild(th);
                     });
@@ -445,13 +469,18 @@
                         var pointsAgainst = standingRow.pointsAgainst;
                         var difference = standingRow.difference;
                         var points2 = standingRow.points2;
-                        var difference2 = standingRow.difference2;
-                        var difference3 = standingRow.difference3;
+                        var b1_val = standingRow.b1_val; // New B1 value
+                        var b2_val = standingRow.b2_val; // New B2 value
+                        var dpIs_val = standingRow.dpIs_val; // New ΔΠ ΙΣ value
+                        var keIs_val = standingRow.keIs_val; // New ΚΕ ΙΣ value
+                        var dpOl_val = standingRow.dpOl_val; // New ΔΠ ΟΛ value
+                        var keOl_val = standingRow.keOl_val; // New ΚΕ ΟΛ value
+                        var klir_val = standingRow.klir_val; // New ΚΛΗΡ value
 
                         // Progress/Regression (AC)
                         var progressValue = standingRow.progressValue;
                         var progressHtml = '';
-                        var progressClasses = []; // Use an array for classes
+                        var progressClasses = [];
 
                         if (progressValue > 0) {
                             progressHtml = `▲ ${progressValue}`; // Up arrow with value
@@ -464,111 +493,141 @@
                             progressClasses.push('text-muted');
                         }
 
-                        // Apply promotion/relegation styling
+                        // Apply promotion/relegation styling (background colors for zones)
                         if (promotionPositions && position <= promotionPositions) {
-                            tr.classList.add('table-success-light'); // Light green background
-                        } else if (relegationStartFrom && position >= relegationStartFrom) {
-                            tr.classList.add('table-danger-light'); // Light red background
+                            tr.classList.add('table-success-light');
+                        }
+                        if (relegationStartFrom && position >= relegationStartFrom) {
+                            tr.classList.add('table-danger-light');
+                        }
+
+                        // Apply border styling for promotion/relegation zones
+                        if (promotionPositions && position === promotionPositions) {
+                            tr.classList.add('promotion-border-bottom');
+                        }
+                        if (relegationStartFrom && position === relegationStartFrom) {
+                            tr.classList.add('relegation-border-top');
                         }
                         
                         // Append cells in order
-                        // AA
-                        var td0 = document.createElement('td');
-                        td0.textContent = position + '.';
-                        tr.appendChild(td0);
+                        // Α/Α (position)
+                        var td_aa = document.createElement('td');
+                        td_aa.textContent = position + '.';
+                        tr.appendChild(td_aa);
 
-                        // Logo (BA) as background
-                        var td1 = document.createElement('td');
+                        // Logo (BA)
+                        var td_logo = document.createElement('td');
                         var logoDiv = document.createElement('div');
                         logoDiv.className = 'team-logo-bg';
-                        if (teamLogoUrl) {
-                            // Add an onerror handler for the background image
-                            const dummyImg = new Image();
-                            dummyImg.src = teamLogoUrl;
-                            dummyImg.onerror = function() {
-                                logoDiv.style.backgroundImage = 'none'; // Remove background image on error
-                                logoDiv.classList.add('team-logo-placeholder'); // Add a placeholder class
-                            };
-                            logoDiv.style.backgroundImage = `url('${teamLogoUrl}')`;
-                        }
-                        td1.appendChild(logoDiv);
-                        tr.appendChild(td1);
+                        // Add onerror handler for the background image
+                        const dummyImg = new Image();
+                        dummyImg.src = teamLogoUrl;
+                        dummyImg.onerror = function() {
+                            logoDiv.style.backgroundImage = 'none'; // Remove background image on error
+                            logoDiv.classList.add('team-logo-placeholder'); // Add a placeholder class
+                        };
+                        logoDiv.style.backgroundImage = `url('${teamLogoUrl}')`;
+                        td_logo.appendChild(logoDiv);
+                        tr.appendChild(td_logo);
 
-                        // Team Name (AF) - Aligned left
-                        var td2 = document.createElement('td');
-                        td2.className = 'fw-bold text-start'; // Always bold, now aligned left
-                        td2.textContent = teamName;
-                        tr.appendChild(td2);
+                        // Ομάδες (teamName) - Aligned left
+                        var td_teamname = document.createElement('td');
+                        td_teamname.className = 'fw-bold text-start';
+                        td_teamname.textContent = teamName;
+                        tr.appendChild(td_teamname);
 
-                        // Points (AI) - Bold and +2px font-size (handled by class)
-                        var td3 = document.createElement('td');
-                        td3.className = 'standings-points fw-bold'; // Custom class for bold and larger font
-                        td3.textContent = points;
-                        tr.appendChild(td3);
+                        // Βαθ (points) - Bold and larger font
+                        var td_points = document.createElement('td');
+                        td_points.className = 'standings-points fw-bold';
+                        td_points.textContent = points;
+                        tr.appendChild(td_points);
 
-                        // Games Played (AJ)
-                        var td4 = document.createElement('td');
-                        td4.textContent = gamesPlayed;
-                        tr.appendChild(td4);
+                        // Αγών (gamesPlayed)
+                        var td_gamesplayed = document.createElement('td');
+                        td_gamesplayed.textContent = gamesPlayed;
+                        tr.appendChild(td_gamesplayed);
 
-                        // Wins (AM)
-                        var td5 = document.createElement('td');
-                        td5.textContent = wins;
-                        tr.appendChild(td5);
+                        // Nικ (wins)
+                        var td_wins = document.createElement('td');
+                        td_wins.textContent = wins;
+                        tr.appendChild(td_wins);
 
-                        // Losses (AN)
-                        var td6 = document.createElement('td');
-                        td6.textContent = losses;
-                        tr.appendChild(td6);
+                        // Ηττ (losses)
+                        var td_losses = document.createElement('td');
+                        td_losses.textContent = losses;
+                        tr.appendChild(td_losses);
 
-                        // Zeros (AO) - Hidden on small screens if '0'
-                        var td7 = document.createElement('td');
-                        td7.classList.add('d-none', 'd-md-table-cell');
-                        td7.textContent = (zeros === '0' ? '' : zeros);
-                        tr.appendChild(td7);
+                        // Μ (zeros) - Hidden on small screens if '0'
+                        var td_zeros = document.createElement('td');
+                        td_zeros.classList.add('d-none', 'd-md-table-cell');
+                        td_zeros.textContent = (zeros === '0' || zeros === '' ? '' : zeros); // Show empty if '0' or empty
+                        tr.appendChild(td_zeros);
 
-                        // Points For (AP)
-                        var td8 = document.createElement('td');
-                        td8.classList.add('d-none', 'd-md-table-cell');
-                        td8.textContent = pointsFor;
-                        tr.appendChild(td8);
+                        // ΑΦ (pointsFor)
+                        var td_pointsfor = document.createElement('td');
+                        td_pointsfor.classList.add('d-none', 'd-md-table-cell');
+                        td_pointsfor.textContent = pointsFor;
+                        tr.appendChild(td_pointsfor);
 
-                        // Points Against (AQ)
-                        var td9 = document.createElement('td');
-                        td9.classList.add('d-none', 'd-md-table-cell');
-                        td9.textContent = pointsAgainst;
-                        tr.appendChild(td9);
+                        // Επίθ (pointsAgainst) - As per user request, this will show pointsAgainst
+                        var td_pointsagainst = document.createElement('td');
+                        td_pointsagainst.classList.add('d-none', 'd-md-table-cell');
+                        td_pointsagainst.textContent = pointsAgainst;
+                        tr.appendChild(td_pointsagainst);
 
-                        // Difference (AR)
-                        var td10 = document.createElement('td');
-                        td10.classList.add('d-none', 'd-md-table-cell');
-                        td10.textContent = difference;
-                        tr.appendChild(td10);
+                        // Αμυν (difference) - As per user request, this will show difference
+                        var td_difference = document.createElement('td');
+                        td_difference.classList.add('d-none', 'd-md-table-cell');
+                        td_difference.textContent = difference;
+                        tr.appendChild(td_difference);
 
-                        // Points 2 (AS)
-                        var td11 = document.createElement('td');
-                        td11.classList.add('d-none', 'd-md-table-cell');
-                        td11.textContent = points2;
-                        tr.appendChild(td11);
+                        // B1 (b1_val)
+                        var td_b1 = document.createElement('td');
+                        td_b1.classList.add('d-none', 'd-md-table-cell');
+                        td_b1.textContent = b1_val;
+                        tr.appendChild(td_b1);
 
-                        // Difference 2 (AT)
-                        var td12 = document.createElement('td');
-                        td12.classList.add('d-none', 'd-md-table-cell');
-                        td12.textContent = difference2;
-                        tr.appendChild(td12);
+                        // B2 (b2_val)
+                        var td_b2 = document.createElement('td');
+                        td_b2.classList.add('d-none', 'd-md-table-cell');
+                        td_b2.textContent = b2_val;
+                        tr.appendChild(td_b2);
 
-                        // Difference 3 (AZ)
-                        var td13 = document.createElement('td');
-                        td13.classList.add('d-none', 'd-md-table-cell');
-                        td13.textContent = difference3;
-                        tr.appendChild(td13);
+                        // ΔΠ ΙΣ (dpIs_val)
+                        var td_dpis = document.createElement('td');
+                        td_dpis.classList.add('d-none', 'd-md-table-cell');
+                        td_dpis.textContent = dpIs_val;
+                        tr.appendChild(td_dpis);
 
-                        // Progress/Regression (AC) - Last column
-                        var td14 = document.createElement('td');
-                        // Use spread operator to add multiple classes from array
-                        td14.classList.add('d-none', 'd-md-table-cell', ...progressClasses); 
-                        td14.innerHTML = progressHtml;
-                        tr.appendChild(td14);
+                        // ΚΕ ΙΣ (keIs_val)
+                        var td_keis = document.createElement('td');
+                        td_keis.classList.add('d-none', 'd-md-table-cell');
+                        td_keis.textContent = keIs_val;
+                        tr.appendChild(td_keis);
+
+                        // ΔΠ ΟΛ (dpOl_val)
+                        var td_dpol = document.createElement('td');
+                        td_dpol.classList.add('d-none', 'd-md-table-cell');
+                        td_dpol.textContent = dpOl_val;
+                        tr.appendChild(td_dpol);
+
+                        // ΚΕ ΟΛ (keOl_val)
+                        var td_keol = document.createElement('td');
+                        td_keol.classList.add('d-none', 'd-md-table-cell');
+                        td_keol.textContent = keOl_val;
+                        tr.appendChild(td_keol);
+
+                        // ΚΛΗΡ (klir_val)
+                        var td_klir = document.createElement('td');
+                        td_klir.classList.add('d-none', 'd-md-table-cell');
+                        td_klir.textContent = klir_val;
+                        tr.appendChild(td_klir);
+
+                        // Πρόοδος (progressValue) - Last column
+                        var td_progress = document.createElement('td');
+                        td_progress.classList.add('d-none', 'd-md-table-cell', ...progressClasses); 
+                        td_progress.innerHTML = progressHtml;
+                        tr.appendChild(td_progress);
 
                         tbody.appendChild(tr);
                     });
@@ -921,10 +980,17 @@
 
         /* Promotion/Relegation colors */
         .table-success-light {
-            background-color: #d4edda !important; /* Light green for promotion */
+            background-color: #d4edda !important; /* Light green for promotion zone background */
         }
         .table-danger-light {
-            background-color: #f8d7da !important; /* Light red for relegation */
+            background-color: #f8d7da !important; /* Light red for relegation zone background */
+        }
+        /* New border styles for promotion/relegation lines */
+        .promotion-border-bottom {
+            border-bottom: 3px solid #28a745 !important; /* Green border for promotion bottom line */
+        }
+        .relegation-border-top {
+            border-top: 3px solid #dc3545 !important; /* Red border for relegation top line */
         }
 
         /* Footer styles - copied from mc_02 */
