@@ -322,11 +322,13 @@
                         // var gameCode = gameRow.gameCode; // Not directly used in rendering now
 
                         var gameDiv = document.createElement('div');
-                        gameDiv.className = 'game-item d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 p-3 rounded shadow-sm bg-white';
+                        // Modified game-item classes for fixed width distribution
+                        gameDiv.className = 'game-item d-flex flex-column flex-md-row align-items-center mb-3 p-3 rounded shadow-sm bg-white';
 
                         // Left Team (Team A)
                         var teamA_div = document.createElement('div');
-                        teamA_div.className = 'team-side text-start mb-2 mb-md-0 d-flex align-items-center flex-grow-1 justify-content-start';
+                        // Added `flex-grow-0 flex-shrink-0` and `team-side-left` for specific styling
+                        teamA_div.className = 'team-side team-side-left text-start mb-2 mb-md-0 d-flex align-items-center';
                         if (teamA_logo) {
                             var imgA = document.createElement('img');
                             imgA.src = teamA_logo;
@@ -347,7 +349,8 @@
 
                         // Center (Score and Info)
                         var center_div = document.createElement('div');
-                        center_div.className = 'game-center text-center mx-md-3 mb-2 mb-md-0 d-flex flex-column justify-content-center align-items-center';
+                        // Added `flex-grow-0 flex-shrink-0` and `game-center-fixed` for specific styling
+                        center_div.className = 'game-center game-center-fixed text-center mx-md-3 mb-2 mb-md-0 d-flex flex-column justify-content-center align-items-center';
 
                         var score_div = document.createElement('div');
                         score_div.className = 'game-score d-flex align-items-center';
@@ -373,7 +376,8 @@
 
                         // Right Team (Team B)
                         var teamB_div = document.createElement('div');
-                        teamB_div.className = 'team-side text-end d-flex mb-2 mb-md-0 align-items-center flex-grow-1 justify-content-end';
+                        // Added `flex-grow-0 flex-shrink-0` and `team-side-right` for specific styling
+                        teamB_div.className = 'team-side team-side-right text-end d-flex mb-2 mb-md-0 align-items-center';
                         var spanB = document.createElement('span');
                         spanB.className = 'team-name fw-bold';
                         spanB.textContent = teamB_name;
@@ -519,14 +523,9 @@
                                     td.classList.add(...progressClasses);
                                     break;
                                 default: // Handle all other numeric/text fields
-                                    // Apply hide-zero-value class only if the value is an empty string
-                                    if (cellValue === '') {
-                                        td.classList.add('hide-empty-value'); // New class for empty values
-                                    } else if (cellValue === '0') {
-                                        // If value is exactly '0', show it normally
-                                        // td.textContent = '0';
-                                        td.classList.add('hide-empty-value'); // New class for empty values
-
+                                    // Apply hide-empty-value class if the value is an empty string OR '0'
+                                    if (cellValue === '' || cellValue === '0') {
+                                        td.classList.add('hide-empty-value'); // New class for empty/zero values
                                     } else {
                                         td.textContent = cellValue; // Show any other value
                                     }
@@ -795,6 +794,9 @@
             box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02);
             transition: all 0.2s ease-in-out;
             background-color: #ffffff !important;
+            /* Added for fixed width distribution */
+            flex-wrap: nowrap; /* Prevent wrapping on desktop */
+            justify-content: center; /* Center content horizontally within the game-item */
         }
         .game-item:hover {
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,.08);
@@ -828,6 +830,30 @@
         .game-info {
             font-size: 0.85rem;
             color: var(--mc-secondary-color);
+        }
+
+        /* Specific styles for game-item sections */
+        .team-side-left {
+            flex-basis: 40%;
+            flex-grow: 0;
+            flex-shrink: 0;
+            justify-content: flex-start !important; /* Ensure left alignment */
+        }
+
+        .game-center-fixed {
+            flex-basis: 20%;
+            flex-grow: 0;
+            flex-shrink: 0;
+            /* Ensure content inside is centered horizontally and vertically */
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .team-side-right {
+            flex-basis: 40%;
+            flex-grow: 0;
+            flex-shrink: 0;
+            justify-content: flex-end !important; /* Ensure right alignment */
         }
 
         /* Standings Table Styling */
@@ -900,6 +926,7 @@
         }
 
         /* Hide cell content for empty values (keep cell background) */
+        /* Changed to target only cells with empty string or '0' as content */
         .hide-empty-value {
             color: transparent; /* Makes text transparent */
         }
@@ -961,13 +988,24 @@
                 align-items: flex-start !important; /* Align left */
             }
             .team-side {
-                justify-content: flex-start !important; /* Align team names to start */
+                /* On small screens, let them take full width */
+                flex-basis: auto;
                 width: 100%;
+                justify-content: flex-start !important; /* Align team names to start */
             }
             .game-center {
+                /* On small screens, let it take full width */
+                flex-basis: auto;
                 width: 100%;
                 margin-top: 0.5rem;
                 margin-bottom: 0.5rem;
+            }
+            /* Reset specific flex properties for mobile to default flex-column behavior */
+            .team-side-left,
+            .team-side-right,
+            .game-center-fixed {
+                flex-grow: 1; /* Allow them to grow */
+                flex-shrink: 1; /* Allow them to shrink */
             }
         }
     </style>
