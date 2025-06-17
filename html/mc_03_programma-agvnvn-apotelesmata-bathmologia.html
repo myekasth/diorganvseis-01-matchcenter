@@ -333,7 +333,8 @@
                         // var gameCode = gameRow.gameCode; // Not directly used in rendering now
 
                         var gameDiv = document.createElement('div');
-                        gameDiv.className = 'game-item d-flex flex-column flex-md-row align-items-center mb-3 p-3 rounded shadow-sm bg-white';
+                        // No flex-column here, we want it to stay row even on small screens
+                        gameDiv.className = 'game-item d-flex flex-md-row align-items-center mb-3 p-3 rounded shadow-sm bg-white';
 
                         // Left Team (Team A) - Team name and Logo background div
                         var teamA_div = document.createElement('div');
@@ -341,7 +342,7 @@
                         
                         // New div for logo background on the left side - placed BEFORE team name
                         var logoA_bg_div = document.createElement('div');
-                        logoA_bg_div.className = 'team-logo-container team-logo-container-left';
+                        logoA_bg_div.className = 'team-logo-container team-logo-container-left d-none d-md-flex'; // Hidden on mobile
                         if (teamA_logo) {
                             logoA_bg_div.style.backgroundImage = `url('${teamA_logo}')`;
                         } else {
@@ -400,7 +401,7 @@
 
                         // New div for logo background on the right side - placed AFTER team name
                         var logoB_bg_div = document.createElement('div');
-                        logoB_bg_div.className = 'team-logo-container team-logo-container-right';
+                        logoB_bg_div.className = 'team-logo-container team-logo-container-right d-none d-md-flex'; // Hidden on mobile
                         if (teamB_logo) {
                             logoB_bg_div.style.backgroundImage = `url('${teamB_logo}')`;
                         } else {
@@ -815,9 +816,11 @@
             flex-wrap: nowrap; /* Ensure items stay on one line on desktop */
             justify-content: center; /* Center overall content */
         }
+        /* Hover effect for game-item */
         .game-item:hover {
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,.08);
             transform: translateY(-2px);
+            background-color: #f5f5f5 !important; /* Light gray on hover */
         }
 
         /* Responsive flex basis for the three main game-item sections */
@@ -842,7 +845,7 @@
         .team-logo-container {
             width: 50px; /* Fixed width for logo area, updated from 40px */
             height: 50px; /* Fixed height for logo area, updated from 100% */
-            background-size: cover; /* Fill the area while maintaining aspect ratio */
+            background-size: contain; /* Fill the area while maintaining aspect ratio */
             background-repeat: no-repeat;
             display: flex; /* Use flex to help align content if needed */
             align-items: center; /* Vertically center content if any */
@@ -877,7 +880,7 @@
         .score-number {
             font-family: 'Krona One', sans-serif;
             /* Increased font size for better visibility */
-            font-size: 1.25rem; /* Slightly larger for scores */
+            font-size: 1.95rem !important; /* Slightly larger for scores */
         }
         .versus-text {
             font-size: 1.5rem; /* Larger for the hyphen */
@@ -1010,25 +1013,37 @@
                 padding: 1rem 0.5rem;
             }
             .game-item {
-                flex-direction: column; /* Stack items vertically */
-                align-items: flex-start !important; /* Align left by default for column */
-                flex-wrap: wrap; /* Allow wrapping on mobile */
+                /* Removed flex-direction: column to keep row layout */
+                align-items: center !important; /* Keep items vertically centered */
+                flex-wrap: nowrap; /* Keep on single line if possible */
             }
-            .team-side-left, .team-side-right, .game-center-fixed {
-                flex-basis: auto; /* Revert to auto on mobile */
-                width: 100%; /* Take full width on mobile */
-                padding: 0 0.5rem; /* Adjust padding for mobile */
-                flex-grow: 1; /* Allow them to grow */
-                flex-shrink: 1; /* Allow them to shrink */
-            }
-            /* Ensure alignment for team names remains flex-start on mobile */
+            /* Ensure fixed flex-basis on mobile, combined with truncation */
             .team-side-left, .team-side-right {
+                flex-basis: 40%;
+                flex-grow: 0;
+                flex-shrink: 0;
+                padding: 0 0.5rem; /* Adjust padding for mobile */
+            }
+            .game-center-fixed {
+                flex-basis: 20%;
+                flex-grow: 0;
+                flex-shrink: 0;
+                padding: 0 0.5rem; /* Adjust padding for mobile */
+            }
+
+            /* Ensure alignment for team names and logos within their flex containers on mobile */
+            .team-side-left {
                 justify-content: flex-start !important;
             }
-            /* Hide logo containers on mobile */
-            .team-logo-container {
-                display: none;
+            .team-side-right {
+                justify-content: flex-end !important; /* Align to the right side of their 40% container */
             }
+            
+            /* Hide logo containers on mobile explicitly with d-none from Bootstrap */
+            .team-logo-container {
+                 display: none !important;
+            }
+            
             /* Center the score block horizontally in the center div on mobile */
             .game-center-fixed .score-logos-container {
                 justify-content: center !important;
