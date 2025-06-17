@@ -335,59 +335,53 @@
                         var gameDiv = document.createElement('div');
                         gameDiv.className = 'game-item d-flex flex-column flex-md-row align-items-center mb-3 p-3 rounded shadow-sm bg-white';
 
-                        // Left Team (Team A) - Team name only
+                        // Left Team (Team A) - Team name and Logo background div
                         var teamA_div = document.createElement('div');
                         teamA_div.className = 'team-side team-side-left text-start mb-2 mb-md-0 d-flex align-items-center';
+                        
+                        // New div for logo background on the left side
+                        var logoA_bg_div = document.createElement('div');
+                        logoA_bg_div.className = 'team-logo-container team-logo-container-left';
+                        if (teamA_logo) {
+                            logoA_bg_div.style.backgroundImage = `url('${teamA_logo}')`;
+                        } else {
+                            logoA_bg_div.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`;
+                        }
+                        // Add error handling for background image in case it fails to load
+                        logoA_bg_div.onerror = function() {
+                            this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; // Fallback
+                        };
+                        teamA_div.appendChild(logoA_bg_div); // Append the background logo div
+
                         var spanA = document.createElement('span');
                         spanA.className = 'team-name fw-bold';
                         spanA.textContent = teamA_name_display; // Use truncated name
                         teamA_div.appendChild(spanA);
                         gameDiv.appendChild(teamA_div);
 
-                        // Center (Score, Logos, and Info)
+                        // Center (Score and Info) - No logos here anymore
                         var center_div = document.createElement('div');
                         center_div.className = 'game-center game-center-fixed text-center mx-md-3 mb-2 mb-md-0 d-flex flex-column justify-content-center align-items-center';
 
-                        var score_logos_container = document.createElement('div');
-                        score_logos_container.className = 'score-logos-container d-flex align-items-center justify-content-center';
+                        var score_div = document.createElement('div');
+                        score_div.className = 'game-score d-flex align-items-center justify-content-center';
 
-                        // Team A Score and Logo
-                        var teamA_score_logo_div = document.createElement('div');
-                        teamA_score_logo_div.className = 'team-score-logo team-score-logo-A d-flex align-items-center';
                         var spanScoreA = document.createElement('span');
                         spanScoreA.className = 'score-number text-primary fw-bold fs-5';
                         spanScoreA.textContent = scoreA;
-                        teamA_score_logo_div.appendChild(spanScoreA);
-                        var imgA = document.createElement('img');
-                        imgA.src = teamA_logo;
-                        imgA.alt = teamA_name_display + ' logo';
-                        imgA.className = 'team-logo-small ms-2';
-                        imgA.onerror = function() { this.onerror=null; this.src=DEFAULT_LOGO_URL; };
-                        teamA_score_logo_div.appendChild(imgA);
-                        score_logos_container.appendChild(teamA_score_logo_div);
+                        score_div.appendChild(spanScoreA);
 
-                        // Versus Text
                         var spanVersus = document.createElement('span');
-                        spanVersus.className = 'versus-text mx-2';
+                        spanVersus.className = 'versus-text mx-1';
                         spanVersus.textContent = '-';
-                        score_logos_container.appendChild(spanVersus);
+                        score_div.appendChild(spanVersus);
 
-                        // Team B Logo and Score
-                        var teamB_score_logo_div = document.createElement('div');
-                        teamB_score_logo_div.className = 'team-score-logo team-score-logo-B d-flex align-items-center';
-                        var imgB = document.createElement('img');
-                        imgB.src = teamB_logo;
-                        imgB.alt = teamB_name_display + ' logo';
-                        imgB.className = 'team-logo-small me-2';
-                        imgB.onerror = function() { this.onerror=null; this.src=DEFAULT_LOGO_URL; };
-                        teamB_score_logo_div.appendChild(imgB);
                         var spanScoreB = document.createElement('span');
                         spanScoreB.className = 'score-number text-primary fw-bold fs-5';
                         spanScoreB.textContent = scoreB;
-                        teamB_score_logo_div.appendChild(spanScoreB);
-                        score_logos_container.appendChild(teamB_score_logo_div);
+                        score_div.appendChild(spanScoreB);
 
-                        center_div.appendChild(score_logos_container);
+                        center_div.appendChild(score_div);
 
                         var info_div = document.createElement('div');
                         info_div.className = 'game-info text-muted small mt-1';
@@ -395,13 +389,28 @@
                         center_div.appendChild(info_div);
                         gameDiv.appendChild(center_div);
 
-                        // Right Team (Team B) - Team name only
+                        // Right Team (Team B) - Team name and Logo background div
                         var teamB_div = document.createElement('div');
                         teamB_div.className = 'team-side team-side-right text-end d-flex mb-2 mb-md-0 align-items-center';
                         var spanB = document.createElement('span');
                         spanB.className = 'team-name fw-bold';
                         spanB.textContent = teamB_name_display; // Use truncated name
                         teamB_div.appendChild(spanB);
+
+                        // New div for logo background on the right side
+                        var logoB_bg_div = document.createElement('div');
+                        logoB_bg_div.className = 'team-logo-container team-logo-container-right';
+                        if (teamB_logo) {
+                            logoB_bg_div.style.backgroundImage = `url('${teamB_logo}')`;
+                        } else {
+                            logoB_bg_div.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`;
+                        }
+                        // Add error handling for background image
+                        logoB_bg_div.onerror = function() {
+                            this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; // Fallback
+                        };
+                        teamB_div.appendChild(logoB_bg_div); // Append the background logo div
+                        
                         gameDiv.appendChild(teamB_div);
 
                         gamesTabPane.appendChild(gameDiv);
@@ -592,6 +601,7 @@
             });
             contentDiv.appendChild(mainAccordion);
 
+            // --- Start of dynamically added footer content (replacing static footer) ---
             // Add the footer buttons container
             const footerButtonsContainer = document.createElement('div');
             footerButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3');
@@ -618,7 +628,7 @@
             
             contentDiv.appendChild(footerButtonsContainer);
 
-            // Add footer elements
+            // Add the footer elements as per user's request
             const ekasthDiv = document.createElement('div');
             ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12');
             const now = new Date();
@@ -630,14 +640,13 @@
             const seconds = String(now.getSeconds()).padStart(2, '0');
             const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
             ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
-            // Update the span with the current date/time
-            document.getElementById("currentDateTime").textContent = formattedDateTime;
             contentDiv.appendChild(ekasthDiv);
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
-            versionDiv.textContent = `LT v.25.06.17 | mc_03_programma@myekasth`; 
+            versionDiv.textContent = `LT v.25.06.17 | mc_02_kathgories @ myekasth`; // Updated version string as requested
             contentDiv.appendChild(versionDiv);
+            // --- End of dynamically added footer content ---
         }
     </script>
 
@@ -828,10 +837,26 @@
             justify-content: center !important;
         }
 
-        .team-logo-small {
-            width: 24px; /* Smaller logo for center section */
-            height: 24px;
-            object-fit: contain;
+        /* New styles for logo containers in left/right sections */
+        .team-logo-container {
+            width: 40px; /* Fixed width for logo area */
+            height: 100%; /* Take full height of its parent (team-side) */
+            background-size: cover; /* Fill the area while maintaining aspect ratio */
+            background-repeat: no-repeat;
+            display: flex; /* Use flex to help align content if needed */
+            align-items: center; /* Vertically center content if any */
+        }
+
+        .team-logo-container-left {
+            /* For left side (home team), show the right half of the logo */
+            background-position: center right; /* Align right side of logo to center of container */
+            margin-right: 0.5rem; /* Space between logo and team name */
+        }
+
+        .team-logo-container-right {
+            /* For right side (away team), show the left half of the logo */
+            background-position: center left; /* Align left side of logo to center of container */
+            margin-left: 0.5rem; /* Space between team name and logo */
         }
         
         .score-logos-container {
@@ -999,7 +1024,11 @@
             .team-side-left, .team-side-right {
                 justify-content: flex-start !important;
             }
-            /* Center the score/logo block horizontally in the center div on mobile */
+            /* Hide logo containers on mobile */
+            .team-logo-container {
+                display: none;
+            }
+            /* Center the score block horizontally in the center div on mobile */
             .game-center-fixed .score-logos-container {
                 justify-content: center !important;
             }
@@ -1039,35 +1068,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="text-light bg-dark pt-4 pb-2">
-        <div class="container">
-            <!-- Footer buttons container -->
-            <div class="row">
-                <div class="col-12 text-center mt-4 mb-2 d-flex justify-content-center gap-3">
-                    <!-- "Πίσω" button -->
-                    <a href="#" id="backButtonFooter" class="btn btn-sm btn-back-custom">
-                        ← Πίσω
-                    </a>
-                    <!-- "Προκηρύξεις" button -->
-                    <a href="https://www.ekasth1976.gr/2024/07/2024-25.html" target="_blank" class="btn btn-sm btn-back-custom">
-                        Προκηρύξεις
-                    </a>
-                </div>
-            </div>
-            <!-- Standard footer text -->
-            <div class="row">
-                <div class="col-12 text-center ekasth-footer-text">
-                    Ε.ΚΑ.Σ.Θ. 1976 - <span id="currentDateTime"></span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 text-center ekasth-footer-version-text">
-                    LT v.25.06.17 | mc_03_programma@myekasth
-                </div>
-            </div>
-        </div>
-    </footer>
 
 </body>
 </html>
