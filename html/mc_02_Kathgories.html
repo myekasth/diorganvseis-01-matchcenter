@@ -254,7 +254,7 @@
                             '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
                             '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.sheetIdForNextLevel);
                         linkProgramma.className = 'btn btn-primary btn-sm';
-                        linkProgramma.innerHTML = '� Πρόγραμμα & Βαθμολογία';
+                        linkProgramma.innerHTML = '🏀 Πρόγραμμα & Βαθμολογία';
                         buttonsDiv.appendChild(linkProgramma);
 
                         // Link to Teams of Category (mc_03_TeamsOfKathgoria.html) if teamsSheetId exists
@@ -399,7 +399,7 @@
 
         .MatchcenterHomepageWidget__header {
             font-family: 'Krona One', sans-serif;
-            font-size: 2.2rem;
+            font-size: 2.2rem; /* Keep consistent size */
             margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -426,7 +426,7 @@
         .combined-header-title {
             font-family: 'Inter', sans-serif;
             font-weight: 500;
-            font-size: 1.1rem;
+            font-size: 1.1rem; /* Keep consistent size */
             margin-bottom: 0;
             color: var(--mc-header-combined-title-color);
             text-align: center;
@@ -576,11 +576,21 @@
                 /* Add significant left padding to make space for the back button */
                 padding-left: 5rem; /* ~80px, assuming button width + margin */
             }
+            /* Reverted font-size for header titles to keep them consistent */
             .MatchcenterHomepageWidget__header {
-                font-size: 1.8rem; /* Slightly smaller font to prevent overflow on very narrow screens */
+                font-size: 2.2rem; /* Keep consistent size */
             }
             .combined-header-title {
-                font-size: 0.9rem; /* Slightly smaller font for secondary title */
+                font-size: 1.1rem; /* Keep consistent size */
+            }
+
+            /* Adjust the 'Πίσω' button for smaller screens */
+            .btn-back-custom {
+                font-size: 0.65rem; /* Significantly smaller font size */
+                padding: 0.2rem 0.4rem; /* Reduced padding */
+                top: 0.7rem; /* Adjust position slightly */
+                left: 0.7rem; /* Adjust position slightly */
+                /* If only arrow is desired, add: text-indent: -9999px; overflow: hidden; width: 30px; */
             }
         }
     </style>
