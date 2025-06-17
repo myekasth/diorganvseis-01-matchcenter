@@ -524,7 +524,9 @@
                                         td.classList.add('hide-empty-value'); // New class for empty values
                                     } else if (cellValue === '0') {
                                         // If value is exactly '0', show it normally
-                                        td.textContent = '0';
+                                        // td.textContent = '0';
+                                        td.classList.add('hide-empty-value'); // New class for empty values
+
                                     } else {
                                         td.textContent = cellValue; // Show any other value
                                     }
