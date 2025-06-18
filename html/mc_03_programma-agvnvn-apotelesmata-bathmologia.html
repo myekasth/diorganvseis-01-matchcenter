@@ -100,13 +100,25 @@
          * @param {Date} dateObj The Date object to format.
          * @returns {string} The formatted date string.
          */
-        function formatGameDateForAccordion(dateObj) {
+        function formatFullDateWithDay(dateObj) {
             const dayName = dayNamesShort[dateObj.getDay()];
             const formattedDay = String(dateObj.getDate()).padStart(2, '0');
             const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
             const formattedYear = dateObj.getFullYear(); 
 
             return `${dayName}, ${formattedDay}-${formattedMonth}-${formattedYear}`;
+        }
+
+        /**
+         * Formats a Date object into "DD-MM-YYYY" string.
+         * @param {Date} dateObj The Date object to format.
+         * @returns {string} The formatted date string.
+         */
+        function formatSimpleDate(dateObj) {
+            const formattedDay = String(dateObj.getDate()).padStart(2, '0');
+            const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const formattedYear = dateObj.getFullYear();
+            return `${formattedDay}-${formattedMonth}-${formattedYear}`;
         }
 
         /**
@@ -273,7 +285,6 @@
                 // Calculate min and max dates for the current round
                 let minGameDate = null;
                 let maxGameDate = null;
-                // Changed from 'const' to 'let' to avoid re-declaration error in some environments
                 let currentRoundGames = gamesByRound[roundNumber] || []; 
 
                 if (currentRoundGames.length > 0) {
@@ -295,20 +306,16 @@
                 dateDisplaySpan.classList.add('round-date-display');
 
                 if (minGameDate && maxGameDate) {
-                    const formattedMinDate = formatGameDateForAccordion(minGameDate);
-                    const formattedMaxDate = formatGameDateForAccordion(maxGameDate);
+                    const isMobileScreen = window.innerWidth < 768; // Check for mobile size here
 
-                    if (minGameDate.toDateString() === maxGameDate.toDateString()) { // Compare date parts only
-                        dateDisplaySpan.textContent = formattedMinDate;
-                    } else {
-                        // Format for range: "Από DD-MM-YYYY ως DD-MM-YYYY"
-                        const formatFullDateOnly = (dateObj) => {
-                            const d = String(dateObj.getDate()).padStart(2, '0');
-                            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                            const y = dateObj.getFullYear();
-                            return `${d}-${m}-${y}`;
-                        };
-                        dateDisplaySpan.textContent = `Από ${formatFullDateOnly(minGameDate)} ως ${formatFullDateOnly(maxGameDate)}`;
+                    if (minGameDate.toDateString() === maxGameDate.toDateString()) { // Single date
+                        dateDisplaySpan.textContent = formatFullDateWithDay(minGameDate); // Same format for desktop/mobile for single date
+                    } else { // Date range
+                        if (isMobileScreen) {
+                            dateDisplaySpan.textContent = `${formatSimpleDate(minGameDate)} - ${formatSimpleDate(maxGameDate)}`;
+                        } else {
+                            dateDisplaySpan.textContent = `Από ${formatSimpleDate(minGameDate)} ως ${formatSimpleDate(maxGameDate)}`;
+                        }
                     }
                 }
                 accordionButton.appendChild(dateDisplaySpan); // Append the date span to the button
@@ -379,7 +386,6 @@
                 gamesTabPane.setAttribute('aria-labelledby', `games-tab-${roundNumber}`);
                 
                 // Sort games within this round by date and time before displaying
-                // Changed from 'const' to 'let' to avoid re-declaration error in some environments
                 currentRoundGames = gamesByRound[roundNumber] || []; 
                 currentRoundGames.sort((a, b) => {
                     var dateA = new Date(a.date.split('/').reverse().join('-') + 'T' + a.time);
@@ -411,7 +417,7 @@
                         var teamA_div = document.createElement('div');
                         teamA_div.className = 'team-side team-side-left text-start mb-2 mb-md-0 d-flex align-items-center';
                         
-                        // New div for logo background on the left side - removed d-none d-md-flex
+                        // New div for logo background on the left side
                         var logoA_bg_div = document.createElement('div');
                         logoA_bg_div.className = 'team-logo-container team-logo-container-left'; 
                         if (teamA_logo) {
@@ -470,7 +476,7 @@
                         spanB.textContent = teamB_name_display; // Use truncated name
                         teamB_div.appendChild(spanB);
 
-                        // New div for logo background on the right side - removed d-none d-md-flex
+                        // New div for logo background on the right side
                         var logoB_bg_div = document.createElement('div');
                         logoB_bg_div.className = 'team-logo-container team-logo-container-right';
                         if (teamB_logo) {
@@ -505,7 +511,6 @@
                 standingsTabPane.setAttribute('aria-labelledby', `standings-tab-${roundNumber}`);
 
                 // Render standings for this round
-                // Changed from 'const' to 'let' to avoid re-declaration error in some environments
                 let currentRoundStandings = standingsByRound[roundNumber] || []; 
                 if (currentRoundStandings.length > 0) {
                     var standingsTable = document.createElement('table');
@@ -1112,6 +1117,11 @@
             .game-center {
                 margin-top: 0.5rem;
                 margin-bottom: 0.5rem;
+            }
+
+            /* Mobile specific font size for round-date-display */
+            .round-date-display {
+                font-size: calc(0.85em - 2px); /* Reduce font size by 2px on mobile */
             }
         }
     </style>
