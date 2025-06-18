@@ -26,6 +26,9 @@
     
     <!-- Google Charts Library for data visualization -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 
     <script type="text/javascript">
         // Ensure Google Charts is loaded and ready before calling drawchart
@@ -206,7 +209,14 @@
                         scoreB: data.getFormattedValue(row, 9), // Column J
                         gameCode: data.getFormattedValue(row, 16), // Column Q
                         teamA_logo: data.getFormattedValue(row, 53) || DEFAULT_LOGO_URL, // Column BB (index 53) or default
-                        teamB_logo: data.getFormattedValue(row, 54) || DEFAULT_LOGO_URL  // Column BC (index 54) or default
+                        teamB_logo: data.getFormattedValue(row, 54) || DEFAULT_LOGO_URL,  // Column BC (index 54) or default
+                        // Add officials' data (assuming these column indices)
+                        referee1: data.getFormattedValue(row, 20), // Column U
+                        referee2: data.getFormattedValue(row, 21), // Column V
+                        commissioner: data.getFormattedValue(row, 22), // Column W
+                        scorer1: data.getFormattedValue(row, 23), // Column X
+                        scorer2: data.getFormattedValue(row, 24), // Column Y
+                        scorer3: data.getFormattedValue(row, 25)  // Column Z
                     };
                     gamesByRound[roundForGame].push(gameData);
 
@@ -494,6 +504,18 @@
                         info_div.className = 'game-info text-muted small mt-1';
                         info_div.innerHTML = `${arena}<br>${date} ${time}`;
                         center_div.appendChild(info_div);
+                        
+                        // New: Officials Toggle Button
+                        const officialsToggleBtn = document.createElement('button');
+                        officialsToggleBtn.className = 'btn btn-sm btn-link officials-toggle-btn';
+                        officialsToggleBtn.type = 'button';
+                        officialsToggleBtn.setAttribute('data-bs-toggle', 'collapse');
+                        officialsToggleBtn.setAttribute('data-bs-target', `#officials-collapse-${gameRow.gameCode}`);
+                        officialsToggleBtn.setAttribute('aria-expanded', 'false');
+                        officialsToggleBtn.setAttribute('aria-controls', `officials-collapse-${gameRow.gameCode}`);
+                        officialsToggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>'; // Font Awesome icon
+                        center_div.appendChild(officialsToggleBtn);
+
                         gameDiv.appendChild(center_div);
 
                         var teamB_div = document.createElement('div');
@@ -518,6 +540,44 @@
                         gameDiv.appendChild(teamB_div);
 
                         gamesTabPane.appendChild(gameDiv);
+
+                        // New: Officials Accordion Collapse below each game item
+                        const officialsCollapse = document.createElement('div');
+                        officialsCollapse.id = `officials-collapse-${gameRow.gameCode}`;
+                        officialsCollapse.className = 'collapse officials-info-collapse'; // Custom class for styling
+                        officialsCollapse.setAttribute('data-bs-parent', `#games-panel-${roundNumber}`); // Ensure it collapses within the tab pane
+
+                        const officialsCardBody = document.createElement('div');
+                        officialsCardBody.className = 'card card-body officials-card-body';
+
+                        const officialsList = document.createElement('ul');
+                        officialsList.className = 'list-unstyled small text-muted text-start mb-0';
+
+                        // Helper function to add official if available
+                        const addOfficialToList = (label, value) => {
+                            if (value && value.trim() !== "") {
+                                const listItem = document.createElement('li');
+                                listItem.innerHTML = `<strong>${label}:</strong> ${value}`;
+                                officialsList.appendChild(listItem);
+                            }
+                        };
+                        
+                        addOfficialToList('Διαιτητής 1', gameRow.referee1);
+                        addOfficialToList('Διαιτητής 2', gameRow.referee2);
+                        addOfficialToList('Κομισάριος', gameRow.commissioner);
+                        addOfficialToList('Κριτής 1', gameRow.scorer1);
+                        addOfficialToList('Κριτής 2', gameRow.scorer2);
+                        addOfficialToList('Κριτής 3', gameRow.scorer3);
+
+                        if (officialsList.children.length === 0) {
+                            const noOfficialsItem = document.createElement('li');
+                            noOfficialsItem.textContent = 'Δεν έχουν οριστεί όλοι οι επίσημοι για τον αγώνα.';
+                            officialsList.appendChild(noOfficialsItem);
+                        }
+
+                        officialsCardBody.appendChild(officialsList);
+                        officialsCollapse.appendChild(officialsCardBody);
+                        gamesTabPane.appendChild(officialsCollapse); // Append after the gameDiv
                     });
                 } else {
                     var noGamesDiv = document.createElement('div');
@@ -873,13 +933,27 @@
                         if (teamA_name_full.includes(selectedTeam) || teamB_name_full.includes(selectedTeam)) {
                             gameItem.classList.remove('d-none'); 
                             gameItem.classList.add('d-flex'); 
+                            // Also ensure the officials toggle button is visible when filtering by team and game is visible
+                            const officialsToggle = gameItem.querySelector('.officials-toggle-btn');
+                            if (officialsToggle) officialsToggle.classList.remove('d-none');
                         } else {
                             gameItem.classList.add('d-none'); 
                             gameItem.classList.remove('d-flex'); 
+                            // Hide officials toggle button if game is hidden
+                            const officialsToggle = gameItem.querySelector('.officials-toggle-btn');
+                            if (officialsToggle) officialsToggle.classList.add('d-none');
+                            // Ensure any open officials accordion is closed if the game is hidden
+                            const officialsCollapseDiv = document.getElementById(`officials-collapse-${gameItem.dataset.gameCode}`);
+                            if (officialsCollapseDiv && officialsCollapseDiv.classList.contains('show')) {
+                                officialsCollapseDiv.classList.remove('show');
+                            }
                         }
                     } else { // Show all games within the expanded accordions (no team filter active)
                         gameItem.classList.remove('d-none'); 
                         gameItem.classList.add('d-flex'); 
+                        // Always show officials toggle button when not filtering by team
+                        const officialsToggle = gameItem.querySelector('.officials-toggle-btn');
+                        if (officialsToggle) officialsToggle.classList.remove('d-none');
                     }
                 });
             });
@@ -1092,6 +1166,7 @@
             background-color: #ffffff !important;
             flex-wrap: nowrap; 
             justify-content: center; 
+            position: relative; /* For positioning the officials toggle button */
         }
         .game-item:hover {
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,.08);
@@ -1163,6 +1238,58 @@
             color: inherit; 
             white-space: nowrap; 
             text-align: right; 
+        }
+
+        /* Officials Toggle Button */
+        .officials-toggle-btn {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            color: var(--mc-secondary-color);
+            background: none;
+            border: none;
+            position: absolute; /* Position relative to .game-item */
+            bottom: 0; /* Align to the bottom of game-item */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%) translateY(50%); /* Adjust to center it properly below the div */
+            z-index: 10; /* Ensure it's clickable */
+            transition: transform 0.2s ease-in-out;
+        }
+        .officials-toggle-btn:hover {
+            color: var(--mc-primary-color);
+            transform: translateX(-50%) translateY(50%) scale(1.1);
+        }
+        .officials-toggle-btn.collapsed .fas.fa-chevron-down {
+            transform: rotate(0deg);
+        }
+        .officials-toggle-btn:not(.collapsed) .fas.fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        /* Officials Info Collapse styles */
+        .officials-info-collapse {
+            width: 100%;
+            background-color: #f0f0f0; /* Light background for officials info */
+            border-top: 1px solid #e9ecef;
+            border-radius: 0 0 0.75rem 0.75rem;
+            margin-top: 0.75rem; /* Space from the game item */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,.03);
+            text-align: left;
+        }
+        .officials-card-body {
+            padding: 0.75rem 1.5rem;
+            background-color: transparent !important;
+            border: none !important;
+        }
+        .officials-card-body ul {
+            list-style: none; /* Remove bullet points */
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+        .officials-card-body ul li {
+            padding: 0.2em 0;
+        }
+        .officials-card-body ul li strong {
+            color: var(--mc-text-dark); /* Make labels slightly darker */
         }
 
         /* Standings Table Styling */
@@ -1335,6 +1462,15 @@
             }
             .filter-group {
                 width: 100%; /* Full width for each filter group */
+            }
+            /* Adjust officials toggle button for mobile */
+            .officials-toggle-btn {
+                position: static; /* Remove absolute positioning */
+                transform: none; /* Remove transform */
+                margin-top: 0.5rem; /* Add some space */
+            }
+            .officials-info-collapse {
+                margin-top: 0.5rem; /* Reduce top margin on mobile */
             }
         }
     </style>
