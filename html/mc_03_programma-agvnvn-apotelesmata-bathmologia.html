@@ -660,7 +660,7 @@
                     var noStandingsDiv = document.createElement('div');
                     noGamesDiv.className = 'alert alert-info text-center';
                     noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
-                    standingsTabPane.appendChild(noGamesDiv);
+                    standingsTabPane.appendChild(noStandingsDiv);
                 }
 
                 tabContent.appendChild(standingsTabPane);
@@ -764,9 +764,11 @@
          * @param {Event | null} event The event object from the dropdown change, or null for initial load.
          */
         function applyFilters(event) {
-            let selectedRound = document.getElementById('roundFilter').value;
-            let selectedTeam = document.getElementById('teamFilter').value;
-            const accordions = document.querySelectorAll('#mainGamesAccordion .accordion-item');
+            let selectedRoundElement = document.getElementById('roundFilter');
+            let selectedTeamElement = document.getElementById('teamFilter');
+
+            let selectedRound = selectedRoundElement.value;
+            let selectedTeam = selectedTeamElement.value;
             
             // Determine which filter triggered the call
             let filterTriggered = null;
@@ -775,13 +777,22 @@
             } else {
                 // Initial load: default to round filter logic
                 filterTriggered = 'round';
-                // Ensure initial selections match the default for round filter logic
-                document.getElementById('roundFilter').value = 'current';
-                document.getElementById('teamFilter').value = 'all';
-                selectedRound = 'current'; // Update local variable for logic
-                selectedTeam = 'all'; // Update local variable for logic
             }
 
+            if (filterTriggered === 'team') {
+                // If team filter was changed, reset round filter to "all"
+                selectedRoundElement.value = 'all'; 
+                selectedRound = 'all'; // Update local variable for logic
+                // The selectedTeam value is already set by the user's action
+            } else { // filterTriggered === 'round' (or initial load)
+                // If round filter was changed, reset team filter to "all"
+                selectedTeamElement.value = 'all'; 
+                selectedTeam = 'all'; // Update local variable for logic
+                // The selectedRound value is already set by the user's action
+            }
+
+
+            const accordions = document.querySelectorAll('#mainGamesAccordion .accordion-item');
             let firstAccordionToScroll = null;
 
             accordions.forEach(accordionItem => {
@@ -794,28 +805,12 @@
                 let shouldAccordionBeExpanded = false; 
                 let shouldGameBeFilteredByTeam = false; 
 
-                if (filterTriggered === 'team') {
-                    // Team filter was most recently changed or is the current active mode
-                    
-                    // Force all accordions to be expanded when team filter is active
-                    shouldAccordionBeExpanded = true; 
-
-                    // Games will be filtered by the selected team (if not 'all')
-                    shouldGameBeFilteredByTeam = (selectedTeam !== 'all');
-
-                    // Hide nav-tabs when a specific team is selected (but not if 'all' teams is selected)
-                    if (navTabs) {
-                        if (selectedTeam !== 'all') { 
-                            navTabs.classList.add('d-none');
-                        } else { 
-                            navTabs.classList.remove('d-none');
-                        }
-                    }
-
-                } else { // filterTriggered === 'round'
-                    // Round filter was most recently changed or is the initial/default active mode
-                    
-                    // Accordion expansion based on selected round
+                // Logic for accordion expansion based on the *currently active* filter mode (after potential resets)
+                if (selectedTeam !== 'all') { // If a specific team is selected (team filter is active)
+                    shouldAccordionBeExpanded = true;
+                    shouldGameBeFilteredByTeam = true; // Games are filtered by team
+                    if (navTabs) { navTabs.classList.add('d-none'); } // Hide nav-tabs
+                } else { // If no specific team is selected (round filter is active or default)
                     if (selectedRound === 'all') {
                         shouldAccordionBeExpanded = true;
                     } else if (selectedRound === 'current') {
@@ -850,14 +845,8 @@
                             shouldAccordionBeExpanded = true;
                         }
                     }
-
-                    // Games will NOT be filtered by team in this mode (show all games in the selected round(s))
-                    shouldGameBeFilteredByTeam = false;
-
-                    // Show nav-tabs when round filter is active
-                    if (navTabs) {
-                        navTabs.classList.remove('d-none');
-                    }
+                    shouldGameBeFilteredByTeam = false; // Games are NOT filtered by team
+                    if (navTabs) { navTabs.classList.remove('d-none'); } // Show nav-tabs
                 }
 
                 // Apply accordion expansion/collapse
@@ -865,7 +854,7 @@
                     accordionButton.classList.remove('collapsed');
                     accordionButton.setAttribute('aria-expanded', 'true');
                     accordionCollapse.classList.add('show');
-                    if (firstAccordionToScroll === null) { // Only set the first accordion to scroll to once
+                    if (firstAccordionToScroll === null) { 
                         firstAccordionToScroll = accordionCollapse.id;
                     }
                 } else {
@@ -888,7 +877,7 @@
                             gameItem.classList.add('d-none'); 
                             gameItem.classList.remove('d-flex'); 
                         }
-                    } else { // Show all games within the expanded accordions
+                    } else { // Show all games within the expanded accordions (no team filter active)
                         gameItem.classList.remove('d-none'); 
                         gameItem.classList.add('d-flex'); 
                     }
