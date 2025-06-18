@@ -755,17 +755,33 @@
             teamFilter.addEventListener('change', applyFilters);
 
             // Apply filters initially to set default state and scroll
-            applyFilters();
+            // Pass null as event to indicate initial load
+            applyFilters(null);
         }
 
         /**
          * Applies the selected filters to the displayed games and accordions.
+         * @param {Event | null} event The event object from the dropdown change, or null for initial load.
          */
-        function applyFilters() {
-            const selectedRound = document.getElementById('roundFilter').value;
-            const selectedTeam = document.getElementById('teamFilter').value;
+        function applyFilters(event) {
+            let selectedRound = document.getElementById('roundFilter').value;
+            let selectedTeam = document.getElementById('teamFilter').value;
             const accordions = document.querySelectorAll('#mainGamesAccordion .accordion-item');
             
+            // Determine which filter triggered the call
+            let filterTriggered = null;
+            if (event && event.target) {
+                filterTriggered = event.target.id === 'roundFilter' ? 'round' : 'team';
+            } else {
+                // Initial load: default to round filter logic
+                filterTriggered = 'round';
+                // Ensure initial selections match the default for round filter logic
+                document.getElementById('roundFilter').value = 'current';
+                document.getElementById('teamFilter').value = 'all';
+                selectedRound = 'current'; // Update local variable for logic
+                selectedTeam = 'all'; // Update local variable for logic
+            }
+
             let firstAccordionToScroll = null;
 
             accordions.forEach(accordionItem => {
@@ -773,58 +789,83 @@
                 const accordionButton = accordionItem.querySelector('.accordion-button');
                 const accordionCollapse = accordionItem.querySelector('.accordion-collapse');
                 const gamesTabPane = accordionItem.querySelector(`#games-panel-${roundNumber}`);
+                const navTabs = accordionItem.querySelector('.nav-tabs'); 
 
-                // --- Determine if accordion should be expanded based on BOTH filters ---
-                let shouldBeExpanded = false;
+                let shouldAccordionBeExpanded = false; 
+                let shouldGameBeFilteredByTeam = false; 
 
-                if (selectedTeam !== 'all') {
-                    // If a specific team is selected, all accordions should be open.
-                    shouldBeExpanded = true;
-                } else if (selectedRound === 'all') {
-                    // If "Όλες οι Αγωνιστικές" is selected (and no team filter), all accordions open.
-                    shouldBeExpanded = true;
-                } else if (selectedRound === 'current') {
-                    // If "Τρέχουσα Αγωνιστική" is selected (and no team filter)
-                    let minGameDate = null;
-                    let maxGameDate = null;
-                    let currentRoundGamesForDateCheck = gamesByRound[roundNumber] || []; 
+                if (filterTriggered === 'team') {
+                    // Team filter was most recently changed or is the current active mode
+                    
+                    // Force all accordions to be expanded when team filter is active
+                    shouldAccordionBeExpanded = true; 
 
-                    if (currentRoundGamesForDateCheck.length > 0) {
-                        currentRoundGamesForDateCheck.forEach(game => {
-                            const [gDay, gMonth, gYear] = game.date.split('/').map(Number);
-                            const gameDateObj = new Date(gYear, gMonth - 1, gDay);
-                            gameDateObj.setHours(0, 0, 0, 0);
+                    // Games will be filtered by the selected team (if not 'all')
+                    shouldGameBeFilteredByTeam = (selectedTeam !== 'all');
 
-                            if (!minGameDate || gameDateObj < minGameDate) {
-                                minGameDate = gameDateObj;
-                            }
-                            if (!maxGameDate || gameDateObj > maxGameDate) {
-                                maxGameDate = gameDateObj;
-                            }
-                        });
-                    }
-
-                    if (minGameDate && maxGameDate) {
-                        const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
-                        const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
-                        if (roundStartsWithinWindow && roundEndsWithinWindow) {
-                            shouldBeExpanded = true;
+                    // Hide nav-tabs when a specific team is selected (but not if 'all' teams is selected)
+                    if (navTabs) {
+                        if (selectedTeam !== 'all') { 
+                            navTabs.classList.add('d-none');
+                        } else { 
+                            navTabs.classList.remove('d-none');
                         }
                     }
-                } else { 
-                    // If a specific round number is selected (and no team filter)
-                    if (roundNumber === selectedRound) {
-                        shouldBeExpanded = true;
+
+                } else { // filterTriggered === 'round'
+                    // Round filter was most recently changed or is the initial/default active mode
+                    
+                    // Accordion expansion based on selected round
+                    if (selectedRound === 'all') {
+                        shouldAccordionBeExpanded = true;
+                    } else if (selectedRound === 'current') {
+                        let minGameDate = null;
+                        let maxGameDate = null;
+                        let currentRoundGamesForDateCheck = gamesByRound[roundNumber] || []; 
+
+                        if (currentRoundGamesForDateCheck.length > 0) {
+                            currentRoundGamesForDateCheck.forEach(game => {
+                                const [gDay, gMonth, gYear] = game.date.split('/').map(Number);
+                                const gameDateObj = new Date(gYear, gMonth - 1, gDay);
+                                gameDateObj.setHours(0, 0, 0, 0);
+
+                                if (!minGameDate || gameDateObj < minGameDate) {
+                                    minGameDate = gameDateObj;
+                                }
+                                if (!maxGameDate || gameDateObj > maxGameDate) {
+                                    maxGameDate = gameDateObj;
+                                }
+                            });
+                        }
+
+                        if (minGameDate && maxGameDate) {
+                            const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
+                            const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
+                            if (roundStartsWithinWindow && roundEndsWithinWindow) {
+                                shouldAccordionBeExpanded = true;
+                            }
+                        }
+                    } else { 
+                        if (roundNumber === selectedRound) {
+                            shouldAccordionBeExpanded = true;
+                        }
+                    }
+
+                    // Games will NOT be filtered by team in this mode (show all games in the selected round(s))
+                    shouldGameBeFilteredByTeam = false;
+
+                    // Show nav-tabs when round filter is active
+                    if (navTabs) {
+                        navTabs.classList.remove('d-none');
                     }
                 }
 
-                // Apply expanded/collapsed state to accordion
-                if (shouldBeExpanded) {
+                // Apply accordion expansion/collapse
+                if (shouldAccordionBeExpanded) {
                     accordionButton.classList.remove('collapsed');
                     accordionButton.setAttribute('aria-expanded', 'true');
                     accordionCollapse.classList.add('show');
-                    // Store the ID of the first accordion that is expanded, for scrolling.
-                    if (firstAccordionToScroll === null) {
+                    if (firstAccordionToScroll === null) { // Only set the first accordion to scroll to once
                         firstAccordionToScroll = accordionCollapse.id;
                     }
                 } else {
@@ -833,20 +874,23 @@
                     accordionCollapse.classList.remove('show');
                 }
 
-                // --- Apply Team Filter Logic within each round's games ---
-                // This logic is independent of the accordion's expanded state,
-                // it only controls the visibility of individual game items.
+                // Apply game visibility logic
                 const gameItems = gamesTabPane.querySelectorAll('.game-item');
                 gameItems.forEach(gameItem => {
                     const teamA_name_full = gameItem.dataset.teamA; 
                     const teamB_name_full = gameItem.dataset.teamB; 
 
-                    if (selectedTeam === 'all' || teamA_name_full.includes(selectedTeam) || teamB_name_full.includes(selectedTeam)) {
-                        gameItem.classList.remove('d-none'); // Show game
-                        gameItem.classList.add('d-flex'); // Ensure it's flex
-                    } else {
-                        gameItem.classList.add('d-none'); // Hide game
-                        gameItem.classList.remove('d-flex'); // Remove flex when hidden
+                    if (shouldGameBeFilteredByTeam) {
+                        if (teamA_name_full.includes(selectedTeam) || teamB_name_full.includes(selectedTeam)) {
+                            gameItem.classList.remove('d-none'); 
+                            gameItem.classList.add('d-flex'); 
+                        } else {
+                            gameItem.classList.add('d-none'); 
+                            gameItem.classList.remove('d-flex'); 
+                        }
+                    } else { // Show all games within the expanded accordions
+                        gameItem.classList.remove('d-none'); 
+                        gameItem.classList.add('d-flex'); 
                     }
                 });
             });
