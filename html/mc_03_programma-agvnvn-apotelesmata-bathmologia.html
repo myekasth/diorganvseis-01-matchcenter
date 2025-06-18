@@ -92,6 +92,23 @@
             query.send(handle_DrawGamesAndStandings_DataQueryResponse);
         }
 
+        // Array for short day names in Greek
+        const dayNamesShort = ['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'];
+
+        /**
+         * Formats a Date object into "DDD, DD-MM-YYYY" string.
+         * @param {Date} dateObj The Date object to format.
+         * @returns {string} The formatted date string.
+         */
+        function formatGameDateForAccordion(dateObj) {
+            const dayName = dayNamesShort[dateObj.getDay()];
+            const formattedDay = String(dateObj.getDate()).padStart(2, '0');
+            const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const formattedYear = dateObj.getFullYear(); 
+
+            return `${dayName}, ${formattedDay}-${formattedMonth}-${formattedYear}`;
+        }
+
         /**
          * Handles the data response from the Google Sheet query and renders games and standings using nested accordions and tabs.
          * Data is grouped by "ΑΓΩΝΙΣΤΙΚΗ" (Column B). Each accordion item contains two tabs: "Αγώνες" and "Βαθμολογία".
@@ -243,8 +260,58 @@
                 accordionButton.setAttribute('data-bs-target', `#${collapseId}`);
                 accordionButton.setAttribute('aria-expanded', 'false'); // Set to false by default
                 accordionButton.setAttribute('aria-controls', collapseId);
-                accordionButton.innerHTML = `<h5 class="mb-0 text-dark">${roundNumber}η Αγωνιστική</h5>`; // Round number as title
 
+                // Make the accordion button a flex container to align title left and date right
+                accordionButton.classList.add('d-flex', 'justify-content-between', 'align-items-center');
+
+                // Create a container for the round title
+                const titleSpan = document.createElement('h5');
+                titleSpan.className = 'mb-0 text-dark';
+                titleSpan.textContent = `${roundNumber}η Αγωνιστική`;
+                accordionButton.appendChild(titleSpan);
+
+                // Calculate min and max dates for the current round
+                let minGameDate = null;
+                let maxGameDate = null;
+                const currentRoundGames = gamesByRound[roundNumber] || [];
+
+                if (currentRoundGames.length > 0) {
+                    currentRoundGames.forEach(game => {
+                        // Parse date string (DD/MM/YYYY) into a Date object for comparison
+                        const [gDay, gMonth, gYear] = game.date.split('/').map(Number);
+                        const gameDateObj = new Date(gYear, gMonth - 1, gDay);
+
+                        if (!minGameDate || gameDateObj < minGameDate) {
+                            minGameDate = gameDateObj;
+                        }
+                        if (!maxGameDate || gameDateObj > maxGameDate) {
+                            maxGameDate = gameDateObj;
+                        }
+                    });
+                }
+
+                const dateDisplaySpan = document.createElement('span');
+                dateDisplaySpan.classList.add('round-date-display');
+
+                if (minGameDate && maxGameDate) {
+                    const formattedMinDate = formatGameDateForAccordion(minGameDate);
+                    const formattedMaxDate = formatGameDateForAccordion(maxGameDate);
+
+                    if (minGameDate.toDateString() === maxGameDate.toDateString()) { // Compare date parts only
+                        dateDisplaySpan.textContent = formattedMinDate;
+                    } else {
+                        // Format for range: "Από DD-MM-YYYY ως DD-MM-YYYY"
+                        const formatFullDateOnly = (dateObj) => {
+                            const d = String(dateObj.getDate()).padStart(2, '0');
+                            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const y = dateObj.getFullYear();
+                            return `${d}-${m}-${y}`;
+                        };
+                        dateDisplaySpan.textContent = `Από ${formatFullDateOnly(minGameDate)} ως ${formatFullDateOnly(maxGameDate)}`;
+                    }
+                }
+                accordionButton.appendChild(dateDisplaySpan); // Append the date span to the button
+                
                 accordionHeader.appendChild(accordionButton);
                 accordionItem.appendChild(accordionHeader);
 
@@ -868,6 +935,15 @@
         .game-info {
             font-size: 0.85rem;
             color: var(--mc-secondary-color);
+        }
+
+        /* New style for the date display in accordion header */
+        .round-date-display {
+            font-size: 0.85em; /* Smaller font for date */
+            color: inherit; /* Inherit color from accordion button state */
+            white-space: nowrap; /* Prevent wrapping for date string */
+            margin-left: 1rem; /* Space between title and date */
+            text-align: right; /* Ensure right alignment within its space */
         }
 
         /* Standings Table Styling */
