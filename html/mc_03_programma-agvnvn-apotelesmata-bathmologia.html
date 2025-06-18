@@ -26,8 +26,6 @@
     
     <!-- Google Charts Library for data visualization -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <!-- Font Awesome is no longer needed since custom '...' button is used -->
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
 
 
     <script type="text/javascript">
@@ -211,13 +209,13 @@
                         teamA_logo: data.getFormattedValue(row, 53) || DEFAULT_LOGO_URL, // Column BB (index 53) or default
                         teamB_logo: data.getFormattedValue(row, 54) || DEFAULT_LOGO_URL,  // Column BC (index 54) or default
                         // Add officials' data with new indices as per user's specification
-                        referee1: data.getFormattedValue(row, 10), // Column K
-                        referee2: data.getFormattedValue(row, 11), // Column L
-                        referee3: data.getFormattedValue(row, 12), // Column M
-                        commissioner: data.getFormattedValue(row, 55), // Column BD
-                        scorer1: data.getFormattedValue(row, 13), // Column N
-                        scorer2: data.getFormattedValue(row, 14), // Column O
-                        scorer3: data.getFormattedValue(row, 15)  // Column P
+                        referee1: data.getFormattedValue(row, 10), // Column K (index 10)
+                        referee2: data.getFormattedValue(row, 11), // Column L (index 11)
+                        referee3: data.getFormattedValue(row, 12), // Column M (index 12)
+                        commissioner: data.getFormattedValue(row, 55), // Column BD (index 55)
+                        scorer1: data.getFormattedValue(row, 13), // Column N (index 13)
+                        scorer2: data.getFormattedValue(row, 14), // Column O (index 14)
+                        scorer3: data.getFormattedValue(row, 15)  // Column P (index 15)
                     };
                     gamesByRound[roundForGame].push(gameData);
 
@@ -361,6 +359,10 @@
                         if (firstAccordionToOpen === null) {
                             firstAccordionToOpen = collapseId; 
                         }
+                    }
+                    // Part α: Add class for past rounds
+                    if (maxGameDate < today) {
+                        accordionButton.classList.add('past-round-accordion');
                     }
 
                 }
@@ -567,12 +569,13 @@
                         // Add officials based on provided data, only if not empty
                         addOfficialToList('Διαιτητής 1', gameRow.referee1);
                         addOfficialToList('Διαιτητής 2', gameRow.referee2);
-                        addOfficialToList('Διαιτητής 3', gameRow.referee3); // Added Referee 3
+                        addOfficialToList('Διαιτητής 3', gameRow.referee3); 
                         addOfficialToList('Κομισάριος', gameRow.commissioner);
                         addOfficialToList('Κριτής 1', gameRow.scorer1);
                         addOfficialToList('Κριτής 2', gameRow.scorer2);
                         addOfficialToList('Κριτής 3', gameRow.scorer3);
 
+                        // Changed default message
                         if (officialsList.children.length === 0) {
                             const noOfficialsItem = document.createElement('li');
                             noOfficialsItem.textContent = 'Δεν έχουμε ορισμούς για τον αγώνα.';
@@ -724,7 +727,7 @@
                     var noStandingsDiv = document.createElement('div');
                     noGamesDiv.className = 'alert alert-info text-center';
                     noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
-                    standingsTabPane.appendChild(noGamesDiv);
+                    standingsTabPane.appendChild(noStandingsDiv);
                 }
 
                 tabContent.appendChild(standingsTabPane);
@@ -874,6 +877,15 @@
                     shouldAccordionBeExpanded = true;
                     shouldGameBeFilteredByTeam = true; // Games are filtered by team
                     if (navTabs) { navTabs.classList.add('d-none'); } // Hide nav-tabs
+
+                    // Part β: Ensure "Αγώνες" tab is selected for this round when team filter is active
+                    const gamesNavLink = accordionItem.querySelector(`#games-tab-${roundNumber}`);
+                    const standingsNavLink = accordionItem.querySelector(`#standings-tab-${roundNumber}`);
+                    if (standingsNavLink && standingsNavLink.classList.contains('active')) {
+                        const gamesTab = new bootstrap.Tab(gamesNavLink);
+                        gamesTab.show();
+                    }
+
                 } else { // If no specific team is selected (round filter is active or default)
                     if (selectedRound === 'all') {
                         shouldAccordionBeExpanded = true;
@@ -1109,6 +1121,16 @@
             color: #ffffff; /* White text when active */
             box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
         }
+        /* Style for past rounds */
+        .past-round-accordion {
+            background-color: #d8d8d8 !important; /* Darker grey for past rounds */
+            color: #495057 !important; /* Darker text */
+        }
+        .past-round-accordion:not(.collapsed) {
+            background-color: #a0a0a0 !important; /* Even darker grey when active/expanded */
+            color: #ffffff !important;
+        }
+
         .accordion-button h5 { 
             color: inherit; 
             margin-bottom: 0;
