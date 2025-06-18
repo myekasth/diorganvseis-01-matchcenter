@@ -236,11 +236,12 @@
                 accordionHeader.id = `heading_${roundNumber}`;
 
                 var accordionButton = document.createElement('button');
-                accordionButton.className = 'accordion-button collapsed'; // All collapsed by default unless date criteria met
+                // Ensure all accordion buttons are collapsed by default
+                accordionButton.className = 'accordion-button collapsed'; 
                 accordionButton.type = 'button';
                 accordionButton.setAttribute('data-bs-toggle', 'collapse');
                 accordionButton.setAttribute('data-bs-target', `#${collapseId}`);
-                accordionButton.setAttribute('aria-expanded', 'false');
+                accordionButton.setAttribute('aria-expanded', 'false'); // Set to false by default
                 accordionButton.setAttribute('aria-controls', collapseId);
                 accordionButton.innerHTML = `<h5 class="mb-0 text-dark">${roundNumber}η Αγωνιστική</h5>`; // Round number as title
 
@@ -249,7 +250,8 @@
 
                 var accordionCollapse = document.createElement('div');
                 accordionCollapse.id = collapseId;
-                accordionCollapse.className = 'accordion-collapse collapse'; // Start collapsed
+                // Ensure all accordion content areas are collapsed by default
+                accordionCollapse.className = 'accordion-collapse collapse'; 
                 accordionCollapse.setAttribute('aria-labelledby', `heading_${roundNumber}`);
                 accordionCollapse.setAttribute('data-bs-parent', '#mainGamesAccordion');
 
@@ -575,31 +577,8 @@
                 accordionItem.appendChild(accordionCollapse);
                 mainAccordion.appendChild(accordionItem);
 
-                // Open/collapse logic based on date
-                var roundGames = gamesByRound[roundNumber];
-                if (roundGames && roundGames.length > 0) {
-                    // Assuming date is in Column D (index 3) and format DD/MM/YYYY
-                    var firstGameDateStr = roundGames[0].date; // Use the parsed 'date' property
-                    var [day, month, year] = firstGameDateStr.split('/').map(Number);
-                    var gameDate = new Date(year, month - 1, day); // Month is 0-indexed
-
-                    var eightDaysAgo = new Date(today);
-                    eightDaysAgo.setDate(today.getDate() - 8);
-
-                    var sevenDaysFromNow = new Date(today);
-                    sevenDaysFromNow.setDate(today.getDate() + 7);
-
-                    if (gameDate >= eightDaysAgo && gameDate <= sevenDaysFromNow) {
-                        accordionButton.classList.remove('collapsed');
-                        accordionButton.setAttribute('aria-expanded', 'true');
-                        accordionCollapse.classList.add('show');
-                    }
-                } else if (standingsByRound[roundNumber] && standingsByRound[roundNumber].length > 0 && uniqueRounds.indexOf(roundNumber) === (uniqueRounds.length -1) ) {
-                    // If no games, but standings exist, open the latest round's standings
-                    accordionButton.classList.remove('collapsed');
-                    accordionButton.setAttribute('aria-expanded', 'true');
-                    accordionCollapse.classList.add('show');
-                }
+                // Removed the logic that automatically opens accordions based on date or last round.
+                // All accordions will now remain collapsed by default on page load.
             });
             contentDiv.appendChild(mainAccordion);
 
@@ -843,8 +822,8 @@
 
         /* New styles for logo containers in left/right sections */
         .team-logo-container {
-            width: 45px; /* Fixed width for logo area, updated from 40px */
-            height: 45px; /* Fixed height for logo area, updated from 100% */
+            width: 50px; /* Fixed width for logo area, updated from 40px */
+            height: 50px; /* Fixed height for logo area, updated from 100% */
             background-size: contain; /* Fill the area while maintaining aspect ratio */
             background-repeat: no-repeat;
             display: flex; /* Use flex to help align content if needed */
@@ -1033,15 +1012,17 @@
 
             /* Ensure alignment for team names and logos within their flex containers on mobile */
             .team-side-left {
-                justify-content: flex-end !important;
+                justify-content: flex-start !important;
             }
             .team-side-right {
-                justify-content: flex-start !important; /* Align to the right side of their 40% container */
+                justify-content: flex-end !important; /* Align to the right side of their 40% container */
             }
             
-            /* Hide logo containers on mobile explicitly with d-none from Bootstrap */
+            /* Show logo containers on mobile explicitly with d-block (or d-flex if desired) from Bootstrap */
             .team-logo-container {
-                 display: block !important;
+                 display: block !important; /* Use block to occupy space, then adjust sizing/positioning */
+                 width: 40px !important; /* Smaller logo for mobile */
+                 height: 40px !important; /* Smaller logo for mobile */
             }
             
             /* Center the score block horizontally in the center div on mobile */
