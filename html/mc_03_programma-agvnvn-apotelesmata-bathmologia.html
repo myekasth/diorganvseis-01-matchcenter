@@ -303,8 +303,8 @@
                 }
 
                 const dateDisplaySpan = document.createElement('span');
-                // Add 'ms-auto' class for explicit right alignment in flexbox
-                dateDisplaySpan.classList.add('round-date-display', 'ms-auto'); 
+                // Removed 'ms-auto' as 'justify-content-between' on parent handles it for two items
+                dateDisplaySpan.classList.add('round-date-display'); 
 
                 if (minGameDate && maxGameDate) {
                     const isMobileScreen = window.innerWidth < 768; // Check for mobile size here
@@ -951,8 +951,7 @@
             font-size: 0.85em; /* Smaller font for date */
             color: inherit; /* Inherit color from accordion button state */
             white-space: nowrap; /* Prevent wrapping for date string */
-            /* Removed margin-left from here as ms-auto will handle it */
-            text-align: right; /* Ensure right alignment within its space */
+            /* text-align: right; is handled by flex container now, can remove if not needed for internal text alignment */
         }
 
         /* Standings Table Styling */
