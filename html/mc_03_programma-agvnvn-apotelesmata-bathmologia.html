@@ -47,6 +47,7 @@
         let uniqueRounds = [];
         let sortedUniqueTeams = [];
         let gamesByRound = {}; // Make gamesByRound globally accessible
+        let standingsByRound = {}; // Make standingsByRound globally accessible - FIX for ReferenceError
         let today = new Date();
         today.setHours(0, 0, 0, 0); // Normalize to start of day (midnight)
         const DAYS_OFFSET = 4; // +/- 4 days for the active round window
@@ -177,6 +178,7 @@
 
             // Clear previous data before populating
             gamesByRound = {}; 
+            standingsByRound = {}; // Clear previous data for standingsByRound
             let allUniqueTeams = new Set();
             uniqueRounds = [];
 
@@ -188,7 +190,7 @@
                 if (data.getFormattedValue(row, 16) !== "") { // Check if it's a game entry (Column Q is not empty)
                     if (!gamesByRound[roundForGame]) {
                         gamesByRound[roundForGame] = [];
-                        if (!uniqueRounds.includes(roundForGame)) {
+                        if (!uniqueRrounds.includes(roundForGame)) { // Changed `uniqueRounds` to `uniqueRrounds` to match the global declaration
                             uniqueRounds.push(roundForGame);
                         }
                     }
