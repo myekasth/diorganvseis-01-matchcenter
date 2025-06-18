@@ -242,7 +242,14 @@
             mainAccordion.id = 'mainGamesAccordion';
 
             var today = new Date();
-            today.setHours(0, 0, 0, 0); // Normalize to start of day
+            today.setHours(0, 0, 0, 0); // Normalize to start of day (midnight)
+            // Calculate +/- 7 days from today
+            var sevenDaysBeforeToday = new Date(today);
+            sevenDaysBeforeToday.setDate(today.getDate() - 7);
+            var sevenDaysAfterToday = new Date(today);
+            sevenDaysAfterToday.setDate(today.getDate() + 7);
+
+            var firstAccordionToOpen = null; // To store the ID of the first accordion to be opened
 
             // Function to truncate team names for mobile
             function truncateTeamName(name) {
@@ -265,12 +272,12 @@
                 accordionHeader.id = `heading_${roundNumber}`;
 
                 var accordionButton = document.createElement('button');
-                // Ensure all accordion buttons are collapsed by default
+                // By default, set to collapsed and aria-expanded to false
                 accordionButton.className = 'accordion-button collapsed'; 
                 accordionButton.type = 'button';
                 accordionButton.setAttribute('data-bs-toggle', 'collapse');
                 accordionButton.setAttribute('data-bs-target', `#${collapseId}`);
-                accordionButton.setAttribute('aria-expanded', 'false'); // Set to false by default
+                accordionButton.setAttribute('aria-expanded', 'false'); 
                 accordionButton.setAttribute('aria-controls', collapseId);
 
                 // Make the accordion button a flex container to align title left and date right
@@ -292,6 +299,7 @@
                         // Parse date string (DD/MM/YYYY) into a Date object for comparison
                         const [gDay, gMonth, gYear] = game.date.split('/').map(Number);
                         const gameDateObj = new Date(gYear, gMonth - 1, gDay);
+                        gameDateObj.setHours(0, 0, 0, 0); // Normalize game date to start of day
 
                         if (!minGameDate || gameDateObj < minGameDate) {
                             minGameDate = gameDateObj;
@@ -318,6 +326,22 @@
                             dateDisplayDiv.textContent = `Από ${formatSimpleDate(minGameDate)} ως ${formatSimpleDate(maxGameDate)}`;
                         }
                     }
+
+                    // Check if the current round falls within the +/- 7 day window
+                    // An overlap exists if (StartA <= EndB) AND (StartB <= EndA)
+                    const roundStartsWithinWindow = minGameDate <= sevenDaysAfterToday;
+                    const roundEndsWithinWindow = sevenDaysBeforeToday <= maxGameDate;
+
+                    if (roundStartsWithinWindow && roundEndsWithinWindow) {
+                        accordionButton.classList.remove('collapsed');
+                        accordionButton.setAttribute('aria-expanded', 'true');
+                        // Add 'show' class to the collapse element directly
+                        // This class will be added later in the loop for the accordionCollapse element itself
+                        if (firstAccordionToOpen === null) {
+                            firstAccordionToOpen = collapseId; // Store the ID of the first one to open
+                        }
+                    }
+
                 }
                 accordionButton.appendChild(dateDisplayDiv); // Appended dateDisplayDiv
                 
@@ -326,8 +350,13 @@
 
                 var accordionCollapse = document.createElement('div');
                 accordionCollapse.id = collapseId;
-                // Ensure all accordion content areas are collapsed by default
-                accordionCollapse.className = 'accordion-collapse collapse'; 
+                // Dynamically add 'show' class if it meets the criteria
+                if (accordionButton.getAttribute('aria-expanded') === 'true') {
+                    accordionCollapse.className = 'accordion-collapse collapse show'; 
+                } else {
+                    accordionCollapse.className = 'accordion-collapse collapse'; 
+                }
+                
                 accordionCollapse.setAttribute('aria-labelledby', `heading_${roundNumber}`);
                 accordionCollapse.setAttribute('data-bs-parent', '#mainGamesAccordion');
 
@@ -652,11 +681,19 @@
                 accordionCollapse.appendChild(accordionBody);
                 accordionItem.appendChild(accordionCollapse);
                 mainAccordion.appendChild(accordionItem);
-
-                // Removed the logic that automatically opens accordions based on date or last round.
-                // All accordions will now remain collapsed by default on page load.
             });
             contentDiv.appendChild(mainAccordion);
+
+            // Scroll the first opened accordion into view
+            if (firstAccordionToOpen) {
+                // Use a small timeout to ensure Bootstrap's collapse transition has started
+                setTimeout(() => {
+                    const element = document.getElementById(firstAccordionToOpen);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 100); 
+            }
 
             // --- Start of dynamically added footer content (replacing static footer) ---
             // Add the footer buttons container
