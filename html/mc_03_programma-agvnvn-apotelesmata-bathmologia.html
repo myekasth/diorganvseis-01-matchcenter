@@ -729,7 +729,10 @@
             const teamFilter = document.getElementById('teamFilter');
 
             // Populate Round Filter
-            roundFilter.innerHTML = '<option value="all">Όλες οι Αγωνιστικές</option>';
+            roundFilter.innerHTML = `
+                <option value="current" selected>Τρέχουσα Αγωνιστική</option>
+                <option value="all">Όλες οι Αγωνιστικές</option>
+            `; // Added 'current' and made it default
             uniqueRounds.forEach(round => {
                 const option = document.createElement('option');
                 option.value = round;
@@ -774,7 +777,37 @@
                 let shouldBeExpanded = false;
                 if (selectedRound === 'all') { // If "Όλες οι Αγωνιστικές" is selected
                     shouldBeExpanded = true; // All accordions should be open
-                } else { // Specific round selected
+                } else if (selectedRound === 'current') { // If "Τρέχουσα Αγωνιστική" is selected
+                    // Re-evaluate date range for this round
+                    let minGameDate = null;
+                    let maxGameDate = null;
+                    let currentRoundGamesForDateCheck = gamesByRound[roundNumber] || []; 
+
+                    if (currentRoundGamesForDateCheck.length > 0) {
+                        currentRoundGamesForDateCheck.forEach(game => {
+                            const [gDay, gMonth, gYear] = game.date.split('/').map(Number);
+                            const gameDateObj = new Date(gYear, gMonth - 1, gDay);
+                            gameDateObj.setHours(0, 0, 0, 0);
+
+                            if (!minGameDate || gameDateObj < minGameDate) {
+                                minGameDate = gameDateObj;
+                            }
+                            if (!maxGameDate || gameDateObj > maxGameDate) {
+                                maxGameDate = gameDateObj;
+                            }
+                        });
+                    }
+
+                    if (minGameDate && maxGameDate) {
+                        // Check if round dates overlap with the +/- 4 day window from today
+                        const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
+                        const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
+
+                        if (roundStartsWithinWindow && roundEndsWithinWindow) {
+                            shouldBeExpanded = true;
+                        }
+                    }
+                } else { // Specific round number selected
                     if (roundNumber === selectedRound) {
                         shouldBeExpanded = true;
                     }
@@ -814,8 +847,8 @@
                 // If a specific team is selected and no games for that team are found in this round,
                 // and the round filter is not specifically set to this round, collapse the accordion.
                 // This prevents empty expanded accordions when filtering by team.
-                // Also, if 'all' rounds are selected but no games are visible for the selected team in this round, collapse.
-                if (selectedTeam !== 'all' && !anyGameVisibleInRound && selectedRound === 'all') {
+                // Also, if 'all' rounds or 'current' round are selected but no games are visible for the selected team in this round, collapse.
+                if (selectedTeam !== 'all' && !anyGameVisibleInRound && (selectedRound === 'all' || selectedRound === 'current')) {
                     accordionButton.classList.add('collapsed');
                     accordionButton.setAttribute('aria-expanded', 'false');
                     accordionCollapse.classList.remove('show');
