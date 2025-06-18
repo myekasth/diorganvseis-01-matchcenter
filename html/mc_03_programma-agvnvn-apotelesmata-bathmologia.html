@@ -303,7 +303,8 @@
                 }
 
                 const dateDisplaySpan = document.createElement('span');
-                dateDisplaySpan.classList.add('round-date-display');
+                // Add 'ms-auto' class for explicit right alignment in flexbox
+                dateDisplaySpan.classList.add('round-date-display', 'ms-auto'); 
 
                 if (minGameDate && maxGameDate) {
                     const isMobileScreen = window.innerWidth < 768; // Check for mobile size here
@@ -950,7 +951,7 @@
             font-size: 0.85em; /* Smaller font for date */
             color: inherit; /* Inherit color from accordion button state */
             white-space: nowrap; /* Prevent wrapping for date string */
-            /* Removed margin-left to allow justify-content-between to handle spacing */
+            /* Removed margin-left from here as ms-auto will handle it */
             text-align: right; /* Ensure right alignment within its space */
         }
 
