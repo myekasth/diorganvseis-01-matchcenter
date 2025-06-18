@@ -276,11 +276,11 @@
                 // Make the accordion button a flex container to align title left and date right
                 accordionButton.classList.add('d-flex', 'justify-content-between', 'align-items-center');
 
-                // Create a container for the round title
-                const titleSpan = document.createElement('h5');
-                titleSpan.className = 'mb-0 text-dark';
-                titleSpan.textContent = `${roundNumber}η Αγωνιστική`;
-                accordionButton.appendChild(titleSpan);
+                // Create a container for the round title (now a div)
+                const titleDiv = document.createElement('div'); // Changed from h5 to div
+                titleDiv.className = 'mb-0 text-dark';
+                titleDiv.textContent = `${roundNumber}η Αγωνιστική`;
+                accordionButton.appendChild(titleDiv); // Appended titleDiv
 
                 // Calculate min and max dates for the current round
                 let minGameDate = null;
@@ -302,24 +302,24 @@
                     });
                 }
 
-                const dateDisplaySpan = document.createElement('span');
-                // Removed 'ms-auto' as 'justify-content-between' on parent handles it for two items
-                dateDisplaySpan.classList.add('round-date-display'); 
+                // Changed to div element and added ms-auto for right alignment
+                const dateDisplayDiv = document.createElement('div'); 
+                dateDisplayDiv.classList.add('round-date-display', 'ms-auto'); 
 
                 if (minGameDate && maxGameDate) {
                     const isMobileScreen = window.innerWidth < 768; // Check for mobile size here
 
                     if (minGameDate.toDateString() === maxGameDate.toDateString()) { // Single date
-                        dateDisplaySpan.textContent = formatFullDateWithDay(minGameDate); // Same format for desktop/mobile for single date
+                        dateDisplayDiv.textContent = formatFullDateWithDay(minGameDate); // Same format for desktop/mobile for single date
                     } else { // Date range
                         if (isMobileScreen) {
-                            dateDisplaySpan.textContent = `${formatSimpleDate(minGameDate)} - ${formatSimpleDate(maxGameDate)}`;
+                            dateDisplayDiv.textContent = `${formatSimpleDate(minGameDate)} - ${formatSimpleDate(maxGameDate)}`;
                         } else {
-                            dateDisplaySpan.textContent = `Από ${formatSimpleDate(minGameDate)} ως ${formatSimpleDate(maxGameDate)}`;
+                            dateDisplayDiv.textContent = `Από ${formatSimpleDate(minGameDate)} ως ${formatSimpleDate(maxGameDate)}`;
                         }
                     }
                 }
-                accordionButton.appendChild(dateDisplaySpan); // Append the date span to the button
+                accordionButton.appendChild(dateDisplayDiv); // Appended dateDisplayDiv
                 
                 accordionHeader.appendChild(accordionButton);
                 accordionItem.appendChild(accordionHeader);
@@ -951,7 +951,7 @@
             font-size: 0.85em; /* Smaller font for date */
             color: inherit; /* Inherit color from accordion button state */
             white-space: nowrap; /* Prevent wrapping for date string */
-            /* text-align: right; is handled by flex container now, can remove if not needed for internal text alignment */
+            text-align: right; /* Ensure text inside aligns right */
         }
 
         /* Standings Table Styling */
