@@ -45,6 +45,7 @@
 
         /**
          * Parses URL query parameters.
+         * Applies decodeURIComponent twice to handle potential double encoding.
          * @param {string} variable The name of the query parameter to retrieve.
          * @returns {string|boolean} The value of the parameter or false if not found.
          */
@@ -53,7 +54,10 @@
             var vars = query.split("&");
             for (var i=0; i<vars.length; i++) {
                 var pair = vars[i].split("=");
-                if(pair[0] === variable){return pair[1];}
+                if(pair[0] === variable){
+                    // Apply decodeURIComponent twice to handle potential double encoding
+                    return decodeURIComponent(decodeURIComponent(pair[1]));
+                }
             }
             return(false);
         }
@@ -63,10 +67,10 @@
          * This function is called as the callback for google.load to ensure Google Charts API is ready.
          */
         function drawchart(){
-            // Retrieve parameters from URL, using defaults if not present
-            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) : defaultNameDiorganvtriaArxh;
-            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? decodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) : defaultAgvnistikhPeriodos;
-            var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? decodeURIComponent(getQueryVariable("pNameKathgoriasOmilou")) : defaultNameKathgoriasOmilou;
+            // Retrieve parameters from URL, using defaults if not present, and ensure double decoding
+            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? getQueryVariable("pNameDiorganvtriaArxh") : defaultNameDiorganvtriaArxh;
+            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? getQueryVariable("pAgvnistikhPeriodos") : defaultAgvnistikhPeriodos;
+            var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? getQueryVariable("pNameKathgoriasOmilou") : defaultNameKathgoriasOmilou;
             
             // Update the combined header title
             document.getElementById("combined-header-title").innerHTML = `ΠΡΟΓΡΑΜΜΑ & ΒΑΘΜΟΛΟΓΙΕΣ | ${pNameKathgoriasOmilou} (${pAgvnistikhPeriodos}) | ${pNameDiorganvtriaArxh}`;
@@ -79,7 +83,7 @@
          * It uses the pPowerKathgoriasOmilou parameter (Sheet ID) to query the specific sheet.
          */
         function drawGamesAndStandings() {
-            var pPowerKathgoriasOmilou = getQueryVariable("pPowerKathgoriasOmilou") ? decodeURIComponent(getQueryVariable("pPowerKathgoriasOmilou")) : defaultPowerKathgoriasOmilou;
+            var pPowerKathgoriasOmilou = getQueryVariable("pPowerKathgoriasOmilou") ? getQueryVariable("pPowerKathgoriasOmilou") : defaultPowerKathgoriasOmilou;
 
             // Query for all data.
             // Ordering will be handled in JavaScript after grouping for more flexibility.
@@ -228,13 +232,13 @@
             // Sort unique rounds numerically
             uniqueRounds.sort((a, b) => parseInt(a) - parseInt(b));
 
-            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) : defaultNameDiorganvtriaArxh;
-            var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) : defaultPowerDiorganvtriaArxh;
-            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? decodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) : defaultAgvnistikhPeriodos;
-            var pNamePrvtathlhmatos = getQueryVariable("pNamePrvtathlhmatos") ? decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) : defaultNamePrvtathlhmatos;
-            var pPowerPrvtathlhmatos = getQueryVariable("pPowerPrvtathlhmatos") ? decodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos")) : defaultPowerPrvtathlhmatos;
-            var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? decodeURIComponent(getQueryVariable("pNameKathgoriasOmilou")) : defaultNameKathgoriasOmilou;
-            var pPowerKathgoriasOmilou = getQueryVariable("pPowerKathgoriasOmilou") ? decodeURIComponent(getQueryVariable("pPowerKathgoriasOmilou")) : defaultPowerKathgoriasOmilou;
+            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? getQueryVariable("pNameDiorganvtriaArxh") : defaultNameDiorganvtriaArxh;
+            var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? getQueryVariable("pPowerDiorganvtriaArxh") : defaultPowerDiorganvtriaArxh;
+            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? getQueryVariable("pAgvnistikhPeriodos") : defaultAgvnistikhPeriodos;
+            var pNamePrvtathlhmatos = getQueryVariable("pNamePrvtathlhmatos") ? getQueryVariable("pNamePrvtathlhmatos") : defaultNamePrvtathlhmatos;
+            var pPowerPrvtathlhmatos = getQueryVariable("pPowerPrvtathlhmatos") ? getQueryVariable("pPowerPrvtathlhmatos") : defaultPowerPrvtathlhmatos;
+            var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? getQueryVariable("pNameKathgoriasOmilou") : defaultNameKathgoriasOmilou;
+            var pPowerKathgoriasOmilou = getQueryVariable("pPowerKathgoriasOmilou") ? getQueryVariable("pPowerKathgoriasOmilou") : defaultPowerKathgoriasOmilou;
 
 
             var mainAccordion = document.createElement('div');
@@ -243,11 +247,11 @@
 
             var today = new Date();
             today.setHours(0, 0, 0, 0); // Normalize to start of day (midnight)
-            // Calculate +/- 7 days from today
-            var sevenDaysBeforeToday = new Date(today);
-            sevenDaysBeforeToday.setDate(today.getDate() - 7);
-            var sevenDaysAfterToday = new Date(today);
-            sevenDaysAfterToday.setDate(today.getDate() + 7);
+            // Calculate +/- 4 days from today
+            var fourDaysBeforeToday = new Date(today);
+            fourDaysBeforeToday.setDate(today.getDate() - 4);
+            var fourDaysAfterToday = new Date(today);
+            fourDaysAfterToday.setDate(today.getDate() + 4);
 
             var firstAccordionToOpen = null; // To store the ID of the first accordion to be opened
 
@@ -327,16 +331,14 @@
                         }
                     }
 
-                    // Check if the current round falls within the +/- 7 day window
+                    // Check if the current round falls within the +/- 4 day window
                     // An overlap exists if (StartA <= EndB) AND (StartB <= EndA)
-                    const roundStartsWithinWindow = minGameDate <= sevenDaysAfterToday;
-                    const roundEndsWithinWindow = sevenDaysBeforeToday <= maxGameDate;
+                    const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
+                    const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
 
                     if (roundStartsWithinWindow && roundEndsWithinWindow) {
                         accordionButton.classList.remove('collapsed');
                         accordionButton.setAttribute('aria-expanded', 'true');
-                        // Add 'show' class to the collapse element directly
-                        // This class will be added later in the loop for the accordionCollapse element itself
                         if (firstAccordionToOpen === null) {
                             firstAccordionToOpen = collapseId; // Store the ID of the first one to open
                         }
