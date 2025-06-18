@@ -278,7 +278,7 @@
 
                 // Create a container for the round title (now a div)
                 const titleDiv = document.createElement('div'); // Changed from h5 to div
-                titleDiv.className = 'mb-0 text-dark';
+                titleDiv.className = 'mb-0 text-dark flex-grow-1'; // Added flex-grow-1 here
                 titleDiv.textContent = `${roundNumber}η Αγωνιστική`;
                 accordionButton.appendChild(titleDiv); // Appended titleDiv
 
@@ -302,9 +302,9 @@
                     });
                 }
 
-                // Changed to div element and added ms-auto for right alignment
+                // Changed to div element and removed ms-auto
                 const dateDisplayDiv = document.createElement('div'); 
-                dateDisplayDiv.classList.add('round-date-display', 'ms-auto'); 
+                dateDisplayDiv.classList.add('round-date-display'); 
 
                 if (minGameDate && maxGameDate) {
                     const isMobileScreen = window.innerWidth < 768; // Check for mobile size here
