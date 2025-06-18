@@ -273,7 +273,8 @@
                 // Calculate min and max dates for the current round
                 let minGameDate = null;
                 let maxGameDate = null;
-                const currentRoundGames = gamesByRound[roundNumber] || [];
+                // Changed from 'const' to 'let' to avoid re-declaration error in some environments
+                let currentRoundGames = gamesByRound[roundNumber] || []; 
 
                 if (currentRoundGames.length > 0) {
                     currentRoundGames.forEach(game => {
@@ -378,7 +379,8 @@
                 gamesTabPane.setAttribute('aria-labelledby', `games-tab-${roundNumber}`);
                 
                 // Sort games within this round by date and time before displaying
-                var currentRoundGames = gamesByRound[roundNumber] || [];
+                // Changed from 'const' to 'let' to avoid re-declaration error in some environments
+                currentRoundGames = gamesByRound[roundNumber] || []; 
                 currentRoundGames.sort((a, b) => {
                     var dateA = new Date(a.date.split('/').reverse().join('-') + 'T' + a.time);
                     var dateB = new Date(b.date.split('/').reverse().join('-') + 'T' + b.time);
@@ -409,9 +411,9 @@
                         var teamA_div = document.createElement('div');
                         teamA_div.className = 'team-side team-side-left text-start mb-2 mb-md-0 d-flex align-items-center';
                         
-                        // New div for logo background on the left side - placed BEFORE team name
+                        // New div for logo background on the left side - removed d-none d-md-flex
                         var logoA_bg_div = document.createElement('div');
-                        logoA_bg_div.className = 'team-logo-container team-logo-container-left d-none d-md-flex'; // Hidden on mobile
+                        logoA_bg_div.className = 'team-logo-container team-logo-container-left'; 
                         if (teamA_logo) {
                             logoA_bg_div.style.backgroundImage = `url('${teamA_logo}')`;
                         } else {
@@ -468,9 +470,9 @@
                         spanB.textContent = teamB_name_display; // Use truncated name
                         teamB_div.appendChild(spanB);
 
-                        // New div for logo background on the right side - placed AFTER team name
+                        // New div for logo background on the right side - removed d-none d-md-flex
                         var logoB_bg_div = document.createElement('div');
-                        logoB_bg_div.className = 'team-logo-container team-logo-container-right d-none d-md-flex'; // Hidden on mobile
+                        logoB_bg_div.className = 'team-logo-container team-logo-container-right';
                         if (teamB_logo) {
                             logoB_bg_div.style.backgroundImage = `url('${teamB_logo}')`;
                         } else {
@@ -503,7 +505,8 @@
                 standingsTabPane.setAttribute('aria-labelledby', `standings-tab-${roundNumber}`);
 
                 // Render standings for this round
-                var currentRoundStandings = standingsByRound[roundNumber] || [];
+                // Changed from 'const' to 'let' to avoid re-declaration error in some environments
+                let currentRoundStandings = standingsByRound[roundNumber] || []; 
                 if (currentRoundStandings.length > 0) {
                     var standingsTable = document.createElement('table');
                     standingsTable.className = 'table table-hover table-striped table-sm standings-table'; // Added standings-table class
@@ -1068,7 +1071,7 @@
                 padding: 1rem 0.5rem;
             }
             .game-item {
-                /* Removed flex-direction: column to keep row layout */
+                /* No flex-direction: column for mobile, stays row */
                 align-items: center !important; /* Keep items vertically centered */
                 flex-wrap: nowrap; /* Keep on single line if possible */
             }
@@ -1094,9 +1097,9 @@
                 justify-content: flex-end !important; /* Align to the right side of their 40% container */
             }
             
-            /* Show logo containers on mobile explicitly with d-block (or d-flex if desired) from Bootstrap */
+            /* Show logo containers on mobile, but at a smaller size */
             .team-logo-container {
-                 display: block !important; /* Use block to occupy space, then adjust sizing/positioning */
+                 display: flex !important; /* Ensure logos are shown as flex items */
                  width: 40px !important; /* Smaller logo for mobile */
                  height: 40px !important; /* Smaller logo for mobile */
             }
