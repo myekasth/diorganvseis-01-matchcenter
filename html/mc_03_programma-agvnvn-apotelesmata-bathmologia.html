@@ -190,7 +190,7 @@
                 if (data.getFormattedValue(row, 16) !== "") { // Check if it's a game entry (Column Q is not empty)
                     if (!gamesByRound[roundForGame]) {
                         gamesByRound[roundForGame] = [];
-                        if (!uniqueRrounds.includes(roundForGame)) { // Changed `uniqueRounds` to `uniqueRrounds` to match the global declaration
+                        if (!uniqueRounds.includes(roundForGame)) { // Corrected: uniqueRounds instead of uniqueRrounds
                             uniqueRounds.push(roundForGame);
                         }
                     }
