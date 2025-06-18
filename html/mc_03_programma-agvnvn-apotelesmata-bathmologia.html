@@ -43,6 +43,20 @@
         // Default logo URL if no logo is provided in the spreadsheet
         const DEFAULT_LOGO_URL = "https://lh3.googleusercontent.com/-_r1FEKyvfIA/V5o9rF6kKLI/AAAAAAABNFE/p_lq6O0AKQ8CNJJRJ0jotUb4jGsUthdqgCCo/s36/white-repo-circle.png";
 
+        // Global variables for filter data and current date range
+        let uniqueRounds = [];
+        let sortedUniqueTeams = [];
+        let gamesByRound = {}; // Make gamesByRound globally accessible
+        let today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to start of day (midnight)
+        const DAYS_OFFSET = 4; // +/- 4 days for the active round window
+        let fourDaysBeforeToday = new Date(today);
+        fourDaysBeforeToday.setDate(today.getDate() - DAYS_OFFSET);
+        let fourDaysAfterToday = new Date(today);
+        fourDaysAfterToday.setDate(today.getDate() + DAYS_OFFSET);
+        let firstAccordionToOpen = null; // Store ID of the first accordion to be opened by default logic
+
+
         /**
          * Parses URL query parameters.
          * Applies decodeURIComponent twice to handle potential double encoding.
@@ -145,9 +159,9 @@
             var totalRows = data.getNumberOfRows();
             var contentDiv = document.getElementById("list-content-id");
 
-            var loadingSpinner = document.getElementById("loading-spinner");
+            var loadingSpinner = document;
             if (loadingSpinner) {
-                loadingSpinner.remove();
+                loadingSpinner.getElementById("loading-spinner").remove();
             }
             contentDiv.innerHTML = ''; // Clear existing content
 
@@ -161,10 +175,10 @@
             var promotionPositions = parseInt(data.getFormattedValue(0, 77)); // BZ2
             var relegationStartFrom = parseInt(data.getFormattedValue(1, 77)); // BZ3
 
-            // Group data by Round (Column B for games, Column AD for standings)
-            var gamesByRound = {};
-            var standingsByRound = {}; // To store standings for each round
-            var uniqueRounds = [];
+            // Clear previous data before populating
+            gamesByRound = {}; 
+            let allUniqueTeams = new Set();
+            uniqueRounds = [];
 
             for (var row = 0; row < totalRows; row++) {
                 var roundForGame = data.getFormattedValue(row, 1); // Column B: ΑΓΩΝΙΣΤΙΚΗ (for games)
@@ -193,6 +207,9 @@
                         teamB_logo: data.getFormattedValue(row, 54) || DEFAULT_LOGO_URL  // Column BC (index 54) or default
                     };
                     gamesByRound[roundForGame].push(gameData);
+
+                    allUniqueTeams.add(gameData.teamA_name);
+                    allUniqueTeams.add(gameData.teamB_name);
                 }
 
                 // Populate standingsByRound - assumes all standing rows for a given round are grouped together
@@ -231,6 +248,8 @@
 
             // Sort unique rounds numerically
             uniqueRounds.sort((a, b) => parseInt(a) - parseInt(b));
+            sortedUniqueTeams = Array.from(allUniqueTeams).sort();
+
 
             var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? getQueryVariable("pNameDiorganvtriaArxh") : defaultNameDiorganvtriaArxh;
             var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? getQueryVariable("pPowerDiorganvtriaArxh") : defaultPowerDiorganvtriaArxh;
@@ -245,15 +264,8 @@
             mainAccordion.className = 'accordion';
             mainAccordion.id = 'mainGamesAccordion';
 
-            var today = new Date();
-            today.setHours(0, 0, 0, 0); // Normalize to start of day (midnight)
-            // Calculate +/- 4 days from today
-            var fourDaysBeforeToday = new Date(today);
-            fourDaysBeforeToday.setDate(today.getDate() - 4);
-            var fourDaysAfterToday = new Date(today);
-            fourDaysAfterToday.setDate(today.getDate() + 4);
-
-            var firstAccordionToOpen = null; // To store the ID of the first accordion to be opened
+            // Reset firstAccordionToOpen
+            firstAccordionToOpen = null; 
 
             // Function to truncate team names for mobile
             function truncateTeamName(name) {
@@ -270,13 +282,13 @@
 
                 var accordionItem = document.createElement('div');
                 accordionItem.className = 'accordion-item';
+                accordionItem.id = accordionItemId; // Set ID for easy access during filtering
 
                 var accordionHeader = document.createElement('h2');
                 accordionHeader.className = 'accordion-header';
                 accordionHeader.id = `heading_${roundNumber}`;
 
                 var accordionButton = document.createElement('button');
-                // By default, set to collapsed and aria-expanded to false
                 accordionButton.className = 'accordion-button collapsed'; 
                 accordionButton.type = 'button';
                 accordionButton.setAttribute('data-bs-toggle', 'collapse');
@@ -284,26 +296,22 @@
                 accordionButton.setAttribute('aria-expanded', 'false'); 
                 accordionButton.setAttribute('aria-controls', collapseId);
 
-                // Make the accordion button a flex container to align title left and date right
                 accordionButton.classList.add('d-flex', 'justify-content-between', 'align-items-center');
 
-                // Create a container for the round title (now a div)
-                const titleDiv = document.createElement('div'); // Changed from h5 to div
-                titleDiv.className = 'mb-0 text-dark flex-grow-1'; // Added flex-grow-1 here
+                const titleDiv = document.createElement('div'); 
+                titleDiv.className = 'mb-0 text-dark flex-grow-1'; 
                 titleDiv.textContent = `${roundNumber}η Αγωνιστική`;
-                accordionButton.appendChild(titleDiv); // Appended titleDiv
+                accordionButton.appendChild(titleDiv);
 
-                // Calculate min and max dates for the current round
                 let minGameDate = null;
                 let maxGameDate = null;
                 let currentRoundGames = gamesByRound[roundNumber] || []; 
 
                 if (currentRoundGames.length > 0) {
                     currentRoundGames.forEach(game => {
-                        // Parse date string (DD/MM/YYYY) into a Date object for comparison
                         const [gDay, gMonth, gYear] = game.date.split('/').map(Number);
                         const gameDateObj = new Date(gYear, gMonth - 1, gDay);
-                        gameDateObj.setHours(0, 0, 0, 0); // Normalize game date to start of day
+                        gameDateObj.setHours(0, 0, 0, 0); 
 
                         if (!minGameDate || gameDateObj < minGameDate) {
                             minGameDate = gameDateObj;
@@ -314,16 +322,15 @@
                     });
                 }
 
-                // Changed to div element and removed ms-auto
                 const dateDisplayDiv = document.createElement('div'); 
                 dateDisplayDiv.classList.add('round-date-display'); 
 
                 if (minGameDate && maxGameDate) {
-                    const isMobileScreen = window.innerWidth < 768; // Check for mobile size here
+                    const isMobileScreen = window.innerWidth < 768;
 
-                    if (minGameDate.toDateString() === maxGameDate.toDateString()) { // Single date
-                        dateDisplayDiv.textContent = formatFullDateWithDay(minGameDate); // Same format for desktop/mobile for single date
-                    } else { // Date range
+                    if (minGameDate.toDateString() === maxGameDate.toDateString()) {
+                        dateDisplayDiv.textContent = formatFullDateWithDay(minGameDate);
+                    } else { 
                         if (isMobileScreen) {
                             dateDisplayDiv.textContent = `${formatSimpleDate(minGameDate)} - ${formatSimpleDate(maxGameDate)}`;
                         } else {
@@ -331,8 +338,7 @@
                         }
                     }
 
-                    // Check if the current round falls within the +/- 4 day window
-                    // An overlap exists if (StartA <= EndB) AND (StartB <= EndA)
+                    // Determine if this accordion should be open by default
                     const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
                     const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
 
@@ -340,19 +346,18 @@
                         accordionButton.classList.remove('collapsed');
                         accordionButton.setAttribute('aria-expanded', 'true');
                         if (firstAccordionToOpen === null) {
-                            firstAccordionToOpen = collapseId; // Store the ID of the first one to open
+                            firstAccordionToOpen = collapseId; 
                         }
                     }
 
                 }
-                accordionButton.appendChild(dateDisplayDiv); // Appended dateDisplayDiv
+                accordionButton.appendChild(dateDisplayDiv); 
                 
                 accordionHeader.appendChild(accordionButton);
                 accordionItem.appendChild(accordionHeader);
 
                 var accordionCollapse = document.createElement('div');
                 accordionCollapse.id = collapseId;
-                // Dynamically add 'show' class if it meets the criteria
                 if (accordionButton.getAttribute('aria-expanded') === 'true') {
                     accordionCollapse.className = 'accordion-collapse collapse show'; 
                 } else {
@@ -363,19 +368,17 @@
                 accordionCollapse.setAttribute('data-bs-parent', '#mainGamesAccordion');
 
                 var accordionBody = document.createElement('div');
-                accordionBody.className = 'accordion-body p-0'; // No padding for body, tabs will have it
+                accordionBody.className = 'accordion-body p-0'; 
 
-                // Create Tabs container for Games and Standings
                 var navTabs = document.createElement('ul');
-                navTabs.className = 'nav nav-tabs nav-justified bg-light pt-2'; // Justified tabs for full width
+                navTabs.className = 'nav nav-tabs nav-justified bg-light pt-2'; 
                 navTabs.id = `navTabs_${roundNumber}`;
                 navTabs.setAttribute('role', 'tablist');
 
-                // Tab 1: Games
                 var gamesTabLi = document.createElement('li');
                 gamesTabLi.className = 'nav-item';
                 var gamesNavLink = document.createElement('button');
-                gamesNavLink.className = 'nav-link active'; // Games tab active by default
+                gamesNavLink.className = 'nav-link active'; 
                 gamesNavLink.id = `games-tab-${roundNumber}`;
                 gamesNavLink.setAttribute('data-bs-toggle', 'tab');
                 gamesNavLink.setAttribute('data-bs-target', `#games-panel-${roundNumber}`);
@@ -387,7 +390,6 @@
                 gamesTabLi.appendChild(gamesNavLink);
                 navTabs.appendChild(gamesTabLi);
 
-                // Tab 2: Standings
                 var standingsTabLi = document.createElement('li');
                 standingsTabLi.className = 'nav-item';
                 var standingsNavLink = document.createElement('button');
@@ -405,19 +407,16 @@
 
                 accordionBody.appendChild(navTabs);
 
-                // Tab Content container
                 var tabContent = document.createElement('div');
                 tabContent.className = 'tab-content';
                 tabContent.id = `navTabContent_${roundNumber}`;
 
-                // Tab Pane 1: Games
                 var gamesTabPane = document.createElement('div');
-                gamesTabPane.className = 'tab-pane fade show active p-3'; // Add padding for content
+                gamesTabPane.className = 'tab-pane fade show active p-3'; 
                 gamesTabPane.id = `games-panel-${roundNumber}`;
                 gamesTabPane.setAttribute('role', 'tabpanel');
                 gamesTabPane.setAttribute('aria-labelledby', `games-tab-${roundNumber}`);
                 
-                // Sort games within this round by date and time before displaying
                 currentRoundGames = gamesByRound[roundNumber] || []; 
                 currentRoundGames.sort((a, b) => {
                     var dateA = new Date(a.date.split('/').reverse().join('-') + 'T' + a.time);
@@ -425,10 +424,8 @@
                     return dateA - dateB;
                 });
 
-                // Render games for this round
                 if (currentRoundGames.length > 0) {
                     currentRoundGames.forEach((gameRow, gameIndex) => {
-                        // Apply truncation based on screen size
                         var teamA_name_display = truncateTeamName(gameRow.teamA_name);
                         var teamB_name_display = truncateTeamName(gameRow.teamB_name);
 
@@ -439,17 +436,16 @@
                         var arena = gameRow.arena;
                         var date = gameRow.date;
                         var time = gameRow.time;
-                        // var gameCode = gameRow.gameCode; // Not directly used in rendering now
 
                         var gameDiv = document.createElement('div');
-                        // No flex-column here, we want it to stay row even on small screens
                         gameDiv.className = 'game-item d-flex flex-md-row align-items-center mb-3 p-3 rounded shadow-sm bg-white';
+                        // Store full team names as data attributes for filtering
+                        gameDiv.dataset.teamA = gameRow.teamA_name;
+                        gameDiv.dataset.teamB = gameRow.teamB_name;
 
-                        // Left Team (Team A) - Team name and Logo background div
                         var teamA_div = document.createElement('div');
                         teamA_div.className = 'team-side team-side-left text-start mb-2 mb-md-0 d-flex align-items-center';
                         
-                        // New div for logo background on the left side
                         var logoA_bg_div = document.createElement('div');
                         logoA_bg_div.className = 'team-logo-container team-logo-container-left'; 
                         if (teamA_logo) {
@@ -457,19 +453,17 @@
                         } else {
                             logoA_bg_div.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`;
                         }
-                        // Add error handling for background image in case it fails to load
                         logoA_bg_div.onerror = function() {
-                            this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; // Fallback
+                            this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; 
                         };
-                        teamA_div.appendChild(logoA_bg_div); // Append the background logo div
+                        teamA_div.appendChild(logoA_bg_div); 
 
                         var spanA = document.createElement('span');
                         spanA.className = 'team-name fw-bold';
-                        spanA.textContent = teamA_name_display; // Use truncated name
+                        spanA.textContent = teamA_name_display; 
                         teamA_div.appendChild(spanA);
                         gameDiv.appendChild(teamA_div);
 
-                        // Center (Score and Info) - No logos here anymore
                         var center_div = document.createElement('div');
                         center_div.className = 'game-center game-center-fixed text-center mx-md-3 mb-2 mb-md-0 d-flex flex-column justify-content-center align-items-center';
 
@@ -499,16 +493,13 @@
                         center_div.appendChild(info_div);
                         gameDiv.appendChild(center_div);
 
-                        // Right Team (Team B) - Team name and Logo background div
                         var teamB_div = document.createElement('div');
-                        // Added justify-content-end for right alignment of contents within this flex container
                         teamB_div.className = 'team-side team-side-right d-flex mb-2 mb-md-0 align-items-center justify-content-end';
                         var spanB = document.createElement('span');
                         spanB.className = 'team-name fw-bold';
-                        spanB.textContent = teamB_name_display; // Use truncated name
+                        spanB.textContent = teamB_name_display; 
                         teamB_div.appendChild(spanB);
 
-                        // New div for logo background on the right side
                         var logoB_bg_div = document.createElement('div');
                         logoB_bg_div.className = 'team-logo-container team-logo-container-right';
                         if (teamB_logo) {
@@ -516,11 +507,10 @@
                         } else {
                             logoB_bg_div.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`;
                         }
-                        // Add error handling for background image
                         logoB_bg_div.onerror = function() {
-                            this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; // Fallback
+                            this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; 
                         };
-                        teamB_div.appendChild(logoB_bg_div); // Append the background logo div
+                        teamB_div.appendChild(logoB_bg_div); 
                         
                         gameDiv.appendChild(teamB_div);
 
@@ -535,26 +525,23 @@
 
                 tabContent.appendChild(gamesTabPane);
 
-                // Tab Pane 2: Standings
                 var standingsTabPane = document.createElement('div');
-                standingsTabPane.className = 'tab-pane fade p-3'; // Add padding for content
+                standingsTabPane.className = 'tab-pane fade p-3'; 
                 standingsTabPane.id = `standings-panel-${roundNumber}`;
                 standingsTabPane.setAttribute('role', 'tabpanel');
                 standingsTabPane.setAttribute('aria-labelledby', `standings-tab-${roundNumber}`);
 
-                // Render standings for this round
                 let currentRoundStandings = standingsByRound[roundNumber] || []; 
                 if (currentRoundStandings.length > 0) {
                     var standingsTable = document.createElement('table');
-                    standingsTable.className = 'table table-hover table-striped table-sm standings-table'; // Added standings-table class
+                    standingsTable.className = 'table table-hover table-striped table-sm standings-table'; 
 
                     var thead = document.createElement('thead');
                     var headerRow = document.createElement('tr');
-                    // Updated column headers and their order based on user's request
                     const standingsHeaders = [
                         { text: 'Α/Α', property: 'position', class: '' },
-                        { text: ' ', property: 'teamLogoUrl', class: '' }, // Logo column
-                        { text: 'Ομάδες', property: 'teamName', class: 'text-start' }, // Align left
+                        { text: ' ', property: 'teamLogoUrl', class: '' },
+                        { text: 'Ομάδες', property: 'teamName', class: 'text-start' },
                         { text: 'Βαθ', property: 'points', class: 'fw-bold' },
                         { text: 'Αγών', property: 'gamesPlayed', class: '' },
                         { text: 'Nικ', property: 'wins', class: 'd-none d-md-table-cell' },
@@ -563,7 +550,7 @@
                         { text: 'ΑΦ', property: 'pointsFor', class: 'd-none d-md-table-cell' },
                         { text: 'Επίθ', property: 'pointsAgainst', class: 'd-none d-md-table-cell' },
                         { text: 'Αμυν', property: 'defensePoints', class: 'd-none d-md-table-cell' },
-                        { text: 'Διαφ', property: 'overallDifference', class: 'd-none d-md-table-cell' }, // NEW COLUMN
+                        { text: 'Διαφ', property: 'overallDifference', class: 'd-none d-md-table-cell' },
                         { text: 'B1', property: 'b1_val', class: '' },
                         { text: 'B2', property: 'b2_val', class: '' },
                         { text: 'ΔΠ ΙΣ', property: 'dpIs_val', class: 'd-none d-md-table-cell' },
@@ -590,7 +577,6 @@
                     currentRoundStandings.forEach((standingRow, standingIndex) => {
                         var tr = document.createElement('tr');
                         
-                        // Apply promotion/relegation styling (background colors for zones)
                         if (promotionPositions && standingRow.position <= promotionPositions) {
                             tr.classList.add('table-success-light');
                         }
@@ -598,7 +584,6 @@
                             tr.classList.add('table-danger-light');
                         }
 
-                        // Apply border styling for promotion/relegation zones
                         if (promotionPositions && standingRow.position === promotionPositions) {
                             tr.classList.add('promotion-border-bottom');
                         }
@@ -606,16 +591,15 @@
                             tr.classList.add('relegation-border-top');
                         }
                         
-                        // Loop through headers to create cells in correct order
                         standingsHeaders.forEach(headerInfo => {
                             var td = document.createElement('td');
-                            let cellValue = standingRow[headerInfo.property]; // Get the raw value from standingRow object
+                            let cellValue = standingRow[headerInfo.property]; 
 
                             switch (headerInfo.property) {
                                 case 'teamLogoUrl':
                                     var logoDiv = document.createElement('div');
                                     logoDiv.className = 'team-logo-bg';
-                                    if (cellValue) { // cellValue is the URL
+                                    if (cellValue) { 
                                         const dummyImg = new Image();
                                         dummyImg.src = cellValue;
                                         dummyImg.onerror = function() {
@@ -624,17 +608,17 @@
                                         };
                                         logoDiv.style.backgroundImage = `url('${cellValue}')`;
                                     }
-                                    td.appendChild(logoDiv); // Append div directly to td
+                                    td.appendChild(logoDiv); 
                                     break;
                                 case 'teamName':
-                                    td.classList.add('fw-bold', 'text-start'); // Always bold, aligned left
+                                    td.classList.add('fw-bold', 'text-start'); 
                                     td.textContent = cellValue;
                                     break;
                                 case 'points':
                                     td.classList.add('standings-points', 'fw-bold');
                                     td.textContent = cellValue;
                                     break;
-                                case 'progressValue': // This is a special case for arrows/numbers
+                                case 'progressValue': 
                                     let progressHtml = '';
                                     let progressClasses = [];
                                     if (cellValue > 0) {
@@ -650,17 +634,15 @@
                                     td.innerHTML = progressHtml;
                                     td.classList.add(...progressClasses);
                                     break;
-                                default: // Handle all other numeric/text fields
-                                    // Apply hide-empty-value class if the value is an empty string OR '0'
+                                default: 
                                     if (cellValue === '' || cellValue === '0') {
-                                        td.classList.add('hide-empty-value'); // New class for empty/zero values
+                                        td.classList.add('hide-empty-value'); 
                                     } else {
-                                        td.textContent = cellValue; // Show any other value
+                                        td.textContent = cellValue; 
                                     }
                                     break;
                             }
                             
-                            // Add generic classes for visibility if defined in headerInfo
                             if (headerInfo.class) {
                                 td.classList.add(...headerInfo.class.split(' '));
                             }
@@ -686,16 +668,8 @@
             });
             contentDiv.appendChild(mainAccordion);
 
-            // Scroll the first opened accordion into view
-            if (firstAccordionToOpen) {
-                // Use a small timeout to ensure Bootstrap's collapse transition has started
-                setTimeout(() => {
-                    const element = document.getElementById(firstAccordionToOpen);
-                    if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }
-                }, 100); 
-            }
+            // Setup filters and apply them
+            setupFilters();
 
             // --- Start of dynamically added footer content (replacing static footer) ---
             // Add the footer buttons container
@@ -740,9 +714,149 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
-            versionDiv.textContent = `LT v.25.06.17 | mc_03_programma-agvnvn-apotelesmata-bathmologia @ myekasth`; // Updated version string as requested
+            versionDiv.textContent = `LT v.25.06.17 | mc_03_programma-agvnvn-apotelesmata-bathmologia @ myekasth`; 
             contentDiv.appendChild(versionDiv);
             // --- End of dynamically added footer content ---
+        }
+
+        /**
+         * Populates the round and team filter dropdowns.
+         */
+        function setupFilters() {
+            const roundFilter = document.getElementById('roundFilter');
+            const teamFilter = document.getElementById('teamFilter');
+
+            // Populate Round Filter
+            roundFilter.innerHTML = '<option value="all">Όλες οι Αγωνιστικές</option>';
+            uniqueRounds.forEach(round => {
+                const option = document.createElement('option');
+                option.value = round;
+                option.textContent = `${round}η Αγωνιστική`;
+                roundFilter.appendChild(option);
+            });
+
+            // Populate Team Filter
+            teamFilter.innerHTML = '<option value="all">Όλες οι Ομάδες</option>';
+            sortedUniqueTeams.forEach(teamName => {
+                const option = document.createElement('option');
+                option.value = teamName;
+                option.textContent = teamName;
+                teamFilter.appendChild(option);
+            });
+
+            // Add event listeners
+            roundFilter.addEventListener('change', applyFilters);
+            teamFilter.addEventListener('change', applyFilters);
+
+            // Apply filters initially to set default state and scroll
+            applyFilters();
+        }
+
+        /**
+         * Applies the selected filters to the displayed games and accordions.
+         */
+        function applyFilters() {
+            const selectedRound = document.getElementById('roundFilter').value;
+            const selectedTeam = document.getElementById('teamFilter').value;
+            const accordions = document.querySelectorAll('#mainGamesAccordion .accordion-item');
+            const defaultExpandLogicEnabled = (selectedRound === 'all'); // Flag for default logic
+
+            let firstAccordionToScroll = null;
+
+            accordions.forEach(accordionItem => {
+                const roundNumber = accordionItem.id.replace('roundAccordionItem_', '');
+                const accordionButton = accordionItem.querySelector('.accordion-button');
+                const accordionCollapse = accordionItem.querySelector('.accordion-collapse');
+                const gamesTabPane = accordionItem.querySelector(`#games-panel-${roundNumber}`);
+
+                // --- Apply Round Filter Logic ---
+                let shouldBeExpanded = false;
+                if (defaultExpandLogicEnabled) {
+                    // Re-evaluate date range for this round if "Όλα" is selected for rounds
+                    let minGameDate = null;
+                    let maxGameDate = null;
+                    let currentRoundGamesForDateCheck = gamesByRound[roundNumber] || []; 
+
+                    if (currentRoundGamesForDateCheck.length > 0) {
+                        currentRoundGamesForDateCheck.forEach(game => {
+                            const [gDay, gMonth, gYear] = game.date.split('/').map(Number);
+                            const gameDateObj = new Date(gYear, gMonth - 1, gDay);
+                            gameDateObj.setHours(0, 0, 0, 0);
+
+                            if (!minGameDate || gameDateObj < minGameDate) {
+                                minGameDate = gameDateObj;
+                            }
+                            if (!maxGameDate || gameDateObj > maxGameDate) {
+                                maxGameDate = gameDateObj;
+                            }
+                        });
+                    }
+
+                    if (minGameDate && maxGameDate) {
+                        // Check if round dates overlap with the +/- 4 day window from today
+                        const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
+                        const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
+
+                        if (roundStartsWithinWindow && roundEndsWithinWindow) {
+                            shouldBeExpanded = true;
+                        }
+                    }
+                } else { // Specific round selected
+                    if (roundNumber === selectedRound) {
+                        shouldBeExpanded = true;
+                    }
+                }
+
+                // Apply expanded/collapsed state
+                if (shouldBeExpanded) {
+                    accordionButton.classList.remove('collapsed');
+                    accordionButton.setAttribute('aria-expanded', 'true');
+                    accordionCollapse.classList.add('show');
+                    // Store the ID of the first accordion that is expanded by either default or filter
+                    if (firstAccordionToScroll === null) {
+                        firstAccordionToScroll = accordionCollapse.id;
+                    }
+                } else {
+                    accordionButton.classList.add('collapsed');
+                    accordionButton.setAttribute('aria-expanded', 'false');
+                    accordionCollapse.classList.remove('show');
+                }
+
+                // --- Apply Team Filter Logic within each round's games ---
+                const gameItems = gamesTabPane.querySelectorAll('.game-item');
+                let anyGameVisibleInRound = false; // Track if any game is visible in this round after team filtering
+
+                gameItems.forEach(gameItem => {
+                    const teamA_name_full = gameItem.dataset.teamA; // Get full name from data attribute
+                    const teamB_name_full = gameItem.dataset.teamB; // Get full name from data attribute
+
+                    if (selectedTeam === 'all' || teamA_name_full.includes(selectedTeam) || teamB_name_full.includes(selectedTeam)) {
+                        gameItem.style.display = 'flex'; // Show game
+                        anyGameVisibleInRound = true;
+                    } else {
+                        gameItem.style.display = 'none'; // Hide game
+                    }
+                });
+
+                // If a specific team is selected and no games for that team are found in this round,
+                // and the round filter is not specifically set to this round, collapse the accordion.
+                // This prevents empty expanded accordions when filtering by team.
+                if (selectedTeam !== 'all' && !anyGameVisibleInRound && selectedRound === 'all') {
+                    accordionButton.classList.add('collapsed');
+                    accordionButton.setAttribute('aria-expanded', 'false');
+                    accordionCollapse.classList.remove('show');
+                }
+            });
+
+            // Scroll to the first expanded accordion, if any
+            if (firstAccordionToScroll) {
+                setTimeout(() => {
+                    const element = document.getElementById(firstAccordionToScroll);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 100); 
+            }
         }
     </script>
 
@@ -762,6 +876,8 @@
             --mc-header-text-color: #212529; /* Dark text for contrast on white */
             --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
             --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
+
+            --mc-filter-bg-color: #e0e0e0; /* Light gray for filter zone background */
         }
 
         /* Base body styling */
@@ -777,7 +893,7 @@
             font-family: 'Krona One', sans-serif;
         }
 
-        /* New Sticky Header Styles - copied from mc_02 */
+        /* New Sticky Header Tabs */
         .sticky-header-tabs {
             position: sticky;
             top: 0;
@@ -825,7 +941,38 @@
             text-align: center;
         }
 
-        /* Accordion specific styles - copied from mc_02 and adapted */
+        /* Filter Zone Styling */
+        .filter-zone {
+            background-color: var(--mc-filter-bg-color);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 1rem; /* Space between filter elements */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-zone .form-select {
+            max-width: 300px; /* Limit width of dropdowns */
+            min-width: 180px; /* Ensure a minimum width */
+            flex-grow: 1; /* Allow them to grow */
+        }
+        
+        .filter-zone label {
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            color: var(--mc-text-dark);
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+
+        /* Accordion specific styles */
         .accordion-item {
             border-radius: 0.75rem;
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,.03);
@@ -848,8 +995,8 @@
             color: #ffffff; /* White text when active */
             box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
         }
-        .accordion-button h5 { /* Style for h5 inside accordion button */
-            color: inherit; /* Inherit color from button state */
+        .accordion-button h5 { 
+            color: inherit; 
             margin-bottom: 0;
         }
 
@@ -858,7 +1005,7 @@
         }
 
         .accordion-body {
-            padding: 0; /* Removed padding here, tabs will handle it */
+            padding: 0; 
             background-color: #f8f9fa;
             border-top: 1px solid rgba(0,0,0,.05);
         }
@@ -866,7 +1013,7 @@
         /* Styles for the navigation tabs */
         .nav-tabs {
             border-bottom: 1px solid rgba(0,0,0,.05);
-            margin-bottom: 0; /* Remove bottom margin if used with tab-content immediately below */
+            margin-bottom: 0; 
         }
 
         .nav-tabs .nav-link {
@@ -876,14 +1023,14 @@
             font-weight: 500;
             background-color: transparent;
             padding: 0.75rem 1rem;
-            margin-bottom: -1px; /* Overlap border with tab-content */
+            margin-bottom: -1px; 
             transition: all 0.2s ease;
         }
 
         .nav-tabs .nav-link.active {
             color: var(--mc-primary-color);
             background-color: #ffffff;
-            border-bottom: 3px solid var(--mc-primary-color); /* Active indicator */
+            border-bottom: 3px solid var(--mc-primary-color); 
             font-weight: 700;
         }
         .nav-tabs .nav-link:hover {
@@ -892,13 +1039,13 @@
 
         .tab-content {
             border-top: none;
-            background-color: #ffffff; /* White background for tab content areas */
-            border-radius: 0 0 0.75rem 0.75rem; /* Rounded bottom corners for the tab content area */
-            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02); /* Light shadow for depth */
+            background-color: #ffffff; 
+            border-radius: 0 0 0.75rem 0.75rem; 
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02); 
         }
 
         .tab-pane {
-            padding: 1.5rem; /* Padding for the content inside each tab */
+            padding: 1.5rem; 
         }
 
         /* Game item styling */
@@ -907,77 +1054,67 @@
             box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02);
             transition: all 0.2s ease-in-out;
             background-color: #ffffff !important;
-            flex-wrap: nowrap; /* Ensure items stay on one line on desktop */
-            justify-content: center; /* Center overall content */
+            flex-wrap: nowrap; 
+            justify-content: center; 
         }
-        /* Hover effect for game-item */
         .game-item:hover {
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,.08);
             transform: translateY(-2px);
-            background-color: #f5f5f5 !important; /* Light gray on hover */
+            background-color: #f5f5f5 !important; 
         }
 
-        /* Responsive flex basis for the three main game-item sections */
         .team-side-left, .team-side-right {
             flex-basis: 40%;
             flex-grow: 0;
             flex-shrink: 0;
-            /* Added padding-left/right to ensure text doesn't touch edges */
-            padding: 0 1rem; /* Adjust as needed */
+            padding: 0 1rem; 
         }
 
         .game-center-fixed {
             flex-basis: 20%;
             flex-grow: 0;
             flex-shrink: 0;
-            /* Ensure content inside is centered horizontally and vertically */
             align-items: center !important;
             justify-content: center !important;
         }
 
-        /* New styles for logo containers in left/right sections */
         .team-logo-container {
-            width: 50px; /* Fixed width for logo area, updated from 40px */
-            height: 50px; /* Fixed height for logo area, updated from 100% */
-            background-size: contain; /* Fill the area while maintaining aspect ratio */
+            width: 50px; 
+            height: 50px; 
+            background-size: contain; 
             background-repeat: no-repeat;
-            display: flex; /* Use flex to help align content if needed */
-            align-items: center; /* Vertically center content if any */
+            display: flex; 
+            align-items: center; 
         }
 
         .team-logo-container-left {
-            /* For left side (home team), show the left half of the logo */
-            background-position: center left; /* Align left side of logo to center of container */
-            margin-right: 0.5rem; /* Space between logo and team name */
+            background-position: center left; 
+            margin-right: 0.5rem; 
         }
 
         .team-logo-container-right {
-            /* For right side (away team), show the right half of the logo */
-            background-position: center right; /* Align right side of logo to center of container */
-            margin-left: 0; /* Removed margin-left to make it 'stick' to the team name */
+            background-position: center right; 
+            margin-left: 0; 
         }
         
         .score-logos-container {
-            /* This container ensures scores and logos are grouped and centered within game-center-fixed */
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%; /* Take full width of its parent to help centering */
+            width: 100%; 
         }
 
         .team-score-logo {
             display: flex;
             align-items: center;
-            /* No flex-grow/shrink here, their content dictates size */
         }
 
         .score-number {
             font-family: 'Krona One', sans-serif;
-            /* Increased font size for better visibility */
-            font-size: 1.95rem !important; /* Slightly larger for scores */
+            font-size: 1.95rem !important; 
         }
         .versus-text {
-            font-size: 1.5rem; /* Larger for the hyphen */
+            font-size: 1.5rem; 
             font-weight: bold;
         }
         .game-info {
@@ -985,12 +1122,11 @@
             color: var(--mc-secondary-color);
         }
 
-        /* New style for the date display in accordion header */
         .round-date-display {
-            font-size: 0.85em; /* Smaller font for date */
-            color: inherit; /* Inherit color from accordion button state */
-            white-space: nowrap; /* Prevent wrapping for date string */
-            text-align: right; /* Ensure text inside aligns right */
+            font-size: 0.85em; 
+            color: inherit; 
+            white-space: nowrap; 
+            text-align: right; 
         }
 
         /* Standings Table Styling */
@@ -1115,40 +1251,35 @@
                 padding: 1rem 0.5rem;
             }
             .game-item {
-                /* No flex-direction: column for mobile, stays row */
-                align-items: center !important; /* Keep items vertically centered */
-                flex-wrap: nowrap; /* Keep on single line if possible */
+                align-items: center !important; 
+                flex-wrap: nowrap; 
             }
-            /* Ensure fixed flex-basis on mobile, combined with truncation */
             .team-side-left, .team-side-right {
                 flex-basis: 40%;
                 flex-grow: 0;
                 flex-shrink: 0;
-                padding: 0 0.5rem; /* Adjust padding for mobile */
+                padding: 0 0.5rem; 
             }
             .game-center-fixed {
                 flex-basis: 20%;
                 flex-grow: 0;
                 flex-shrink: 0;
-                padding: 0 0.5rem; /* Adjust padding for mobile */
+                padding: 0 0.5rem; 
             }
 
-            /* Ensure alignment for team names and logos within their flex containers on mobile */
             .team-side-left {
                 justify-content: flex-start !important;
             }
             .team-side-right {
-                justify-content: flex-end !important; /* Align to the right side of their 40% container */
+                justify-content: flex-end !important; 
             }
             
-            /* Show logo containers on mobile, but at a smaller size */
             .team-logo-container {
-                 display: flex !important; /* Ensure logos are shown as flex items */
-                 width: 40px !important; /* Smaller logo for mobile */
-                 height: 40px !important; /* Smaller logo for mobile */
+                 display: flex !important; 
+                 width: 40px !important; 
+                 height: 40px !important; 
             }
             
-            /* Center the score block horizontally in the center div on mobile */
             .game-center-fixed .score-logos-container {
                 justify-content: center !important;
             }
@@ -1158,9 +1289,16 @@
                 margin-bottom: 0.5rem;
             }
 
-            /* Mobile specific font size for round-date-display */
             .round-date-display {
-                font-size: calc(0.85em - 2px); /* Reduce font size by 2px on mobile */
+                font-size: calc(0.85em - 2px); 
+            }
+
+            .filter-zone {
+                flex-direction: column; /* Stack filters vertically on small screens */
+                align-items: stretch; /* Stretch to fill width */
+            }
+            .filter-group {
+                width: 100%; /* Full width for each filter group */
             }
         }
     </style>
@@ -1178,6 +1316,20 @@
             ΠΡΟΓΡΑΜΜΑ & ΒΑΘΜΟΛΟΓΙΕΣ
         </div>
     </div>
+
+    <!-- Filter Zone -->
+    <section class="container my-4">
+        <div class="filter-zone">
+            <div class="filter-group">
+                <label for="roundFilter" class="form-label">Φιλτράρισμα ανά Αγωνιστική:</label>
+                <select id="roundFilter" class="form-select"></select>
+            </div>
+            <div class="filter-group">
+                <label for="teamFilter" class="form-label">Φιλτράρισμα ανά Ομάδα:</label>
+                <select id="teamFilter" class="form-select"></select>
+            </div>
+        </div>
+    </section>
 
     <!-- Main content section for displaying games and standings -->
     <section class="container my-5">
