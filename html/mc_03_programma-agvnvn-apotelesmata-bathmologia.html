@@ -26,8 +26,8 @@
     
     <!-- Google Charts Library for data visualization -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Font Awesome is no longer needed since custom '...' button is used -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
 
 
     <script type="text/javascript">
@@ -210,13 +210,14 @@
                         gameCode: data.getFormattedValue(row, 16), // Column Q
                         teamA_logo: data.getFormattedValue(row, 53) || DEFAULT_LOGO_URL, // Column BB (index 53) or default
                         teamB_logo: data.getFormattedValue(row, 54) || DEFAULT_LOGO_URL,  // Column BC (index 54) or default
-                        // Add officials' data (assuming these column indices)
-                        referee1: data.getFormattedValue(row, 20), // Column U
-                        referee2: data.getFormattedValue(row, 21), // Column V
-                        commissioner: data.getFormattedValue(row, 22), // Column W
-                        scorer1: data.getFormattedValue(row, 23), // Column X
-                        scorer2: data.getFormattedValue(row, 24), // Column Y
-                        scorer3: data.getFormattedValue(row, 25)  // Column Z
+                        // Add officials' data with new indices as per user's specification
+                        referee1: data.getFormattedValue(row, 10), // Column K
+                        referee2: data.getFormattedValue(row, 11), // Column L
+                        referee3: data.getFormattedValue(row, 12), // Column M
+                        commissioner: data.getFormattedValue(row, 55), // Column BD
+                        scorer1: data.getFormattedValue(row, 13), // Column N
+                        scorer2: data.getFormattedValue(row, 14), // Column O
+                        scorer3: data.getFormattedValue(row, 15)  // Column P
                     };
                     gamesByRound[roundForGame].push(gameData);
 
@@ -455,6 +456,7 @@
                         // Store full team names as data attributes for filtering
                         gameDiv.dataset.teamA = gameRow.teamA_name;
                         gameDiv.dataset.teamB = gameRow.teamB_name;
+                        gameDiv.dataset.gameCode = gameRow.gameCode; // Store gameCode for officials toggle
 
                         var teamA_div = document.createElement('div');
                         teamA_div.className = 'team-side team-side-left text-start mb-2 mb-md-0 d-flex align-items-center';
@@ -505,15 +507,15 @@
                         info_div.innerHTML = `${arena}<br>${date} ${time}`;
                         center_div.appendChild(info_div);
                         
-                        // New: Officials Toggle Button
+                        // New: Officials Toggle Button (3 dots button)
                         const officialsToggleBtn = document.createElement('button');
-                        officialsToggleBtn.className = 'btn btn-sm btn-link officials-toggle-btn';
+                        officialsToggleBtn.className = 'btn btn-sm btn-officials-toggle'; // Use new custom class
                         officialsToggleBtn.type = 'button';
                         officialsToggleBtn.setAttribute('data-bs-toggle', 'collapse');
                         officialsToggleBtn.setAttribute('data-bs-target', `#officials-collapse-${gameRow.gameCode}`);
                         officialsToggleBtn.setAttribute('aria-expanded', 'false');
                         officialsToggleBtn.setAttribute('aria-controls', `officials-collapse-${gameRow.gameCode}`);
-                        officialsToggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>'; // Font Awesome icon
+                        officialsToggleBtn.innerHTML = '<span>...</span>'; // Three dots
                         center_div.appendChild(officialsToggleBtn);
 
                         gameDiv.appendChild(center_div);
@@ -553,7 +555,7 @@
                         const officialsList = document.createElement('ul');
                         officialsList.className = 'list-unstyled small text-muted text-start mb-0';
 
-                        // Helper function to add official if available
+                        // Helper function to add official if available and not empty/whitespace
                         const addOfficialToList = (label, value) => {
                             if (value && value.trim() !== "") {
                                 const listItem = document.createElement('li');
@@ -562,8 +564,10 @@
                             }
                         };
                         
+                        // Add officials based on provided data, only if not empty
                         addOfficialToList('Διαιτητής 1', gameRow.referee1);
                         addOfficialToList('Διαιτητής 2', gameRow.referee2);
+                        addOfficialToList('Διαιτητής 3', gameRow.referee3); // Added Referee 3
                         addOfficialToList('Κομισάριος', gameRow.commissioner);
                         addOfficialToList('Κριτής 1', gameRow.scorer1);
                         addOfficialToList('Κριτής 2', gameRow.scorer2);
@@ -720,7 +724,7 @@
                     var noStandingsDiv = document.createElement('div');
                     noGamesDiv.className = 'alert alert-info text-center';
                     noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
-                    standingsTabPane.appendChild(noStandingsDiv);
+                    standingsTabPane.appendChild(noGamesDiv);
                 }
 
                 tabContent.appendChild(standingsTabPane);
@@ -928,22 +932,22 @@
                 gameItems.forEach(gameItem => {
                     const teamA_name_full = gameItem.dataset.teamA; 
                     const teamB_name_full = gameItem.dataset.teamB; 
+                    const officialsCollapseDiv = document.getElementById(`officials-collapse-${gameItem.dataset.gameCode}`);
 
                     if (shouldGameBeFilteredByTeam) {
                         if (teamA_name_full.includes(selectedTeam) || teamB_name_full.includes(selectedTeam)) {
                             gameItem.classList.remove('d-none'); 
                             gameItem.classList.add('d-flex'); 
                             // Also ensure the officials toggle button is visible when filtering by team and game is visible
-                            const officialsToggle = gameItem.querySelector('.officials-toggle-btn');
+                            const officialsToggle = gameItem.querySelector('.btn-officials-toggle');
                             if (officialsToggle) officialsToggle.classList.remove('d-none');
                         } else {
                             gameItem.classList.add('d-none'); 
                             gameItem.classList.remove('d-flex'); 
                             // Hide officials toggle button if game is hidden
-                            const officialsToggle = gameItem.querySelector('.officials-toggle-btn');
+                            const officialsToggle = gameItem.querySelector('.btn-officials-toggle');
                             if (officialsToggle) officialsToggle.classList.add('d-none');
                             // Ensure any open officials accordion is closed if the game is hidden
-                            const officialsCollapseDiv = document.getElementById(`officials-collapse-${gameItem.dataset.gameCode}`);
                             if (officialsCollapseDiv && officialsCollapseDiv.classList.contains('show')) {
                                 officialsCollapseDiv.classList.remove('show');
                             }
@@ -952,7 +956,7 @@
                         gameItem.classList.remove('d-none'); 
                         gameItem.classList.add('d-flex'); 
                         // Always show officials toggle button when not filtering by team
-                        const officialsToggle = gameItem.querySelector('.officials-toggle-btn');
+                        const officialsToggle = gameItem.querySelector('.btn-officials-toggle');
                         if (officialsToggle) officialsToggle.classList.remove('d-none');
                     }
                 });
@@ -1240,29 +1244,34 @@
             text-align: right; 
         }
 
-        /* Officials Toggle Button */
-        .officials-toggle-btn {
-            padding: 0.2rem 0.5rem;
-            font-size: 0.8rem;
-            color: var(--mc-secondary-color);
-            background: none;
-            border: none;
+        /* Officials Toggle Button (new styling) */
+        .btn-officials-toggle {
+            background-color: transparent; /* Same as btn-back-custom */
+            color: rgba(33, 37, 41, 0.5); /* Semi-transparent dark grey */
+            border: 1px solid rgba(33, 37, 41, 0.2); /* Very subtle border */
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+            padding: 0.1rem 0.6rem; /* Smaller padding for minimal height */
+            border-radius: 0.5rem; /* Standard border-radius */
+            font-size: 1.2rem; /* Larger font for three dots to be visible */
+            line-height: 1; /* Minimal height by adjusting line-height */
+            text-decoration: none; /* No underline */
             position: absolute; /* Position relative to .game-item */
             bottom: 0; /* Align to the bottom of game-item */
             left: 50%; /* Center horizontally */
             transform: translateX(-50%) translateY(50%); /* Adjust to center it properly below the div */
             z-index: 10; /* Ensure it's clickable */
-            transition: transform 0.2s ease-in-out;
+            display: inline-flex; /* Use flexbox to center content */
+            align-items: center;
+            justify-content: center;
         }
-        .officials-toggle-btn:hover {
+        .btn-officials-toggle:hover {
+            background-color: rgba(33, 37, 41, 0.1); /* Light transparent dark grey on hover */
+            color: var(--mc-header-text-color); /* Full dark text on hover */
+            border-color: var(--mc-header-text-color); /* Visible dark border on hover */
+        }
+        .btn-officials-toggle:not(.collapsed) {
             color: var(--mc-primary-color);
-            transform: translateX(-50%) translateY(50%) scale(1.1);
-        }
-        .officials-toggle-btn.collapsed .fas.fa-chevron-down {
-            transform: rotate(0deg);
-        }
-        .officials-toggle-btn:not(.collapsed) .fas.fa-chevron-down {
-            transform: rotate(180deg);
+            background-color: rgba(0, 123, 255, 0.1); /* Light blue background when expanded */
         }
 
         /* Officials Info Collapse styles */
@@ -1464,7 +1473,7 @@
                 width: 100%; /* Full width for each filter group */
             }
             /* Adjust officials toggle button for mobile */
-            .officials-toggle-btn {
+            .btn-officials-toggle {
                 position: static; /* Remove absolute positioning */
                 transform: none; /* Remove transform */
                 margin-top: 0.5rem; /* Add some space */
