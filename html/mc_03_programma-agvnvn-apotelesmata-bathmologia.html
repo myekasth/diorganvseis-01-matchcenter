@@ -716,7 +716,7 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
-            versionDiv.textContent = `LT v.25.06.17 | mc_03_programma-agvnvn-apotelesmata-bathmologia @ myekasth`; 
+            versionDiv.textContent = `LT v.25.06.18 | mc_03_programma-agvnvn-apotelesmata-bathmologia @ myekasth`; 
             contentDiv.appendChild(versionDiv);
             // --- End of dynamically added footer content ---
         }
@@ -730,7 +730,7 @@
 
             // Populate Round Filter
             roundFilter.innerHTML = `
-                <option value="current" selected>Τρέχουσα Αγωνιστική</option>
+                <option value="current" selected>Τρέχουσα Αγωνιστική (±4 ημ)</option>
                 <option value="all">Όλες οι Αγωνιστικές</option>
             `; // Added 'current' and made it default
             uniqueRounds.forEach(round => {
@@ -773,12 +773,17 @@
                 const accordionCollapse = accordionItem.querySelector('.accordion-collapse');
                 const gamesTabPane = accordionItem.querySelector(`#games-panel-${roundNumber}`);
 
-                // --- Apply Round Filter Logic ---
+                // --- Determine if accordion should be expanded based on BOTH filters ---
                 let shouldBeExpanded = false;
-                if (selectedRound === 'all') { // If "Όλες οι Αγωνιστικές" is selected
-                    shouldBeExpanded = true; // All accordions should be open
-                } else if (selectedRound === 'current') { // If "Τρέχουσα Αγωνιστική" is selected
-                    // Re-evaluate date range for this round
+
+                if (selectedTeam !== 'all') {
+                    // If a specific team is selected, all accordions should be open.
+                    shouldBeExpanded = true;
+                } else if (selectedRound === 'all') {
+                    // If "Όλες οι Αγωνιστικές" is selected (and no team filter), all accordions open.
+                    shouldBeExpanded = true;
+                } else if (selectedRound === 'current') {
+                    // If "Τρέχουσα Αγωνιστική" is selected (and no team filter)
                     let minGameDate = null;
                     let maxGameDate = null;
                     let currentRoundGamesForDateCheck = gamesByRound[roundNumber] || []; 
@@ -799,26 +804,25 @@
                     }
 
                     if (minGameDate && maxGameDate) {
-                        // Check if round dates overlap with the +/- 4 day window from today
                         const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
                         const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
-
                         if (roundStartsWithinWindow && roundEndsWithinWindow) {
                             shouldBeExpanded = true;
                         }
                     }
-                } else { // Specific round number selected
+                } else { 
+                    // If a specific round number is selected (and no team filter)
                     if (roundNumber === selectedRound) {
                         shouldBeExpanded = true;
                     }
                 }
 
-                // Apply expanded/collapsed state
+                // Apply expanded/collapsed state to accordion
                 if (shouldBeExpanded) {
                     accordionButton.classList.remove('collapsed');
                     accordionButton.setAttribute('aria-expanded', 'true');
                     accordionCollapse.classList.add('show');
-                    // Store the ID of the first accordion that is expanded by either default or filter
+                    // Store the ID of the first accordion that is expanded, for scrolling.
                     if (firstAccordionToScroll === null) {
                         firstAccordionToScroll = accordionCollapse.id;
                     }
@@ -829,30 +833,19 @@
                 }
 
                 // --- Apply Team Filter Logic within each round's games ---
+                // This logic is independent of the accordion's expanded state,
+                // it only controls the visibility of individual game items.
                 const gameItems = gamesTabPane.querySelectorAll('.game-item');
-                let anyGameVisibleInRound = false; // Track if any game is visible in this round after team filtering
-
                 gameItems.forEach(gameItem => {
-                    const teamA_name_full = gameItem.dataset.teamA; // Get full name from data attribute
-                    const teamB_name_full = gameItem.dataset.teamB; // Get full name from data attribute
+                    const teamA_name_full = gameItem.dataset.teamA; 
+                    const teamB_name_full = gameItem.dataset.teamB; 
 
                     if (selectedTeam === 'all' || teamA_name_full.includes(selectedTeam) || teamB_name_full.includes(selectedTeam)) {
                         gameItem.style.display = 'flex'; // Show game
-                        anyGameVisibleInRound = true;
                     } else {
                         gameItem.style.display = 'none'; // Hide game
                     }
                 });
-
-                // If a specific team is selected and no games for that team are found in this round,
-                // and the round filter is not specifically set to this round, collapse the accordion.
-                // This prevents empty expanded accordions when filtering by team.
-                // Also, if 'all' rounds or 'current' round are selected but no games are visible for the selected team in this round, collapse.
-                if (selectedTeam !== 'all' && !anyGameVisibleInRound && (selectedRound === 'all' || selectedRound === 'current')) {
-                    accordionButton.classList.add('collapsed');
-                    accordionButton.setAttribute('aria-expanded', 'false');
-                    accordionCollapse.classList.remove('show');
-                }
             });
 
             // Scroll to the first expanded accordion, if any
