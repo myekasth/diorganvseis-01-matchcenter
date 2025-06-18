@@ -440,7 +440,8 @@
                         var time = gameRow.time;
 
                         var gameDiv = document.createElement('div');
-                        gameDiv.className = 'game-item d-flex flex-md-row align-items-center mb-3 p-3 rounded shadow-sm bg-white';
+                        // Initialize with d-flex for default display, d-none will be added by filter
+                        gameDiv.className = 'game-item d-flex flex-md-row align-items-center mb-3 p-3 rounded shadow-sm bg-white'; 
                         // Store full team names as data attributes for filtering
                         gameDiv.dataset.teamA = gameRow.teamA_name;
                         gameDiv.dataset.teamB = gameRow.teamB_name;
@@ -659,7 +660,7 @@
                     var noStandingsDiv = document.createElement('div');
                     noGamesDiv.className = 'alert alert-info text-center';
                     noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
-                    standingsTabPane.appendChild(noStandingsDiv);
+                    standingsTabPane.appendChild(noGamesDiv);
                 }
 
                 tabContent.appendChild(standingsTabPane);
@@ -841,9 +842,11 @@
                     const teamB_name_full = gameItem.dataset.teamB; 
 
                     if (selectedTeam === 'all' || teamA_name_full.includes(selectedTeam) || teamB_name_full.includes(selectedTeam)) {
-                        gameItem.style.display = 'flex'; // Show game
+                        gameItem.classList.remove('d-none'); // Show game
+                        gameItem.classList.add('d-flex'); // Ensure it's flex
                     } else {
-                        gameItem.style.display = 'none'; // Hide game
+                        gameItem.classList.add('d-none'); // Hide game
+                        gameItem.classList.remove('d-flex'); // Remove flex when hidden
                     }
                 });
             });
