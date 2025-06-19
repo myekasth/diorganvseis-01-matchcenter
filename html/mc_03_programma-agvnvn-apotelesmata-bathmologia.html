@@ -92,7 +92,7 @@
             var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? getQueryVariable("pNameKathgoriasOmilou") : defaultNameKathgoriasOmilou;
             
             // Retrieve pAgvnistikh if present and validate it
-            var pAgvnistikh = getQueryVariable("pAgvnistikh");
+            var pAgvnistikh = getQueryVariable("BAG");
             if (pAgvnistikh) {
                 const parsedAgvnistikh = parseInt(pAgvnistikh);
                 if (!isNaN(parsedAgvnistikh) && parsedAgvnistikh > 0) { // Ensure it's a positive number
@@ -361,6 +361,7 @@
                         }
                     }
 
+                    // Initialize shouldThisAccordionBeInitiallyOpen to false
                     let shouldThisAccordionBeInitiallyOpen = false;
 
                     // New logic: Prioritize externalRoundParam
