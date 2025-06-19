@@ -29,7 +29,11 @@
     <script type="text/javascript">
         // Ensure Google Charts is loaded and ready before calling drawchart
         google.charts.load('current', {packages:['corechart']});
+<<<<<<< HEAD
+        google.charts.setOnLoadCallback(drawchart); 
+=======
         google.charts.setOnLoadCallback(drawchart); // Corrected: setOnLoadOnLoadCallback to setOnLoadCallback
+>>>>>>> ab3575ae1b067a51291be93220c61bd930ae29d6
 
         /**
          * Parses URL query parameters.
@@ -257,6 +261,25 @@
                         linkProgramma.innerHTML = '🏀 Πρόγραμμα & Βαθμολογία';
                         buttonsDiv.appendChild(linkProgramma);
 
+<<<<<<< HEAD
+                        // Updated button: "XLs" (direct Excel export)
+                        var linkWebXL = document.createElement('a');
+                        linkWebXL.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=xlsx&gid=420343212&range=A:H`;
+                        linkWebXL.target = '_blank'; // Open in new tab
+                        linkWebXL.className = 'btn btn-secondary btn-sm'; // Using secondary color
+                        linkWebXL.innerHTML = '📊 XLs'; // Updated text and emoji
+                        buttonsDiv.appendChild(linkWebXL);
+
+                        // Updated button: "PDF" (opens direct PDF link from Google Sheet with date and page numbers)
+                        var linkWebPDF = document.createElement('a');
+                        linkWebPDF.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=pdf&gid=0&range=A:H&printnotes=false&printdate=true&pagenum=CENTER_FOOTER`;
+                        linkWebPDF.target = '_blank'; // Open in new tab
+                        linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
+                        linkWebPDF.innerHTML = '📄 PDF'; // Updated text and emoji
+                        buttonsDiv.appendChild(linkWebPDF);
+
+
+=======
                         // New button: "Σε web XL"
                         var linkWebXL = document.createElement('a');
                         linkWebXL.href = 'mc_03_programma-embed-XL.html' +
@@ -287,6 +310,7 @@
                         buttonsDiv.appendChild(linkWebPDF);
 
 
+>>>>>>> ab3575ae1b067a51291be93220c61bd930ae29d6
                         // Link to Teams of Category (mc_03_TeamsOfKathgoria.html) if teamsSheetId exists
                         if(item.teamsSheetId !== ''){
                             var linkOmades = document.createElement('a');
@@ -462,11 +486,11 @@
             margin-bottom: 1rem;
         }
 
-        /* Combined header title with dynamic content */
+        /* Combined header title for "ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ [diorganvtria arxh]" */
         .combined-header-title {
             font-family: 'Inter', sans-serif;
             font-weight: 500;
-            font-size: 1.1rem; /* Keep consistent size */
+            font-size: 1.1rem;
             margin-bottom: 0;
             color: var(--mc-header-combined-title-color);
             text-align: center;
@@ -560,9 +584,9 @@
 
         /* Footer specific styles */
         .ekasth-footer-text, .ekasth-footer-version-text {
-            font-size: 0.55rem;
+            font-size: 0.55rem; /* Updated font-size */
             color: var(--mc-secondary-color);
-            padding: 0.1rem 0;
+            padding: 0.1rem 0; /* Updated padding */
         }
 
         .ekasth-footer-text {
