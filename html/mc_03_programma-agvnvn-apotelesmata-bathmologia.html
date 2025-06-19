@@ -58,6 +58,9 @@
         fourDaysAfterToday.setDate(today.getDate() + DAYS_OFFSET);
         let firstAccordionToOpen = null; // Store ID of the first accordion to be opened by default logic
 
+        // New global variable to store external round parameter
+        let externalRoundParam = null;
+
 
         /**
          * Parses URL query parameters.
@@ -88,6 +91,15 @@
             var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? getQueryVariable("pAgvnistikhPeriodos") : defaultAgvnistikhPeriodos;
             var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? getQueryVariable("pNameKathgoriasOmilou") : defaultNameKathgoriasOmilou;
             
+            // Retrieve pAgvnistikh if present and validate it
+            var pAgvnistikh = getQueryVariable("pAgvnistikh");
+            if (pAgvnistikh) {
+                const parsedAgvnistikh = parseInt(pAgvnistikh);
+                if (!isNaN(parsedAgvnistikh) && parsedAgvnistikh > 0) { // Ensure it's a positive number
+                    externalRoundParam = String(parsedAgvnistikh); // Store as string to match roundNumber format
+                }
+            }
+
             // Update the combined header title
             document.getElementById("combined-header-title").innerHTML = `ΠΡΟΓΡΑΜΜΑ & ΒΑΘΜΟΛΟΓΙΕΣ | ${pNameKathgoriasOmilou} (${pAgvnistikhPeriodos}) | ${pNameDiorganvtriaArxh}`;
             
@@ -349,11 +361,22 @@
                         }
                     }
 
-                    // Determine if this accordion should be open by default
-                    const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
-                    const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
+                    let shouldThisAccordionBeInitiallyOpen = false;
 
-                    if (roundStartsWithinWindow && roundEndsWithinWindow) {
+                    // New logic: Prioritize externalRoundParam
+                    if (externalRoundParam !== null && roundNumber === externalRoundParam) {
+                        shouldThisAccordionBeInitiallyOpen = true;
+                    } else if (externalRoundParam === null) {
+                        // Fallback to existing date-based logic if no valid external parameter
+                        const roundStartsWithinWindow = minGameDate <= fourDaysAfterToday;
+                        const roundEndsWithinWindow = fourDaysBeforeToday <= maxGameDate;
+
+                        if (roundStartsWithinWindow && roundEndsWithinWindow) {
+                            shouldThisAccordionBeInitiallyOpen = true;
+                        }
+                    }
+                    
+                    if (shouldThisAccordionBeInitiallyOpen) {
                         accordionButton.classList.remove('collapsed');
                         accordionButton.setAttribute('aria-expanded', 'true');
                         if (firstAccordionToOpen === null) {
@@ -373,7 +396,7 @@
 
                 var accordionCollapse = document.createElement('div');
                 accordionCollapse.id = collapseId;
-                if (accordionButton.getAttribute('aria-expanded') === 'true') {
+                if (shouldThisAccordionBeInitiallyOpen) { // Use the new flag for initial state
                     accordionCollapse.className = 'accordion-collapse collapse show'; 
                 } else {
                     accordionCollapse.className = 'accordion-collapse collapse'; 
@@ -727,7 +750,7 @@
                     var noStandingsDiv = document.createElement('div');
                     noGamesDiv.className = 'alert alert-info text-center';
                     noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
-                    standingsTabPane.appendChild(noStandingsDiv);
+                    standingsTabPane.appendChild(noGamesDiv);
                 }
 
                 tabContent.appendChild(standingsTabPane);
@@ -798,15 +821,23 @@
 
             // Populate Round Filter
             roundFilter.innerHTML = `
-                <option value="current" selected>Τρέχουσα Αγωνιστική (±4 ημ)</option>
+                <option value="current">Τρέχουσα Αγωνιστική (±4 ημ)</option>
                 <option value="all">Όλες οι Αγωνιστικές</option>
-            `; // Added 'current' and made it default
+            `;
             uniqueRounds.forEach(round => {
                 const option = document.createElement('option');
                 option.value = round;
                 option.textContent = `${round}η Αγωνιστική`;
                 roundFilter.appendChild(option);
             });
+
+            // Set the selected value for the round filter based on externalRoundParam or default
+            if (externalRoundParam && uniqueRounds.includes(externalRoundParam)) {
+                roundFilter.value = externalRoundParam;
+            } else {
+                roundFilter.value = 'current'; // Default if no valid external param
+            }
+
 
             // Populate Team Filter
             teamFilter.innerHTML = '<option value="all">Όλες οι Ομάδες</option>';
