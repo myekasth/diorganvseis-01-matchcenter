@@ -29,7 +29,7 @@
     <script type="text/javascript">
         // Ensure Google Charts is loaded and ready before calling drawchart
         google.charts.load('current', {packages:['corechart']});
-        google.charts.setOnLoadCallback(drawchart); // Corrected: setOnLoadOnLoadCallback to setOnLoadCallback
+        google.charts.setOnLoadCallback(drawchart); 
 
         /**
          * Parses URL query parameters.
@@ -257,7 +257,6 @@
                         linkProgramma.innerHTML = '🏀 Πρόγραμμα & Βαθμολογία';
                         buttonsDiv.appendChild(linkProgramma);
 
-<<<<<<< HEAD
                         // Updated button: "XLs" (direct Excel export)
                         var linkWebXL = document.createElement('a');
                         linkWebXL.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=xlsx&gid=420343212&range=A:H`;
@@ -275,38 +274,6 @@
                         buttonsDiv.appendChild(linkWebPDF);
 
 
-=======
-                        // New button: "Σε web XL"
-                        var linkWebXL = document.createElement('a');
-                        linkWebXL.href = 'mc_03_programma-embed-XL.html' +
-                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
-                            '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
-                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
-                            '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
-                            '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos) +
-                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
-                            '&pSheetId=' + encodeURIComponent(item.sheetIdForNextLevel) + // Pass this as pSheetId
-                            '&pGid=' + encodeURIComponent('420343212'); // Fixed GID as requested
-                        linkWebXL.className = 'btn btn-secondary btn-sm'; // Using secondary color
-                        linkWebXL.innerHTML = '📊 Σε web XL'; // Added emoji
-                        buttonsDiv.appendChild(linkWebXL);
-
-                        // New button: "Σε webPDF"
-                        var linkWebPDF = document.createElement('a');
-                        linkWebPDF.href = 'mc_03_programma-PDF.html' + // The new PDF file
-                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
-                            '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
-                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
-                            '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
-                            '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos) +
-                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
-                            '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.sheetIdForNextLevel); // Pass relevant sheet ID
-                        linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
-                        linkWebPDF.innerHTML = '📄 Σε webPDF'; // Added emoji
-                        buttonsDiv.appendChild(linkWebPDF);
-
-
->>>>>>> ab3575ae1b067a51291be93220c61bd930ae29d6
                         // Link to Teams of Category (mc_03_TeamsOfKathgoria.html) if teamsSheetId exists
                         if(item.teamsSheetId !== ''){
                             var linkOmades = document.createElement('a');
