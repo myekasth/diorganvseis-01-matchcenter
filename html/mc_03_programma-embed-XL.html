@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <meta name="description" content="MatchCenter - Πρόγραμμα, αποτελέσματα αγώνων και βαθμολογίες" />
+    <meta name="keywords" content="MatchCenter, basketball, games, results, ranking, rosters, players, champions, μπάσκετ, πρωτάθλημα, διοργάνωση, πρόγραμμα, βαθμολογία" />
+    <meta name="language" content="greek" />
+    <meta name="author" content="MatchCenter" />
+    <meta name="web_author" content="Lazaros T" />
+    <link rel="icon" href="../favicon.ico" />
+
+
+    <title>MatchCenter | Πρόγραμμα, αποτελέσματα αγώνων και βαθμολογίες</title>
+
+    <!-- Google Fonts: Krona One for titles, Inter for body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS and JS Bundle -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Charts Library (still included for consistency, though not directly used for this embed type) -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+
+    <script type="text/javascript">
+        // Global variables for default values (can be overridden by URL parameters)
+        var defaultNameDiorganvtriaArxh = "ΕΚΑΣΘ";
+        var defaultPowerDiorganvtriaArxh = "1bURffybc07Eel69CZu1WKpGj_DIRA8gaE6rQUBtg5WI";
+        var defaultAgvnistikhPeriodos = "2025-26";
+        var defaultNamePrvtathlhmatos = "ΕΚΑΣΘ 2025-2026";
+        var defaultPowerPrvtathlhmatos = "12ZPDSn9GLS29gAGrDsAyZ1Gz6yObTKCeD0yZVFU-IVk";
+        var defaultNameKathgoriasOmilou = "Α1 Ανδρών";
+        var defaultPowerKathgoriasOmilou = "1S-42x8-L-uJ8c7_1G52GgP22L-9c7F0x1D23Xf45A6B"; 
+        
+        // Default parameters for the embedded Google Sheet
+        const defaultPowerEmbeddedSheet = "1aWkMRqogLbTrv8zpCxai_rVe8rop6F-jj1aeibWvhq8";
+        const defaultGidEmbeddedSheet = "420343212";
+
+        /**
+         * Parses URL query parameters.
+         * Applies decodeURIComponent twice to handle potential double encoding.
+         * @param {string} variable The name of the query parameter to retrieve.
+         * @returns {string|boolean} The value of the parameter or false if not found.
+         */
+        function getQueryVariable(variable){
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0; i<vars.length; i++) {
+                var pair = vars[i].split("=");
+                if(pair[0] === variable){
+                    // Apply decodeURIComponent twice to handle potential double encoding
+                    return decodeURIComponent(decodeURIComponent(pair[1]));
+                }
+            }
+            return(false);
+        }
+
+        /**
+         * Initializes the page by setting the header title and embedding the Google Sheet.
+         * This function is called on window load.
+         */
+        function initializePage(){
+            // Retrieve parameters from URL, using defaults if not present, and ensure double decoding
+            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? getQueryVariable("pNameDiorganvtriaArxh") : defaultNameDiorganvtriaArxh;
+            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? getQueryVariable("pAgvnistikhPeriodos") : defaultAgvnistikhPeriodos;
+            var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? getQueryVariable("pNameKathgoriasOmilou") : defaultNameKathgoriasOmilou;
+            
+            // Update the combined header title
+            document.getElementById("combined-header-title").innerHTML = `web Google XL | ${pNameKathgoriasOmilou} (${pAgvnistikhPeriodos}) | ${pNameDiorganvtriaArxh}`;
+            
+            embedGoogleSheet();
+        }
+
+        /**
+         * Embeds the specified Google Sheet into the 'list-content-id' div using an iframe.
+         * The sheet ID and GID are taken from URL parameters or default values.
+         */
+        function embedGoogleSheet() {
+            var pSheetId = getQueryVariable("pSheetId") ? getQueryVariable("pSheetId") : defaultPowerEmbeddedSheet;
+            var pGid = getQueryVariable("pGid") ? getQueryVariable("pGid") : defaultGidEmbeddedSheet;
+
+            var contentDiv = document.getElementById("list-content-id");
+            // Remove loading spinner
+            var loadingSpinner = document.getElementById("loading-spinner");
+            if (loadingSpinner) {
+                loadingSpinner.remove();
+            }
+            contentDiv.innerHTML = ''; // Clear existing content
+
+            if (!pSheetId || !pGid) {
+                contentDiv.innerHTML = '<div class="col-12"><p class="text-center text-danger">Δεν βρέθηκαν απαραίτητες παράμετροι (Sheet ID ή GID) για την ενσωμάτωση του φύλλου.</p></div>';
+                return;
+            }
+
+            const iframeUrl = `https://docs.google.com/spreadsheets/d/${pSheetId}/htmlembed?gid=${pGid}&range=A1:AO100&headers=false&chrome=false&widget=false`; // Removed `single=true` to show all sheets if needed, added range, chrome, widget for cleaner embed
+
+            const iframe = document.createElement('iframe');
+            iframe.src = iframeUrl;
+            iframe.style.width = '100%';
+            iframe.style.height = '1000px'; // Set a default height that can be overridden by CSS
+            iframe.style.border = 'none';
+            iframe.setAttribute('frameborder', '0');
+            iframe.setAttribute('allowfullscreen', '');
+            iframe.setAttribute('loading', 'lazy'); // Lazy load the iframe
+
+            contentDiv.appendChild(iframe);
+
+            // Add the footer elements as per user's request
+            const footerContainer = document.createElement('div');
+            footerContainer.classList.add('col-12', 'mt-4'); // Use mt-4 for spacing above footer elements
+
+            const footerButtonsContainer = document.createElement('div');
+            footerButtonsContainer.classList.add('text-center', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3');
+
+            // Add "Πίσω" button
+            const backLink = document.createElement('a');
+            backLink.href = 'mc_02_Kathgories.html' + // Link back to categories
+                '?pNameDiorganvtriaArxh=' + encodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
+                '&pPowerDiorganvtriaArxh=' + encodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) +
+                '&pAgvnistikhPeriodos=' + encodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) +
+                '&pNamePrvtathlhmatos=' + encodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) +
+                '&pPowerPrvtathlhmatos=' + encodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos"));
+            backLink.classList.add('btn', 'btn-sm', 'btn-back-custom');
+            backLink.textContent = '← Πίσω';
+            footerButtonsContainer.appendChild(backLink);
+
+            // Add "Προκηρύξεις" button
+            const announcementsLink = document.createElement('a');
+            announcementsLink.href = 'https://www.ekasth1976.gr/2024/07/2024-25.html';
+            announcementsLink.target = '_blank';
+            announcementsLink.classList.add('btn', 'btn-sm', 'btn-back-custom');
+            announcementsLink.textContent = 'Προκηρύξεις';
+            footerButtonsContainer.appendChild(announcementsLink);
+            
+            footerContainer.appendChild(footerButtonsContainer);
+
+            const ekasthDiv = document.createElement('div');
+            ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12');
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
+            footerContainer.appendChild(ekasthDiv);
+
+            const versionDiv = document.createElement('div');
+            versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
+            versionDiv.textContent = `LT v.25.06.19 | mc_03_program_embed_XL @ myekasth`; 
+            footerContainer.appendChild(versionDiv);
+            
+            contentDiv.appendChild(footerContainer); // Append the whole footer container
+        }
+
+        // Call initializePage when the window loads
+        window.onload = initializePage;
+    </script>
+
+    <style>
+        /* CSS variables for consistent theming */
+        :root {
+            --mc-primary-color: #007bff; /* Bootstrap primary blue */
+            --mc-secondary-color: #6c757d; /* Bootstrap secondary gray */
+            --mc-info-color: #17a2b8; /* Bootstrap info cyan */
+            --mc-light-bg: #f8f9fa; /* Light background */
+            --mc-dark-bg: #212529; /* Dark text for contrast */
+            --mc-text-dark: #212529; /* Dark text for light backgrounds */
+            --mc-timeline-color: #ff0000; /* Pure red for underline */
+
+            /* Monochromatic white header colors and contrasting text colors */
+            --mc-header-bg-color: #ffffff; /* Pure white background for header */
+            --mc-header-text-color: #212529; /* Dark text for contrast on white */
+            --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
+            --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
+
+            --mc-filter-bg-color: #e0e0e0; /* Light gray for filter zone background */
+        }
+
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mc-light-bg);
+            color: var(--mc-text-dark);
+            padding-top: 0; /* No fixed top padding as header is sticky */
+        }
+
+        /* Font styling for headings */
+        h1, h5 {
+            font-family: 'Krona One', sans-serif;
+        }
+
+        /* Sticky Header Tabs */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: var(--mc-header-bg-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            z-index: 1020;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .MatchcenterHomepageWidget__header {
+            font-family: 'Krona One', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--mc-header-text-color);
+        }
+
+        .MatchcenterHomepageWidget__header small {
+            font-size: 0.6em;
+            vertical-align: middle;
+            color: var(--mc-header-small-text-color);
+            font-weight: 300;
+        }
+
+        .header-underline {
+            height: 5px;
+            width: 100%;
+            background-color: var(--mc-timeline-color);
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .combined-header-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: var(--mc-header-combined-title-color);
+            text-align: center;
+        }
+
+        /* Main content section styling for the iframe */
+        .main-content-section {
+            width: 100%;
+            height: calc(100vh - 200px); /* Adjust height as needed, accounting for header/footer */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column; /* Allow iframe and footer to stack */
+            flex-grow: 1; /* Allow container to grow */
+        }
+
+        /* iframe specific styles */
+        .iframe-container iframe {
+            flex-grow: 1; /* Allow iframe to take available height */
+            min-height: 500px; /* Minimum height for iframe on smaller screens */
+        }
+
+        /* Footer styles */
+        .ekasth-footer-text, .ekasth-footer-version-text {
+            font-size: 0.55rem;
+            color: var(--mc-secondary-color);
+            padding: 0.1rem 0;
+        }
+
+        .ekasth-footer-text {
+            border-top: 1px solid rgba(0,0,0,.1);
+            padding-top: 1.5rem;
+        }
+
+        .btn-back-custom {
+            background-color: transparent;
+            color: rgba(33, 37, 41, 0.5);
+            border: 1px solid rgba(33, 37, 41, 0.2);
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .btn-back-custom:hover,
+        .btn-back-custom:focus {
+            background-color: rgba(33, 37, 41, 0.1);
+            color: var(--mc-header-text-color);
+            border-color: var(--mc-header-text-color);
+            box-shadow: none;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767.98px) {
+            .sticky-header-tabs {
+                padding-left: 1rem;
+            }
+            .MatchcenterHomepageWidget__header {
+                font-size: 2.2rem;
+            }
+            .combined-header-title {
+                font-size: 1.1rem;
+            }
+            .iframe-container iframe {
+                min-height: 400px; /* Smaller min-height for mobile */
+            }
+        }
+    </style>
+</head>
+
+<body id="myPage">
+
+    <!-- Sticky Header Tabs -->
+    <div class="sticky-header-tabs">
+        <h3 class="MatchcenterHomepageWidget__header">
+            MATCH<small class="text-body-secondary">CENTER</small>
+        </h3>
+        <div class="header-underline"></div>
+        <div class="combined-header-title" id="combined-header-title">
+            ΠΡΟΓΡΑΜΜΑ & ΒΑΘΜΟΛΟΓΙΕΣ
+        </div>
+    </div>
+
+    <!-- Main content section for displaying the embedded Google Sheet -->
+    <section class="container my-2 main-content-section">
+        <div class="row w-100 h-100"> <!-- Use w-100 h-100 to make row fill the section -->
+            <div class="col-12 iframe-container" id="list-content-id">
+                <!-- Loading spinner displayed until iframe is loaded -->
+                <div class="text-center" id="loading-spinner">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                    </div>
+                    <p>Φόρτωση δεδομένων ...</p>
+                </div>
+                <!-- The iframe and footer will be injected here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
