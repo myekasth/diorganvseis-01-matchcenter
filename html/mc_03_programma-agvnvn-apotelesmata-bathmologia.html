@@ -30,7 +30,8 @@
 
     <script type="text/javascript">
         // Ensure Google Charts is loaded and ready before calling drawchart
-        google.charts.load('current', {'packages':['corechart', 'table']}); // Added 'table' package for data tables
+        // Changed packages to an empty object as specific chart types are not directly used for drawing
+        google.charts.load('current', {}); 
         google.charts.setOnLoadCallback(drawchart);
 
         // --- Global variables for default values (can be overridden by URL parameters) ---
@@ -186,8 +187,19 @@
 
             // Extract promotion/relegation values from BZ column (index 77)
             // Assuming BZ2 is row 1 (index 0) and BZ3 is row 2 (index 1) in Column BZ
-            var promotionPositions = parseInt(data.getFormattedValue(0, 77)); // BZ2
-            var relegationStartFrom = parseInt(data.getFormattedValue(1, 77)); // BZ3
+            let promotionPositions = parseInt(data.getFormattedValue(0, 77)); // BZ2
+            let relegationStartFrom = parseInt(data.getFormattedValue(1, 77)); // BZ3
+
+            // Robust checks for NaN: If parsing fails, set to null
+            if (isNaN(promotionPositions)) {
+                promotionPositions = null;
+            }
+            if (isNaN(relegationStartFrom)) {
+                relegationStartFrom = null;
+            }
+
+            console.log("Promotion Positions (BZ2):", promotionPositions);
+            console.log("Relegation Start From (BZ3):", relegationStartFrom);
 
             // Clear previous data before populating
             gamesByRound = {}; 
@@ -672,17 +684,18 @@
                     currentRoundStandings.forEach((standingRow, standingIndex) => {
                         var tr = document.createElement('tr');
                         
-                        if (promotionPositions && standingRow.position <= promotionPositions) {
+                        // Apply promotion/relegation classes only if the values are valid numbers
+                        if (promotionPositions !== null && standingRow.position <= promotionPositions) {
                             tr.classList.add('table-success-light');
                         }
-                        if (relegationStartFrom && standingRow.position >= relegationStartFrom) {
+                        if (relegationStartFrom !== null && standingRow.position >= relegationStartFrom) {
                             tr.classList.add('table-danger-light');
                         }
 
-                        if (promotionPositions && standingRow.position === promotionPositions) {
+                        if (promotionPositions !== null && standingRow.position === promotionPositions) {
                             tr.classList.add('promotion-border-bottom');
                         }
-                        if (relegationStartFrom && standingRow.position === relegationStartFrom) {
+                        if (relegationStartFrom !== null && standingRow.position === relegationStartFrom) {
                             tr.classList.add('relegation-border-top');
                         }
                         
@@ -750,8 +763,8 @@
                     standingsTabPane.appendChild(standingsTable);
                 } else {
                     var noStandingsDiv = document.createElement('div');
-                    noGamesDiv.className = 'alert alert-info text-center';
-                    noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
+                    noStandingsDiv.className = 'alert alert-info text-center';
+                    noStandingsDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
                     standingsTabPane.appendChild(noStandingsDiv);
                 }
 
