@@ -9,7 +9,7 @@
     <meta name="language" content="greek" />
     <meta name="author" content="MatchCenter" />
     <meta name="web_author" content="Lazaros T" />
-    <link rel="icon" href="favicon.ico" />
+    <link rel="icon" href="../favicon.ico" />
 
     <title>Κατηγορίες,Όμιλοι Πρωταθλημάτων</title>
 
@@ -29,7 +29,7 @@
     <script type="text/javascript">
         // Ensure Google Charts is loaded and ready before calling drawchart
         google.charts.load('current', {packages:['corechart']});
-        google.charts.setOnLoadCallback(drawchart);
+        google.charts.setOnLoadOnLoadCallback(drawchart);
 
         /**
          * Parses URL query parameters.
@@ -217,7 +217,7 @@
                     subAccordionButton.setAttribute('data-bs-target', '#' + subCollapseId);
                     subAccordionButton.setAttribute('aria-expanded', 'false');
                     subAccordionButton.setAttribute('aria-controls', subCollapseId);
-                    subAccordionButton.textContent = championshipNameLevel1; // ΟΝΟΜΑ ΠΡΩΤΑΘΛΗΜΑΤΟΣ (1ο επίπεδο)
+                    subAccordionButton.textContent = championshipNameLevel1; // ΟΝΟΜΑ ΠΡΩΤΑΤΑΘΛΗΜΑΤΟΣ (1ο επίπεδο)
 
                     subAccordionHeader.appendChild(subAccordionButton);
                     subAccordionItem.appendChild(subAccordionHeader);
@@ -257,6 +257,36 @@
                         linkProgramma.innerHTML = '🏀 Πρόγραμμα & Βαθμολογία';
                         buttonsDiv.appendChild(linkProgramma);
 
+                        // New button: "Σε web XL"
+                        var linkWebXL = document.createElement('a');
+                        linkWebXL.href = 'mc_03_programma-embed-XL.html' +
+                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                            '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
+                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
+                            '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
+                            '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos) +
+                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
+                            '&pSheetId=' + encodeURIComponent(item.sheetIdForNextLevel) + // Pass this as pSheetId
+                            '&pGid=' + encodeURIComponent('420343212'); // Fixed GID as requested
+                        linkWebXL.className = 'btn btn-secondary btn-sm'; // Using secondary color
+                        linkWebXL.innerHTML = '📊 Σε web XL'; // Added emoji
+                        buttonsDiv.appendChild(linkWebXL);
+
+                        // New button: "Σε webPDF"
+                        var linkWebPDF = document.createElement('a');
+                        linkWebPDF.href = 'mc_03_programma-PDF.html' + // The new PDF file
+                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                            '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
+                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
+                            '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
+                            '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos) +
+                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
+                            '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.sheetIdForNextLevel); // Pass relevant sheet ID
+                        linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
+                        linkWebPDF.innerHTML = '📄 Σε webPDF'; // Added emoji
+                        buttonsDiv.appendChild(linkWebPDF);
+
+
                         // Link to Teams of Category (mc_03_TeamsOfKathgoria.html) if teamsSheetId exists
                         if(item.teamsSheetId !== ''){
                             var linkOmades = document.createElement('a');
@@ -269,7 +299,7 @@
                                 '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
                                 '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.teamsSheetId);
                             linkOmades.className = 'btn btn-info btn-sm';
-                            linkOmades.innerHTML = '� Ομάδες';
+                            linkOmades.innerHTML = '👥 Ομάδες';
                             buttonsDiv.appendChild(linkOmades);
                         }
 
@@ -425,8 +455,8 @@
 
         /* New style for the red line below the main header */
         .header-underline {
-            height: 5px;
-            width: 100%;
+            height: 5px; /* Updated height */
+            width: 100%; /* Occupy full width of the sticky area */
             background-color: var(--mc-timeline-color);
             margin-top: 0.5rem;
             margin-bottom: 1rem;
