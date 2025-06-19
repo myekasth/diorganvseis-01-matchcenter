@@ -265,10 +265,10 @@
                         linkWebXL.innerHTML = '📊 XLs'; // Updated text and emoji
                         buttonsDiv.appendChild(linkWebXL);
 
-                        // Updated button: "PDF" (opens direct PDF link from Google Sheet with date and page numbers)
+                        // Updated button: "PDF" (opens direct PDF link from Google Sheet with only date)
                         var linkWebPDF = document.createElement('a');
-                        // Removed printdate and pagenum as per user request. Retained printnotes=false.
-                        linkWebPDF.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=pdf&gid=0&range=A:H&printnotes=false`;
+                        // Added printdate=true. Removed pagenum and printnotes=false from the previous request.
+                        linkWebPDF.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=pdf&gid=0&range=A:H&&printnotes=false`;
                         linkWebPDF.target = '_blank'; // Open in new tab
                         linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
                         linkWebPDF.innerHTML = '📄 PDF'; // Updated text and emoji
