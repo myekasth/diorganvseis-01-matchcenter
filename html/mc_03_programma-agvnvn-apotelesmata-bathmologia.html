@@ -92,7 +92,7 @@
             var pNameKathgoriasOmilou = getQueryVariable("pNameKathgoriasOmilou") ? getQueryVariable("pNameKathgoriasOmilou") : defaultNameKathgoriasOmilou;
             
             // Retrieve pAgvnistikh if present and validate it
-            var pAgvnistikh = getQueryVariable("BAG");
+            var pAgvnistikh = getQueryVariable("pAgvnistikh"); // Reverted to pAgvnistikh
             if (pAgvnistikh) {
                 const parsedAgvnistikh = parseInt(pAgvnistikh);
                 if (!isNaN(parsedAgvnistikh) && parsedAgvnistikh > 0) { // Ensure it's a positive number
@@ -348,6 +348,9 @@
                 const dateDisplayDiv = document.createElement('div'); 
                 dateDisplayDiv.classList.add('round-date-display'); 
 
+                // Initialize shouldThisAccordionBeInitiallyOpen to false at the start of each iteration
+                let shouldThisAccordionBeInitiallyOpen = false;
+
                 if (minGameDate && maxGameDate) {
                     const isMobileScreen = window.innerWidth < 768;
 
@@ -360,9 +363,6 @@
                             dateDisplayDiv.textContent = `Από ${formatSimpleDate(minGameDate)} ως ${formatSimpleDate(maxGameDate)}`;
                         }
                     }
-
-                    // Initialize shouldThisAccordionBeInitiallyOpen to false
-                    let shouldThisAccordionBeInitiallyOpen = false;
 
                     // New logic: Prioritize externalRoundParam
                     if (externalRoundParam !== null && roundNumber === externalRoundParam) {
@@ -377,18 +377,19 @@
                         }
                     }
                     
-                    if (shouldThisAccordionBeInitiallyOpen) {
-                        accordionButton.classList.remove('collapsed');
-                        accordionButton.setAttribute('aria-expanded', 'true');
-                        if (firstAccordionToOpen === null) {
-                            firstAccordionToOpen = collapseId; 
-                        }
-                    }
                     // Part α: Add class for past rounds
                     if (maxGameDate < today) {
                         accordionButton.classList.add('past-round-accordion');
                     }
+                } // End of if (minGameDate && maxGameDate)
 
+                // Apply accordion expansion/collapse based on shouldThisAccordionBeInitiallyOpen
+                if (shouldThisAccordionBeInitiallyOpen) {
+                    accordionButton.classList.remove('collapsed');
+                    accordionButton.setAttribute('aria-expanded', 'true');
+                    if (firstAccordionToOpen === null) {
+                        firstAccordionToOpen = collapseId; 
+                    }
                 }
                 accordionButton.appendChild(dateDisplayDiv); 
                 
@@ -751,7 +752,7 @@
                     var noStandingsDiv = document.createElement('div');
                     noGamesDiv.className = 'alert alert-info text-center';
                     noGamesDiv.textContent = 'Δεν βρέθηκε βαθμολογία για αυτή την αγωνιστική.';
-                    standingsTabPane.appendChild(noGamesDiv);
+                    standingsTabPane.appendChild(noStandingsDiv);
                 }
 
                 tabContent.appendChild(standingsTabPane);
