@@ -257,9 +257,14 @@
                         linkProgramma.innerHTML = '🏀 Πρόγραμμα & Βαθμολογία';
                         buttonsDiv.appendChild(linkProgramma);
 
-                        // Updated button: "XLs" (direct Excel export)
+                        // Changed button: "XLs" now links to mc_03_programma-embed-XL.html
                         var linkWebXL = document.createElement('a');
-                        linkWebXL.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=xlsx&gid=420343212&range=A:H`;
+                        linkWebXL.href = 'mc_03_program_embed_XL.html' + 
+                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
+                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
+                            '&pSheetId=' + encodeURIComponent(item.sheetIdForNextLevel) + // Pass the Google Sheet ID
+                            '&pGid=' + encodeURIComponent('420343212'); // Pass the specific GID for the embed, as determined previously
                         linkWebXL.target = '_blank'; // Open in new tab
                         linkWebXL.className = 'btn btn-secondary btn-sm'; // Using secondary color
                         linkWebXL.innerHTML = '📊 XLs'; // Updated text and emoji
