@@ -2,6 +2,7 @@
 <html lang="el">
 <head>
     <meta charset="utf-8">
+    <!-- Removed target-densitydpi as it's deprecated and causes console warnings -->
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
     <meta name="description" content="MatchCenter - Πρόγραμμα, αποτελέσματα αγώνων και βαθμολογίες" />
@@ -98,12 +99,16 @@
                 return;
             }
 
-            const iframeUrl = `https://docs.google.com/spreadsheets/d/${pSheetId}/htmlembed?gid=${pGid}&range=A1:AO100&headers=false&chrome=false&widget=false`; // Removed `single=true` to show all sheets if needed, added range, chrome, widget for cleaner embed
+            // Construct the iframe URL. 
+            // `single=true` is removed to potentially allow tabs in the future if needed by Google Sheets.
+            // `range=A1:AO100` specifies the visible range.
+            // `headers=false`, `chrome=false`, `widget=false` for a cleaner embed without Google Sheets UI elements.
+            const iframeUrl = `https://docs.google.com/spreadsheets/d/${pSheetId}/htmlembed?gid=${pGid}&range=A1:AO100&headers=false&chrome=false&widget=false`; 
 
             const iframe = document.createElement('iframe');
             iframe.src = iframeUrl;
             iframe.style.width = '100%';
-            iframe.style.height = '1000px'; // Set a default height that can be overridden by CSS
+            iframe.style.height = '100%'; // Set height to 100% to fill the parent container's height
             iframe.style.border = 'none';
             iframe.setAttribute('frameborder', '0');
             iframe.setAttribute('allowfullscreen', '');
@@ -111,34 +116,12 @@
 
             contentDiv.appendChild(iframe);
 
-            // Add the footer elements as per user's request
+            // Re-add the footer elements as per user's request
             const footerContainer = document.createElement('div');
             footerContainer.classList.add('col-12', 'mt-4'); // Use mt-4 for spacing above footer elements
 
-            const footerButtonsContainer = document.createElement('div');
-            footerButtonsContainer.classList.add('text-center', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3');
-
-            // Add "Πίσω" button
-            const backLink = document.createElement('a');
-            backLink.href = 'mc_02_Kathgories.html' + // Link back to categories
-                '?pNameDiorganvtriaArxh=' + encodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
-                '&pPowerDiorganvtriaArxh=' + encodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) +
-                '&pAgvnistikhPeriodos=' + encodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) +
-                '&pNamePrvtathlhmatos=' + encodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) +
-                '&pPowerPrvtathlhmatos=' + encodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos"));
-            backLink.classList.add('btn', 'btn-sm', 'btn-back-custom');
-            backLink.textContent = '← Πίσω';
-            footerButtonsContainer.appendChild(backLink);
-
-            // Add "Προκηρύξεις" button
-            const announcementsLink = document.createElement('a');
-            announcementsLink.href = 'https://www.ekasth1976.gr/2024/07/2024-25.html';
-            announcementsLink.target = '_blank';
-            announcementsLink.classList.add('btn', 'btn-sm', 'btn-back-custom');
-            announcementsLink.textContent = 'Προκηρύξεις';
-            footerButtonsContainer.appendChild(announcementsLink);
-            
-            footerContainer.appendChild(footerButtonsContainer);
+            // Removed the "Πίσω" and "Προκηρύξεις" buttons as per user's request.
+            // No footerButtonsContainer is created or appended here.
 
             const ekasthDiv = document.createElement('div');
             ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12');
@@ -155,7 +138,7 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
-            versionDiv.textContent = `LT v.25.06.19 | mc_03_program_embed_XL @ myekasth`; 
+            versionDiv.textContent = `LT v.25.06.20 | mc_03_programma-embed-XL @ myekasth`; 
             footerContainer.appendChild(versionDiv);
             
             contentDiv.appendChild(footerContainer); // Append the whole footer container
@@ -191,6 +174,9 @@
             background-color: var(--mc-light-bg);
             color: var(--mc-text-dark);
             padding-top: 0; /* No fixed top padding as header is sticky */
+            display: flex; /* Use flexbox for overall layout */
+            flex-direction: column; /* Stack header and main content vertically */
+            min-height: 100vh; /* Ensure body takes full viewport height */
         }
 
         /* Font styling for headings */
@@ -211,6 +197,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0; /* Prevent header from shrinking */
         }
 
         .MatchcenterHomepageWidget__header {
@@ -248,28 +235,28 @@
 
         /* Main content section styling for the iframe */
         .main-content-section {
+            flex-grow: 1; /* Allow this section to take up remaining vertical space */
             width: 100%;
-            height: calc(100vh - 200px); /* Adjust height as needed, accounting for header/footer */
+            padding: 1rem 0; /* Add some vertical padding */
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column; /* Stack iframe and footer content vertically */
+            justify-content: flex-start; /* Align iframe to the top of the section */
         }
 
         .iframe-container {
             width: 100%;
-            height: 100%;
+            flex-grow: 1; /* Allow iframe container to take available height */
             display: flex;
-            flex-direction: column; /* Allow iframe and footer to stack */
-            flex-grow: 1; /* Allow container to grow */
+            flex-direction: column; 
         }
 
         /* iframe specific styles */
         .iframe-container iframe {
-            flex-grow: 1; /* Allow iframe to take available height */
-            min-height: 500px; /* Minimum height for iframe on smaller screens */
+            flex-grow: 1; /* Allow iframe to take available height within its container */
+            min-height: 70vh; /* Increased min-height for better visibility */
         }
 
-        /* Footer styles */
+        /* Footer styles (re-added) */
         .ekasth-footer-text, .ekasth-footer-version-text {
             font-size: 0.55rem;
             color: var(--mc-secondary-color);
@@ -281,7 +268,7 @@
             padding-top: 1.5rem;
         }
 
-        .btn-back-custom {
+        .btn-back-custom { /* This class is now unused but kept in CSS for completeness if needed later */
             background-color: transparent;
             color: rgba(33, 37, 41, 0.5);
             border: 1px solid rgba(33, 37, 41, 0.2);
@@ -293,7 +280,7 @@
         }
 
         .btn-back-custom:hover,
-        .btn-back-custom:focus {
+        .btn-back-custom:focus { /* This class is now unused but kept in CSS for completeness if needed later */
             background-color: rgba(33, 37, 41, 0.1);
             color: var(--mc-header-text-color);
             border-color: var(--mc-header-text-color);
@@ -312,7 +299,7 @@
                 font-size: 1.1rem;
             }
             .iframe-container iframe {
-                min-height: 400px; /* Smaller min-height for mobile */
+                min-height: 50vh; /* Adjusted min-height for mobile */
             }
         }
     </style>
