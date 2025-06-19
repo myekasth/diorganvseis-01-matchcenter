@@ -29,7 +29,7 @@
     <script type="text/javascript">
         // Ensure Google Charts is loaded and ready before calling drawchart
         google.charts.load('current', {packages:['corechart']});
-        google.charts.setOnLoadOnLoadCallback(drawchart);
+        google.charts.setOnLoadCallback(drawchart); // Corrected: setOnLoadOnLoadCallback to setOnLoadCallback
 
         /**
          * Parses URL query parameters.
