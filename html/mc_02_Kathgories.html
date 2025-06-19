@@ -267,7 +267,8 @@
 
                         // Updated button: "PDF" (opens direct PDF link from Google Sheet with date and page numbers)
                         var linkWebPDF = document.createElement('a');
-                        linkWebPDF.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=pdf&gid=0&range=A:H&printnotes=false&printdate=true&pagenum=CENTER_FOOTER`;
+                        // Removed printdate and pagenum as per user request. Retained printnotes=false.
+                        linkWebPDF.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=pdf&gid=0&range=A:H&printnotes=false`;
                         linkWebPDF.target = '_blank'; // Open in new tab
                         linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
                         linkWebPDF.innerHTML = '📄 PDF'; // Updated text and emoji
