@@ -46,6 +46,46 @@
             return(false);
         }
 
+        /**
+         * Converts a Google Docs or Google Sheets view URL into a PDF export URL.
+         * If the URL is not a recognized Google Docs/Sheets link, it returns the original URL.
+         * @param {string} originalUrl The original URL from Google Docs or Google Sheets.
+         * @returns {string} The transformed PDF export URL or the original URL if not applicable.
+         */
+        function getPdfExportUrl(originalUrl) {
+            if (!originalUrl) {
+                return '';
+            }
+
+            // Regular expression to match Google Docs/Sheets URLs and capture the ID and type
+            // It looks for /document/d/ or /spreadsheets/d/ followed by the ID.
+            const docSheetRegex = /https:\/\/docs\.google\.com\/(document|spreadsheets)\/d\/([a-zA-Z0-9_-]+)(?:.*)/;
+            const match = originalUrl.match(docSheetRegex);
+
+            if (match) {
+                const docType = match[1]; // 'document' or 'spreadsheets'
+                const docId = match[2];   // The document/spreadsheet ID
+
+                let exportUrl = `https://docs.google.com/${docType}/d/${docId}/export?format=pdf`;
+
+                // If it's a spreadsheet, try to preserve the gid (sheet ID) from the original URL.
+                // This is important for exporting specific tabs of a spreadsheet.
+                if (docType === 'spreadsheets') {
+                    const gidMatch = originalUrl.match(/[?#&]gid=([0-9]+)/);
+                    if (gidMatch) {
+                        exportUrl += `&gid=${gidMatch[1]}`;
+                    } else {
+                        // If no GID is explicitly found, default to gid=0 (the first sheet)
+                        exportUrl += `&gid=0`;
+                    }
+                }
+                return exportUrl;
+            }
+            // If the URL does not match a Google Docs/Sheets pattern, return the original URL
+            // as it might already be a direct PDF link or another type of valid URL.
+            return originalUrl;
+        }
+
         // Default values for parameters if not provided in URL
         // These defaults ensure the page can load with meaningful data even without URL parameters.
         var defaultNameDiorganvtriaArxh = "ΕΚΑΣΘ"; // New default value for pNameDiorganvtriaArxh
@@ -147,6 +187,7 @@
                     finalCategoryGroupName: data.getFormattedValue(row, 4), // Column E
                     sheetIdForNextLevel: data.getFormattedValue(row, 8), // Column I
                     titlesSheetId: data.getFormattedValue(row, 10), // Column K
+                    pdfProgramUrl: data.getFormattedValue(row, 11), // Column L for PDF programs
                     teamsSheetId: data.getFormattedValue(row, 12) // Column M
                 });
             }
@@ -270,14 +311,16 @@
                         linkWebXL.innerHTML = '📊 XLs mode'; // Updated text and emoji
                         buttonsDiv.appendChild(linkWebXL);
 
-                        // Updated button: "PDF" (opens direct PDF link from Google Sheet with only date)
-                        var linkWebPDF = document.createElement('a');
-                        // Added printdate=true. Removed pagenum and printnotes=false from the previous request.
-                        linkWebPDF.href = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(item.sheetIdForNextLevel)}/export?format=pdf&gid=0&range=A:H&&printnotes=false`;
-                        linkWebPDF.target = '_blank'; // Open in new tab
-                        linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
-                        linkWebPDF.innerHTML = '📄 PDF'; // Updated text and emoji
-                        buttonsDiv.appendChild(linkWebPDF);
+                        // Updated button: "PDF" - now processes the URL from Column L for PDF programs
+                        if (item.pdfProgramUrl) { // Only create button if URL exists in Column L
+                            var linkWebPDF = document.createElement('a');
+                            // Transform the Google Docs/Sheets URL to a PDF export URL
+                            linkWebPDF.href = getPdfExportUrl(item.pdfProgramUrl);
+                            linkWebPDF.target = '_blank'; // Open in new tab
+                            linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
+                            linkWebPDF.innerHTML = '📄 PDF'; // Updated text and emoji
+                            buttonsDiv.appendChild(linkWebPDF);
+                        }
 
 
                         // Link to Teams of Category (mc_03_TeamsOfKathgoria.html) if teamsSheetId exists
@@ -295,23 +338,6 @@
                             linkOmades.innerHTML = '👥 Ομάδες';
                             buttonsDiv.appendChild(linkOmades);
                         }
-
-                        // Link to Titles of Categories (mc_04_TitlesOfCategories.html) - REMOVED AS REQUESTED
-                        /*
-                        if(item.titlesSheetId !== ''){
-                            var linkTitloi = document.createElement('a');
-                            linkTitloi.href = 'mc_04_TitlesOfCategories.html' +
-                                '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
-                                '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
-                                '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
-                                '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
-                                '&pNameKathgorias=' + encodeURIComponent(item.finalCategoryGroupName) +
-                                '&pPowerKathgorias=' + encodeURIComponent(item.titlesSheetId);
-                            linkTitloi.className = 'btn btn-secondary btn-sm';
-                            linkTitloi.innerHTML = '🏆 Τίτλοι';
-                            buttonsDiv.appendChild(linkTitloi);
-                        }
-                        */
                         
                         finalItemDiv.appendChild(itemNameSpan);
                         finalItemDiv.appendChild(buttonsDiv);
