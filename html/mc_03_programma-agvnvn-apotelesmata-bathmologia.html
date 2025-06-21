@@ -1096,6 +1096,15 @@
             font-weight: 300;
         }
 
+                /* New styles for the custom superscript */
+        .MatchcenterHomepageWidget__header .header-superscript {
+            font-size: 0.5em; /* Half the size of the parent header font */
+            vertical-align: super;
+            line-height: 0; /* Adjust line height to prevent affecting vertical spacing */
+            position: relative;
+            top: -0.5em; /* Fine-tune vertical position */
+        }
+
         .header-underline {
             height: 5px;
             width: 100%;
@@ -1562,8 +1571,9 @@
 
     <!-- Sticky Header Tabs -->
     <div class="sticky-header-tabs">
+        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
         <h3 class="MatchcenterHomepageWidget__header">
-            MATCHCENTER4<small class="text-body-secondary">Ε.ΚΑ.Σ.Θ.</small>
+            MATCHCENTER<span class="header-superscript">4</span>
         </h3>
         <div class="header-underline"></div>
         <div class="combined-header-title" id="combined-header-title">
