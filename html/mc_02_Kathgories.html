@@ -481,6 +481,17 @@
             margin-bottom: 1rem;
         }
 
+        .header-pre-title {
+            font-family: 'Inter', sans-serif; /* Χρήση της γραμματοσειράς Inter */
+            font-size: 0.8rem; /* Προσαρμοσμένο μέγεθος γραμματοσειράς */
+            color: var(--mc-header-small-text-color); /* Χρώμα γκρι */
+            text-align: center; /* Κεντρική στοίχιση */
+            width: 100%; /* Για να διασφαλιστεί ότι καταλαμβάνει πλήρες πλάτος για το centering */
+            padding: 0; /* Μηδενικό padding */
+            margin: 0; /* Μηδενικό margin */
+            line-height: 1; /* Συμπαγές ύψος γραμμής */
+        }        
+
         /* Combined header title for "ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ [diorganvtria arxh]" */
         .combined-header-title {
             font-family: 'Inter', sans-serif;
@@ -634,8 +645,9 @@
 
     <!-- New Sticky Header Tabs -->
     <div class="sticky-header-tabs">
+        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
         <h3 class="MatchcenterHomepageWidget__header">
-            MATCHCENTER4<small class="text-body-secondary">Ε.ΚΑ.Σ.Θ.</small>
+            MATCHCENTER<span class="header-superscript">4</span>
         </h3>
         <!-- New div for the orange-red line below the main header -->
         <div class="header-underline"></div>
