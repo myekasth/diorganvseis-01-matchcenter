@@ -116,13 +116,28 @@
 
             contentDiv.appendChild(iframe);
 
-            // Re-add the footer elements as per user's request
-            const footerContainer = document.createElement('div');
-            footerContainer.classList.add('col-12', 'mt-4'); // Use mt-4 for spacing above footer elements
+            // Create a div to hold the action buttons (e.g., Close)
+            const actionButtonsContainer = document.createElement('div');
+            actionButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3'); // Centered with spacing
 
-            // Removed the "Πίσω" and "Προκηρύξεις" buttons as per user's request.
-            // No footerButtonsContainer is created or appended here.
+            // Add the "Κλείσιμο" button
+            const closeButton = document.createElement('a');
+            closeButton.href = '#'; // Prevent default link behavior
+            closeButton.classList.add('btn', 'btn-sm', 'btn-custom-close'); // Using btn-custom-close for custom styling
+            // Set innerHTML with span for the icon, allowing separate styling for the 'X'
+            closeButton.innerHTML = '<span class="close-icon">✖</span> Κλείσιμο'; 
+            closeButton.onclick = function() {
+                window.close(); // Attempt to close the window
+                // Fallback for browsers that don't allow window.close()
+                // If the window wasn't opened by script, this might not work.
+                // In such cases, you might consider: window.history.back();
+                return false; // Prevent default link behavior
+            };
+            actionButtonsContainer.appendChild(closeButton);
+            
+            contentDiv.appendChild(actionButtonsContainer); // Append the button container
 
+            // Add the footer elements after all cards and the new button have been processed
             const ekasthDiv = document.createElement('div');
             ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12');
             const now = new Date();
@@ -134,14 +149,12 @@
             const seconds = String(now.getSeconds()).padStart(2, '0');
             const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
             ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
-            footerContainer.appendChild(ekasthDiv);
+            contentDiv.appendChild(ekasthDiv);
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
             versionDiv.textContent = `LT v.25.06.20 | mc_03_programma-embed-XL @ myekasth`; 
-            footerContainer.appendChild(versionDiv);
-            
-            contentDiv.appendChild(footerContainer); // Append the whole footer container
+            contentDiv.appendChild(versionDiv);
         }
 
         // Call initializePage when the window loads
@@ -256,7 +269,7 @@
             min-height: 70vh; /* Increased min-height for better visibility */
         }
 
-        /* Footer styles (re-added) */
+        /* Footer styles */
         .ekasth-footer-text, .ekasth-footer-version-text {
             font-size: 0.55rem;
             color: var(--mc-secondary-color);
@@ -268,23 +281,36 @@
             padding-top: 1.5rem;
         }
 
-        .btn-back-custom { /* This class is now unused but kept in CSS for completeness if needed later */
-            background-color: transparent;
-            color: rgba(33, 37, 41, 0.5);
-            border: 1px solid rgba(33, 37, 41, 0.2);
-            transition: all 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.85rem;
-            text-decoration: none;
+        /* Custom style for the Close button, similar to the back button in mc_02_Kathgories */
+        .btn-custom-close {
+            background-color: transparent; /* Initially transparent */
+            color: var(--mc-secondary-color); /* Grey for text */
+            border: 1px solid var(--mc-secondary-color); /* Grey border */
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+            padding: 0.5rem 1rem; /* Standard padding */
+            border-radius: 0.5rem; /* Standard border-radius */
+            font-size: 0.85rem; /* Standard font-size */
+            text-decoration: none; /* No underline */
         }
 
-        .btn-back-custom:hover,
-        .btn-back-custom:focus { /* This class is now unused but kept in CSS for completeness if needed later */
-            background-color: rgba(33, 37, 41, 0.1);
-            color: var(--mc-header-text-color);
-            border-color: var(--mc-header-text-color);
+        .btn-custom-close:hover,
+        .btn-custom-close:focus {
+            background-color: var(--mc-secondary-color); /* Solid grey on hover */
+            color: #ffffff; /* White text on hover */
+            border-color: var(--mc-secondary-color);
             box-shadow: none;
+        }
+
+        /* Style for the 'X' icon inside the close button */
+        .btn-custom-close .close-icon {
+            color: #dc3545; /* Red for the X icon */
+            margin-right: 0.25rem; /* Small space between X and text */
+        }
+
+        /* Style for the 'X' icon on hover */
+        .btn-custom-close:hover .close-icon,
+        .btn-custom-close:focus .close-icon {
+            color: #ffffff; /* White icon on hover when button background becomes solid */
         }
 
         /* Responsive adjustments for smaller screens */
