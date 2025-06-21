@@ -13,7 +13,7 @@
     <link rel="icon" href="../favicon.ico" />
 
 
-    <title>MatchCenter | Πρόγραμμα, αποτελέσματα αγώνων και βαθμολογίες</title>
+    <title>MatchCenter | Πρόγραμμα web Google XL</title>
 
     <!-- Google Fonts: Krona One for titles, Inter for body text -->
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -213,21 +213,39 @@
             flex-shrink: 0; /* Prevent header from shrinking */
         }
 
+        /* New pre-title for "Ε.ΚΑ.Σ.Θ." */
+        .header-pre-title {
+            font-family: 'Inter', sans-serif; /* Using Inter for this text */
+            font-size: 0.8rem; /* Adjusted font size for "Ε.ΚΑ.Σ.Θ." */
+            color: var(--mc-header-small-text-color); /* Grey color */
+            text-align: center;
+            width: 100%; /* Ensure it takes full width for centering */
+            padding: 0; /* No padding */
+            margin: 0; /* No margin */
+            line-height: 1; /* Compact line height */
+        }
+
+
         .MatchcenterHomepageWidget__header {
             font-family: 'Krona One', sans-serif;
             font-size: 2.2rem;
+            margin-top: 0; /* Remove top margin as pre-title is above */
             margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--mc-header-text-color);
         }
 
-        .MatchcenterHomepageWidget__header small {
-            font-size: 0.6em;
-            vertical-align: middle;
-            color: var(--mc-header-small-text-color);
-            font-weight: 300;
+        /* New styles for the custom superscript */
+        .MatchcenterHomepageWidget__header .header-superscript {
+            font-size: 0.5em; /* Half the size of the parent header font */
+            vertical-align: super;
+            line-height: 0; /* Adjust line height to prevent affecting vertical spacing */
+            position: relative;
+            top: -0.5em; /* Fine-tune vertical position */
         }
+
+        /* Removed .header-subscript as its content is now in .header-pre-title */
 
         .header-underline {
             height: 5px;
@@ -327,6 +345,9 @@
             .iframe-container iframe {
                 min-height: 50vh; /* Adjusted min-height for mobile */
             }
+            .header-pre-title {
+                font-size: 0.7rem; /* Slightly smaller for mobile */
+            }
         }
     </style>
 </head>
@@ -335,8 +356,9 @@
 
     <!-- Sticky Header Tabs -->
     <div class="sticky-header-tabs">
+        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
         <h3 class="MatchcenterHomepageWidget__header">
-            MATCHCENTER4<small class="text-body-secondary">Ε.ΚΑ.Σ.Θ.</small>
+            MATCHCENTER<span class="header-superscript">4</span>
         </h3>
         <div class="header-underline"></div>
         <div class="combined-header-title" id="combined-header-title">
