@@ -188,7 +188,8 @@
                     sheetIdForNextLevel: data.getFormattedValue(row, 8), // Column I
                     titlesSheetId: data.getFormattedValue(row, 10), // Column K
                     pdfProgramUrl: data.getFormattedValue(row, 11), // Column L for PDF programs
-                    teamsSheetId: data.getFormattedValue(row, 12) // Column M
+                    teamsSheetId: data.getFormattedValue(row, 12), // Column M
+                    colH_url: data.getFormattedValue(row, 7) // Column H for the new URL
                 });
             }
 
@@ -284,44 +285,18 @@
                         var buttonsDiv = document.createElement('div');
                         buttonsDiv.className = 'd-flex flex-wrap justify-content-center justify-content-md-end gap-2'; // Buttons flexible and spaced
 
-                        // Link to Program/Results/Standings (mc_03_programma-agvnvn-apotelesmata-bathmologia.html)
-                        var linkProgramma = document.createElement('a');
-                        linkProgramma.href = 'mc_03_programma-agvnvn-apotelesmata-bathmologia.html' + // Assuming this is also in html subfolder
-                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
-                            '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
-                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
-                            '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
-                            '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos) +
-                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
-                            '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.sheetIdForNextLevel);
-                        linkProgramma.className = 'btn btn-primary btn-sm';
-                        linkProgramma.innerHTML = '🏀 Πρόγραμμα & Βαθμολογία';
-                        buttonsDiv.appendChild(linkProgramma);
-
-                        // Changed button: "XLs" now links to mc_03_programma-embed-XL.html
-                        var linkWebXL = document.createElement('a');
-                        linkWebXL.href = 'mc_03_programma-embed-XL.html' + 
-                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
-                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
-                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
-                            '&pSheetId=' + encodeURIComponent(item.sheetIdForNextLevel) + // Pass the Google Sheet ID
-                            '&pGid=' + encodeURIComponent('420343212'); // Pass the specific GID for the embed, as determined previously
-                        linkWebXL.target = '_blank'; // Open in new tab
-                        linkWebXL.className = 'btn btn-secondary btn-sm'; // Using secondary color
-                        linkWebXL.innerHTML = '📊 XLs mode'; // Updated text and emoji
-                        buttonsDiv.appendChild(linkWebXL);
-
-                        // Updated button: "PDF" - now processes the URL from Column L for PDF programs
-                        if (item.pdfProgramUrl) { // Only create button if URL exists in Column L
-                            var linkWebPDF = document.createElement('a');
-                            // Transform the Google Docs/Sheets URL to a PDF export URL
-                            linkWebPDF.href = getPdfExportUrl(item.pdfProgramUrl);
-                            linkWebPDF.target = '_blank'; // Open in new tab
-                            linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
-                            linkWebPDF.innerHTML = '📄 PDF'; // Updated text and emoji
-                            buttonsDiv.appendChild(linkWebPDF);
+                        // Κουμπί "Επεξεργασία αρχείου ομίλου" με URL από τη στήλη H
+                        // Εμφάνιση του κουμπιού μόνο αν υπάρχει URL (αλλαγή α)
+                        if (item.colH_url) { 
+                            var linkEditFile = document.createElement('a');
+                            linkEditFile.href = item.colH_url; // URL από τη στήλη H
+                            linkEditFile.target = '_blank'; // Άνοιγμα σε νέα καρτέλα
+                            linkEditFile.className = 'btn btn-primary btn-sm';
+                            linkEditFile.innerHTML = '🏀 Επεξεργασία αρχείου ομίλου';
+                            buttonsDiv.appendChild(linkEditFile);
                         }
 
+                        // Τα κουμπιά "📊 XLs mode" και "📄 PDF" έχουν αφαιρεθεί σύμφωνα με το αίτημα
 
                         // Link to Teams of Category (mc_03_TeamsOfKathgoria.html) if teamsSheetId exists
                         if(item.teamsSheetId !== ''){
@@ -360,19 +335,6 @@
             const footerButtonsContainer = document.createElement('div');
             footerButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3'); // Centered with spacing
 
-            // Add the "Πίσω" button
-            /* ----             
-            /* ---- για να μην εχει πολλες οχλησεις---
-            /* ----             
-            const backLink = document.createElement('a');
-            backLink.href = '../index.html';
-            backLink.classList.add('btn', 'btn-sm', 'btn-back-custom'); // Use the same custom styling
-            backLink.textContent = '← Πίσω';
-            footerButtonsContainer.appendChild(backLink);
-
-            --- END. ---  */            
-           
-
             // Add the "Προκηρύξεις" button
             const announcementsLink = document.createElement('a');
             announcementsLink.href = 'https://www.ekasth1976.gr/2024/07/2024-25.html';
@@ -399,7 +361,8 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
-            versionDiv.textContent = `LT v.25.06.17 | mc_02_kathgories@myekasth`; 
+            // Αλλαγή γ. του κειμένου στην έκδοση footer
+            versionDiv.textContent = `LT v.25.06.17 | mc_02_kathgories_ENOSIS@myekasth`; 
             containerDiv.appendChild(versionDiv);
         }
 
@@ -425,10 +388,10 @@
             --mc-light-bg: #f8f9fa; /* Light background */
             --mc-dark-bg: #212529; /* Dark text for contrast */
             --mc-text-dark: #212529; /* Dark text for light backgrounds */
-            --mc-timeline-color: #ff0000; /* Pure red for underline */
+            --mc-timeline-color: #008000; /* Πράσινο για την υπογράμμιση */
 
             /* Monochromatic white header colors and contrasting text colors */
-            --mc-header-bg-color: #ffffff; /* Pure white background for header */
+            --mc-header-bg-color: #e6ffe6; /* Πολύ ελαφρύ πράσινο για το header */
             --mc-header-text-color: #212529; /* Dark text for contrast on white */
             --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
             --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
@@ -452,7 +415,7 @@
             position: sticky;
             top: 0;
             width: 100%;
-            background: var(--mc-header-bg-color);
+            background: var(--mc-header-bg-color); /* Χρήση της νέας μεταβλητής για το ελαφρύ πράσινο */
             box-shadow: 0 2px 8px rgba(0,0,0,.1);
             z-index: 1020;
             padding: 1rem;
@@ -482,7 +445,7 @@
         .header-underline {
             height: 5px; /* Updated height */
             width: 100%; /* Occupy full width of the sticky area */
-            background-color: var(--mc-timeline-color);
+            background-color: var(--mc-timeline-color); /* Χρήση της νέας μεταβλητής για το πράσινο */
             margin-top: 0.5rem;
             margin-bottom: 1rem;
         }
@@ -652,6 +615,13 @@
                but the shared styling should generally work well.
                If you want only the arrow on "Πίσω" on small screens, you'd need specific JS/CSS to toggle text. */
         }
+
+        /* Custom style for the main content section background */
+        .container.my-5 {
+            background-color: #f0fff0; /* Πολύ ελαφρύ πρασινάκι */
+            border-radius: 0.75rem; /* Διατήρηση των στρογγυλεμένων γωνιών */
+            padding: 1.5rem; /* Ελαφρύ padding για καλύτερη εμφάνιση */
+        }
     </style>
 </head>
 
@@ -659,7 +629,8 @@
 
     <!-- New Sticky Header Tabs -->
     <div class="sticky-header-tabs">
-        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
+        <!-- Αλλαγή β. του κειμένου στο header-pre-title -->
+        <div class="header-pre-title">web ENOSIS by Ε.ΚΑ.Σ.Θ.</div>
         <h3 class="MatchcenterHomepageWidget__header">
             MATCHCENTER<span class="header-superscript">4</span>
         </h3>
