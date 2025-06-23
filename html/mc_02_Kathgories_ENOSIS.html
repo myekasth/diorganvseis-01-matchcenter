@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="description" content="MatchCenter - Κατηγορίες Πρωταθλημάτων Μπάσκετ" />
+    <meta name="keywords" content="MatchCenter, games, results, ranking, referes, table offcers, champions, μπάσκετ, πρωτάθλημα, διοργάνωση, κατηγορίες" />
+    <meta name="language" content="greek" />
+    <meta name="author" content="MatchCenter" />
+    <meta name="web_author" content="Lazaros T" />
+    <link rel="icon" href="../favicon.ico" />
+
+    <title>Κατηγορίες,Όμιλοι Πρωταθλημάτων</title>
+
+    <!-- Google Fonts: Krona One for titles, Inter for body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS and JS Bundle -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Charts Library for data visualization -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+        // Ensure Google Charts is loaded and ready before calling drawchart
+        google.charts.load('current', {packages:['corechart']});
+        google.charts.setOnLoadCallback(drawchart); 
+
+        /**
+         * Parses URL query parameters.
+         * @param {string} variable The name of the query parameter to retrieve.
+         * @returns {string|boolean} The value of the parameter or false if not found.
+         */
+        function getQueryVariable(variable){
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0; i<vars.length; i++) {
+                var pair = vars[i].split("=");
+                if(pair[0] === variable){return pair[1];}
+            }
+            return(false);
+        }
+
+        /**
+         * Converts a Google Docs or Google Sheets view URL into a PDF export URL.
+         * If the URL is not a recognized Google Docs/Sheets link, it returns the original URL.
+         * @param {string} originalUrl The original URL from Google Docs or Google Sheets.
+         * @returns {string} The transformed PDF export URL or the original URL if not applicable.
+         */
+        function getPdfExportUrl(originalUrl) {
+            if (!originalUrl) {
+                return '';
+            }
+
+            // Regular expression to match Google Docs/Sheets URLs and capture the ID and type
+            // It looks for /document/d/ or /spreadsheets/d/ followed by the ID.
+            const docSheetRegex = /https:\/\/docs\.google\.com\/(document|spreadsheets)\/d\/([a-zA-Z0-9_-]+)(?:.*)/;
+            const match = originalUrl.match(docSheetRegex);
+
+            if (match) {
+                const docType = match[1]; // 'document' or 'spreadsheets'
+                const docId = match[2];   // The document/spreadsheet ID
+
+                let exportUrl = `https://docs.google.com/${docType}/d/${docId}/export?format=pdf`;
+
+                // If it's a spreadsheet, try to preserve the gid (sheet ID) from the original URL.
+                // This is important for exporting specific tabs of a spreadsheet.
+                if (docType === 'spreadsheets') {
+                    const gidMatch = originalUrl.match(/[?#&]gid=([0-9]+)/);
+                    if (gidMatch) {
+                        exportUrl += `&gid=${gidMatch[1]}`;
+                    } else {
+                        // If no GID is explicitly found, default to gid=0 (the first sheet)
+                        exportUrl += `&gid=0`;
+                    }
+                }
+                return exportUrl;
+            }
+            // If the URL does not match a Google Docs/Sheets pattern, return the original URL
+            // as it might already be a direct PDF link or another type of valid URL.
+            return originalUrl;
+        }
+
+        // Default values for parameters if not provided in URL
+        // These defaults ensure the page can load with meaningful data even without URL parameters.
+        var defaultNameDiorganvtriaArxh = "ΕΚΑΣΘ"; // New default value for pNameDiorganvtriaArxh
+        var defaultPowerDiorganvtriaArxh = "1bURffybc07Eel69CZu1WKpGj_DIRA8gaE6rQUBtg5WI"; // Google Sheet ID for organizing authority
+
+        var defaultAgvnistikhPeriodos = "2025-26"; // New default value for pAgvnistikhPeriodos
+        var defaultNamePrvtathlhmatos = "ΕΚΑΣΘ 2025-2026"; // New default value for pNamePrvtathlhmatos
+        var defaultPowerPrvtathlhmatos = "12ZPDSn9GLS29gAGrDsAyZ1Gz6yObTKCeD0yZVFU-IVk"; // Google Sheet ID for categories for a specific championship
+
+        /**
+         * Initializes the chart drawing and sets the championship categories title.
+         * This function is called as the callback for google.load to ensure Google Charts API is ready.
+         * It retrieves parameters from the URL and updates the header title.
+         */
+        function drawchart(){
+            // Get all necessary parameters from URL, using new defaults if not present
+            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) : defaultNameDiorganvtriaArxh;
+            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? decodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) : defaultAgvnistikhPeriodos;
+            var pNamePrvtathlhmatos = getQueryVariable("pNamePrvtathlhmatos") ? decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) : defaultNamePrvtathlhmatos;
+            var pPowerPrvtathlhmatos = getQueryVariable("pPowerPrvtathlhmatos") ? decodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos")) : defaultPowerPrvtathlhmatos; // This is the Google Sheet ID for categories
+
+            // Update the combined header title to reflect categories and championship details
+            document.getElementById("combined-header-title").innerHTML = `ΚΑΤΗΓΟΡΙΕΣ, ΟΜΙΛΟΙ | ΑΓΩΝΙΣΤΙΚΗ ΠΕΡΙΟΔΟΣ : ${pAgvnistikhPeriodos} | ${pNameDiorganvtriaArxh}`;
+
+            // Call the function to draw categories, passing the sheet ID for the query
+            drawCategories(pPowerPrvtathlhmatos);
+        }
+
+        /**
+         * Fetches category data from the Google Sheet using Google Visualization API.
+         * It uses the categorySheetId (pPowerPrvtathlhmatos) to query the specific sheet.
+         * @param {string} categorySheetId The Google Sheet ID containing the categories for the selected championship.
+         */
+        function drawCategories(categorySheetId) {
+            // Query for categories/groups from the Google Sheet, ordered by B,D,F columns for hierarchy
+            var strQueryForURI = 'select * order by B,D,F';
+            var queryString = encodeURIComponent(strQueryForURI);
+
+            // Construct the query using the specific categorySheetId for this championship
+            // Assuming categories are on gid=6 within this specific sheet based on the original file
+            var query = new google.visualization.Query(
+                'https://docs.google.com/spreadsheets/d/'+ categorySheetId +'/gviz/tq?gid=6&headers=1&tq=' + queryString);
+            query.send(handle_DrawCategories_DataQueryResponse);
+        }
+
+        /**
+         * Handles the data response from the Google Sheet query and renders the categories using nested accordions.
+         * It groups data by ΕΙΔΟΣ ΔΙΟΡΓΑΝΩΣΗΣ (Col A), then by ΟΝΟΜΑ ΠΡΩΤΑΘΛΗΜΑΤΟΣ 1ου επιπέδου (Col C).
+         * @param {object} response The Google Visualization API query response.
+         */
+        function handle_DrawCategories_DataQueryResponse(response) {
+            if (response.isError()) {
+                console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                document.getElementById("list-diorganvsevn-id").innerHTML = '<div class="col-12"><p class="text-center text-danger">Προέκυψε σφάλμα κατά τη φόρτωση των κατηγοριών: ' + response.getMessage() + '. Παρακαλώ δοκιμάστε ξανά αργότερα.</p></div>';
+                var loadingSpinner = document.getElementById("loading-spinner");
+                if (loadingSpinner) {
+                    loadingSpinner.remove();
+                }
+                return;
+            }
+
+            var data = response.getDataTable();
+            var posesEggrafes = data.getNumberOfRows();
+            var containerDiv = document.getElementById("list-diorganvsevn-id");
+
+            var loadingSpinner = document.getElementById("loading-spinner");
+            if (loadingSpinner) {
+                    loadingSpinner.remove();
+            }
+            containerDiv.innerHTML = ''; // Clear existing content
+
+            if (posesEggrafes === 0) {
+                containerDiv.innerHTML = '<div class="col-12"><p class="text-center text-muted">Δεν βρέθηκαν κατηγορίες/όμιλοι για το επιλεγμένο πρωτάθλημα.</p></div>';
+                return;
+            }
+
+            // Retrieve common parameters from URL or use defaults
+            var pNameDiorganvtriaArxh = getQueryVariable("pNameDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) : defaultNameDiorganvtriaArxh;
+            var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) : defaultPowerDiorganvtriaArxh;
+            var pAgvnistikhPeriodos = getQueryVariable("pAgvnistikhPeriodos") ? decodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) : defaultAgvnistikhPeriodos;
+            var pNamePrvtathlhmatos = getQueryVariable("pNamePrvtathlhmatos") ? decodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) : defaultNamePrvtathlhmatos;
+            var pPowerPrvtathlhmatos = getQueryVariable("pPowerPrvtathlhmatos") ? decodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos")) : defaultPowerPrvtathlhmatos; // This is the categories sheet ID
+
+            // Group data by ΕΙΔΟΣ ΔΙΟΡΓΑΝΩΣΗΣ (Col A) and then by ΟΝΟΜΑ ΠΡΩΤΑΘΛΗΜΑΤΟΣ 1ου επιπέδου (Col C)
+            var groupedData = {};
+            for (var row = 0; row < posesEggrafes; row++) {
+                var typeOfCompetition = data.getFormattedValue(row, 0); // Column A
+                var championshipNameLevel1 = data.getFormattedValue(row, 2); // Column C
+                
+                // Ensure the top-level grouping exists
+                if (!groupedData[typeOfCompetition]) {
+                    groupedData[typeOfCompetition] = {};
+                }
+                // Ensure the second-level grouping exists
+                if (!groupedData[typeOfCompetition][championshipNameLevel1]) {
+                    groupedData[typeOfCompetition][championshipNameLevel1] = [];
+                }
+                groupedData[typeOfCompetition][championshipNameLevel1].push({
+                    finalCategoryGroupName: data.getFormattedValue(row, 4), // Column E
+                    sheetIdForNextLevel: data.getFormattedValue(row, 8), // Column I
+                    titlesSheetId: data.getFormattedValue(row, 10), // Column K
+                    pdfProgramUrl: data.getFormattedValue(row, 11), // Column L for PDF programs
+                    teamsSheetId: data.getFormattedValue(row, 12) // Column M
+                });
+            }
+
+            // Create the main accordion container
+            var mainAccordion = document.createElement('div');
+            mainAccordion.className = 'accordion';
+            mainAccordion.id = 'mainAccordion';
+
+            var mainAccordionCounter = 0; // For unique IDs for main accordions
+            for (var typeOfCompetition in groupedData) {
+                if (!groupedData.hasOwnProperty(typeOfCompetition)) continue;
+                mainAccordionCounter++;
+                var typeAccordionId = 'typeAccordion_' + mainAccordionCounter;
+                var typeCollapseId = 'typeCollapse_' + mainAccordionCounter;
+
+                var mainAccordionItem = document.createElement('div');
+                mainAccordionItem.className = 'accordion-item';
+
+                var mainAccordionHeader = document.createElement('h2');
+                mainAccordionHeader.className = 'accordion-header';
+                mainAccordionHeader.id = 'heading_' + typeAccordionId;
+
+                var mainAccordionButton = document.createElement('button');
+                mainAccordionButton.className = 'accordion-button' + (mainAccordionCounter === 1 ? '' : ' collapsed'); // First one open by default
+                mainAccordionButton.type = 'button';
+                mainAccordionButton.setAttribute('data-bs-toggle', 'collapse');
+                mainAccordionButton.setAttribute('data-bs-target', '#' + typeCollapseId);
+                mainAccordionButton.setAttribute('aria-expanded', (mainAccordionCounter === 1 ? 'true' : 'false'));
+                mainAccordionButton.setAttribute('aria-controls', typeCollapseId);
+                mainAccordionButton.textContent = typeOfCompetition; // ΕΙΔΟΣ ΔΙΟΡΓΑΝΩΣΗΣ
+
+                mainAccordionHeader.appendChild(mainAccordionButton);
+                mainAccordionItem.appendChild(mainAccordionHeader);
+
+                var mainAccordionCollapse = document.createElement('div');
+                mainAccordionCollapse.id = typeCollapseId;
+                mainAccordionCollapse.className = 'accordion-collapse collapse' + (mainAccordionCounter === 1 ? ' show' : '');
+                mainAccordionCollapse.setAttribute('aria-labelledby', 'heading_' + typeAccordionId);
+                mainAccordionCollapse.setAttribute('data-bs-parent', '#mainAccordion');
+
+                var mainAccordionBody = document.createElement('div');
+                mainAccordionBody.className = 'accordion-body';
+
+                // Create sub-accordion for ΟΝΟΜΑ ΠΡΩΤΑΘΛΗΜΑΤΟΣ (1ο επίπεδο)
+                var subAccordion = document.createElement('div');
+                subAccordion.className = 'accordion accordion-sub'; // Add accordion-sub for styling
+                subAccordion.id = 'subAccordion_' + typeAccordionId;
+
+                var subAccordionCounter = 0; // For unique IDs for sub-accordions
+                for (var championshipNameLevel1 in groupedData[typeOfCompetition]) {
+                    if (!groupedData[typeOfCompetition].hasOwnProperty(championshipNameLevel1)) continue;
+                    subAccordionCounter++;
+                    var subAccordionId = 'subTypeAccordion_' + mainAccordionCounter + '_' + subAccordionCounter;
+                    var subCollapseId = 'subTypeCollapse_' + mainAccordionCounter + '_' + subAccordionCounter;
+
+                    var subAccordionItem = document.createElement('div');
+                    subAccordionItem.className = 'accordion-item';
+
+                    var subAccordionHeader = document.createElement('h2');
+                    subAccordionHeader.className = 'accordion-header';
+                    subAccordionHeader.id = 'heading_' + subAccordionId;
+
+                    var subAccordionButton = document.createElement('button');
+                    subAccordionButton.className = 'accordion-button collapsed'; // All sub-accordions initially collapsed
+                    subAccordionButton.type = 'button';
+                    subAccordionButton.setAttribute('data-bs-toggle', 'collapse');
+                    subAccordionButton.setAttribute('data-bs-target', '#' + subCollapseId);
+                    subAccordionButton.setAttribute('aria-expanded', 'false');
+                    subAccordionButton.setAttribute('aria-controls', subCollapseId);
+                    subAccordionButton.textContent = championshipNameLevel1; // ΟΝΟΜΑ ΠΡΩΤΑΤΑΘΛΗΜΑΤΟΣ (1ο επίπεδο)
+
+                    subAccordionHeader.appendChild(subAccordionButton);
+                    subAccordionItem.appendChild(subAccordionHeader);
+
+                    var subAccordionCollapse = document.createElement('div');
+                    subAccordionCollapse.id = subCollapseId;
+                    subAccordionCollapse.className = 'accordion-collapse collapse';
+                    subAccordionCollapse.setAttribute('aria-labelledby', 'heading_' + subAccordionId);
+                    subAccordionCollapse.setAttribute('data-bs-parent', '#' + subAccordion.id); // Parent is the subAccordion
+
+                    var subAccordionBody = document.createElement('div');
+                    subAccordionBody.className = 'accordion-body';
+
+                    // Add the final level items (ΟΝΟΜΑ ΠΡΩΤΑΘΛΗΜΑΤΟΣ 2ου επιπέδου/Ομίλου) and their buttons
+                    groupedData[typeOfCompetition][championshipNameLevel1].forEach(function(item) {
+                        var finalItemDiv = document.createElement('div');
+                        finalItemDiv.className = 'd-flex flex-column flex-md-row justify-content-between align-items-md-center bg-light rounded p-3 mb-2'; // Responsive flex for items
+
+                        var itemNameSpan = document.createElement('span');
+                        itemNameSpan.className = 'fw-bold text-dark mb-2 mb-md-0';
+                        itemNameSpan.textContent = item.finalCategoryGroupName; // Column E: ΟΝΟΜΑ ΠΡΩΤΑΘΛΗΜΑΤΟΣ (2ο επίπεδο)
+
+                        var buttonsDiv = document.createElement('div');
+                        buttonsDiv.className = 'd-flex flex-wrap justify-content-center justify-content-md-end gap-2'; // Buttons flexible and spaced
+
+                        // Link to Program/Results/Standings (mc_03_programma-agvnvn-apotelesmata-bathmologia.html)
+                        var linkProgramma = document.createElement('a');
+                        linkProgramma.href = 'mc_03_programma-agvnvn-apotelesmata-bathmologia.html' + // Assuming this is also in html subfolder
+                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                            '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
+                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
+                            '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
+                            '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos) +
+                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
+                            '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.sheetIdForNextLevel);
+                        linkProgramma.className = 'btn btn-primary btn-sm';
+                        linkProgramma.innerHTML = '🏀 Πρόγραμμα & Βαθμολογία';
+                        buttonsDiv.appendChild(linkProgramma);
+
+                        // Changed button: "XLs" now links to mc_03_programma-embed-XL.html
+                        var linkWebXL = document.createElement('a');
+                        linkWebXL.href = 'mc_03_programma-embed-XL.html' + 
+                            '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                            '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
+                            '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
+                            '&pSheetId=' + encodeURIComponent(item.sheetIdForNextLevel) + // Pass the Google Sheet ID
+                            '&pGid=' + encodeURIComponent('420343212'); // Pass the specific GID for the embed, as determined previously
+                        linkWebXL.target = '_blank'; // Open in new tab
+                        linkWebXL.className = 'btn btn-secondary btn-sm'; // Using secondary color
+                        linkWebXL.innerHTML = '📊 XLs mode'; // Updated text and emoji
+                        buttonsDiv.appendChild(linkWebXL);
+
+                        // Updated button: "PDF" - now processes the URL from Column L for PDF programs
+                        if (item.pdfProgramUrl) { // Only create button if URL exists in Column L
+                            var linkWebPDF = document.createElement('a');
+                            // Transform the Google Docs/Sheets URL to a PDF export URL
+                            linkWebPDF.href = getPdfExportUrl(item.pdfProgramUrl);
+                            linkWebPDF.target = '_blank'; // Open in new tab
+                            linkWebPDF.className = 'btn btn-success btn-sm'; // Using success color
+                            linkWebPDF.innerHTML = '📄 PDF'; // Updated text and emoji
+                            buttonsDiv.appendChild(linkWebPDF);
+                        }
+
+
+                        // Link to Teams of Category (mc_03_TeamsOfKathgoria.html) if teamsSheetId exists
+                        if(item.teamsSheetId !== ''){
+                            var linkOmades = document.createElement('a');
+                            linkOmades.href = 'mc_03_TeamsOfKathgoria.html' + // Assuming this is also in html subfolder
+                                '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                                '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
+                                '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
+                                '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
+                                '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos) +
+                                '&pNameKathgoriasOmilou=' + encodeURIComponent(item.finalCategoryGroupName) +
+                                '&pPowerKathgoriasOmilou=' + encodeURIComponent(item.teamsSheetId);
+                            linkOmades.className = 'btn btn-info btn-sm';
+                            linkOmades.innerHTML = '👥 Ομάδες';
+                            buttonsDiv.appendChild(linkOmades);
+                        }
+                        
+                        finalItemDiv.appendChild(itemNameSpan);
+                        finalItemDiv.appendChild(buttonsDiv);
+                        subAccordionBody.appendChild(finalItemDiv);
+                    });
+
+                    subAccordionCollapse.appendChild(subAccordionBody);
+                    subAccordionItem.appendChild(subAccordionCollapse);
+                    subAccordion.appendChild(subAccordionItem);
+                }
+
+                mainAccordionBody.appendChild(subAccordion);
+                mainAccordionCollapse.appendChild(mainAccordionBody);
+                mainAccordionItem.appendChild(mainAccordionCollapse);
+                mainAccordion.appendChild(mainAccordionItem);
+            }
+            containerDiv.appendChild(mainAccordion);
+            
+            // Create a div to hold both footer buttons, making it a flex container
+            const footerButtonsContainer = document.createElement('div');
+            footerButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3'); // Centered with spacing
+
+            // Add the "Πίσω" button
+            /* ----             
+            /* ---- για να μην εχει πολλες οχλησεις---
+            /* ----             
+            const backLink = document.createElement('a');
+            backLink.href = '../index.html';
+            backLink.classList.add('btn', 'btn-sm', 'btn-back-custom'); // Use the same custom styling
+            backLink.textContent = '← Πίσω';
+            footerButtonsContainer.appendChild(backLink);
+
+            --- END. ---  */            
+           
+
+            // Add the "Προκηρύξεις" button
+            const announcementsLink = document.createElement('a');
+            announcementsLink.href = 'https://www.ekasth1976.gr/2024/07/2024-25.html';
+            announcementsLink.target = '_blank'; // Open in new tab
+            announcementsLink.classList.add('btn', 'btn-sm', 'btn-back-custom'); // Use the same custom styling for "Προκηρύξεις"
+            announcementsLink.textContent = 'Προκηρύξεις';
+            footerButtonsContainer.appendChild(announcementsLink);
+            
+            containerDiv.appendChild(footerButtonsContainer); // Append the new container to main div
+
+            // Add the footer elements after all cards and the new button have been processed
+            const ekasthDiv = document.createElement('div');
+            ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12');
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
+            containerDiv.appendChild(ekasthDiv);
+
+            const versionDiv = document.createElement('div');
+            versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
+            versionDiv.textContent = `LT v.25.06.17 | mc_02_kathgories@myekasth`; 
+            containerDiv.appendChild(versionDiv);
+        }
+
+        /**
+         * Checks if the given string indicates a Cup competition.
+         * This function is retained from the original file, though not directly used in rendering buttons.
+         * @param {string} mystr The string to check.
+         * @returns {boolean} True if it's a Cup, false otherwise.
+         */
+        function isKypello(mystr){
+            return mystr.indexOf('ΚΥΠΕΛΛΟ') !== -1; // Use !== -1 to correctly check for substring presence
+        }
+
+ 
+    </script>
+
+    <style>
+        /* CSS variables for consistent theming */
+        :root {
+            --mc-primary-color: #007bff; /* Bootstrap primary blue */
+            --mc-secondary-color: #6c757d; /* Bootstrap secondary gray */
+            --mc-info-color: #17a2b8; /* Bootstrap info cyan */
+            --mc-light-bg: #f8f9fa; /* Light background */
+            --mc-dark-bg: #212529; /* Dark text for contrast */
+            --mc-text-dark: #212529; /* Dark text for light backgrounds */
+            --mc-timeline-color: #ff0000; /* Pure red for underline */
+
+            /* Monochromatic white header colors and contrasting text colors */
+            --mc-header-bg-color: #ffffff; /* Pure white background for header */
+            --mc-header-text-color: #212529; /* Dark text for contrast on white */
+            --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
+            --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
+        }
+
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mc-light-bg);
+            color: var(--mc-text-dark);
+            padding-top: 0px;
+        }
+
+        /* Font styling for headings */
+        h1, h5 {
+            font-family: 'Krona One', sans-serif;
+        }
+
+        /* New Sticky Header Styles */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: var(--mc-header-bg-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            z-index: 1020;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .MatchcenterHomepageWidget__header {
+            font-family: 'Krona One', sans-serif;
+            font-size: 2.2rem; /* Keep consistent size */
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--mc-header-text-color);
+        }
+
+        .MatchcenterHomepageWidget__header small {
+            font-size: 0.6em;
+            vertical-align: middle;
+            color: var(--mc-header-small-text-color);
+            font-weight: 300;
+        }
+
+        /* New style for the red line below the main header */
+        .header-underline {
+            height: 5px; /* Updated height */
+            width: 100%; /* Occupy full width of the sticky area */
+            background-color: var(--mc-timeline-color);
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+                /* New styles for the custom superscript */
+        .MatchcenterHomepageWidget__header .header-superscript {
+            font-size: 0.5em; /* Half the size of the parent header font */
+            vertical-align: super;
+            line-height: 0; /* Adjust line height to prevent affecting vertical spacing */
+            position: relative;
+            top: -0.5em; /* Fine-tune vertical position */
+        }
+
+        .header-pre-title {
+            font-family: 'Inter', sans-serif; /* Χρήση της γραμματοσειράς Inter */
+            font-size: 0.8rem; /* Προσαρμοσμένο μέγεθος γραμματοσειράς */
+            color: var(--mc-header-small-text-color); /* Χρώμα γκρι */
+            text-align: center; /* Κεντρική στοίχιση */
+            width: 100%; /* Για να διασφαλιστεί ότι καταλαμβάνει πλήρες πλάτος για το centering */
+            padding: 0; /* Μηδενικό padding */
+            margin: 0; /* Μηδενικό margin */
+            line-height: 1; /* Συμπαγές ύψος γραμμής */
+        }        
+
+        /* Combined header title for "ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ [diorganvtria arxh]" */
+        .combined-header-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: var(--mc-header-combined-title-color);
+            text-align: center;
+        }
+
+
+        /* New accordion specific styles */
+        .accordion-item {
+            border-radius: 0.75rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.03); /* Lighter shadow for accordion items */
+            margin-bottom: 1rem;
+            border: none; /* Remove default Bootstrap border */
+            overflow: hidden; /* Ensures rounded corners apply correctly */
+        }
+
+        .accordion-button {
+            background-color: #e9ecef; /* Light gray for accordion headers */
+            color: var(--mc-text-dark);
+            font-weight: 600;
+            border-radius: 0.75rem !important; /* Apply rounded corners to buttons */
+            padding: 1rem 1.25rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--mc-primary-color); /* Primary color when active */
+            color: var(--mc-text-light);
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+        }
+
+        .accordion-button:focus {
+            box-shadow: none; /* Remove default focus outline */
+        }
+
+        .accordion-body {
+            padding: 1rem;
+            background-color: #f8f9fa; /* Lighter background for body content */
+            border-top: 1px solid rgba(0,0,0,.05);
+        }
+
+        .accordion-sub .accordion-item {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02); /* Even lighter shadow for nested items */
+        }
+
+        .accordion-sub .accordion-button {
+            background-color: #dee2e6; /* Slightly darker for sub-accordion headers */
+            font-size: 0.95rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem !important;
+        }
+
+        .accordion-sub .accordion-button:not(.collapsed) {
+            background-color: var(--mc-info-color); /* Info color for active sub-accordions */
+            color: var(--mc-text-light);
+        }
+
+        .accordion-sub .accordion-body {
+            padding: 0.75rem;
+            background-color: #ffffff; /* White background for innermost content */
+        }
+        
+        /* Styles for the final level item divs (previously card content) */
+        .d-flex.flex-column.flex-md-row {
+            border: 1px solid #e0e0e0; /* Light border for definition */
+            margin-bottom: 0.5rem; /* Space between items */
+            border-radius: 0.5rem; /* Rounded corners */
+            transition: all 0.2s ease-in-out;
+        }
+
+        .d-flex.flex-column.flex-md-row:hover {
+            box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,.08); /* Slight shadow on hover */
+            background-color: #f0f0f0 !important; /* Light hover effect */
+        }
+
+        .d-flex.flex-column.flex-md-row .fw-bold {
+            font-size: 1rem;
+            flex-grow: 1; /* Allows text to take available space */
+        }
+
+        .d-flex.flex-column.flex-md-row .btn {
+            min-width: 120px; /* Ensure buttons have consistent width */
+        }
+
+        .progress {
+            height: 4px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer specific styles */
+        .ekasth-footer-text, .ekasth-footer-version-text {
+            font-size: 0.55rem; /* Updated font-size */
+            color: var(--mc-secondary-color);
+            padding: 0.1rem 0; /* Updated padding */
+        }
+
+        .ekasth-footer-text {
+            border-top: 1px solid rgba(0,0,0,.1);
+            padding-top: 1.5rem;
+        }
+
+        /* Styles for the Back and Announcements buttons (now sharing the same style) */
+        .btn-back-custom {
+            background-color: transparent; /* Initially transparent */
+            color: rgba(33, 37, 41, 0.5); /* Semi-transparent dark grey */
+            border: 1px solid rgba(33, 37, 41, 0.2); /* Very subtle border */
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+            padding: 0.5rem 1rem; /* Standard padding for these buttons */
+            border-radius: 0.5rem; /* Standard border-radius */
+            font-size: 0.85rem; /* Standard font-size */
+            text-decoration: none; /* No underline */
+        }
+
+        .btn-back-custom:hover,
+        .btn-back-custom:focus {
+            background-color: rgba(33, 37, 41, 0.1); /* Light transparent dark grey on hover */
+            color: var(--mc-header-text-color); /* Full dark text on hover */
+            border-color: var(--mc-header-text-color); /* Visible dark border on hover */
+            box-shadow: none; /* Remove default Bootstrap focus shadow if any */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767.98px) {
+            .sticky-header-tabs {
+                /* Remove padding-left as the button is no longer here */
+                padding-left: 1rem;
+            }
+            /* Ensure header titles remain consistent in size */
+            .MatchcenterHomepageWidget__header {
+                font-size: 2.2rem;
+            }
+            .combined-header-title {
+                font-size: 1.1rem;
+            }
+
+            /* Adjust 'Πίσω' and 'Προκηρύξεις' buttons for smaller screens if needed,
+               but the shared styling should generally work well.
+               If you want only the arrow on "Πίσω" on small screens, you'd need specific JS/CSS to toggle text. */
+        }
+    </style>
+</head>
+
+<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="80">
+
+    <!-- New Sticky Header Tabs -->
+    <div class="sticky-header-tabs">
+        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
+        <h3 class="MatchcenterHomepageWidget__header">
+            MATCHCENTER<span class="header-superscript">4</span>
+        </h3>
+        <!-- New div for the orange-red line below the main header -->
+        <div class="header-underline"></div>
+        <!-- Combined header title with dynamic content based on selected championship -->
+        <div class="combined-header-title" id="combined-header-title">
+            ΚΑΤΗΓΟΡΙΕΣ, ΟΜΙΛΟΙ
+        </div>
+        <!-- The back button is moved to the footer, removed from here -->
+    </div>
+
+    <!-- Main content section for displaying categories -->
+    <section class="container my-5">
+        <div class="row" id="list-diorganvsevn-id">
+            <!-- Loading spinner displayed until data is fetched -->
+            <div class="col-12 text-center" id="loading-spinner">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                </div>
+                <p>Φόρτωση δεδομένων ...</p>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
