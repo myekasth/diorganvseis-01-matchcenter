@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="description" content="MatchCenter - Οργάνωση Πρωταθλημάτων Μπάσκετ" />
+    <meta name="keywords" content="MatchCenter, games, results, ranking, referes, table offcers, champions, μπάσκετ, πρωτάθλημα, διοργάνωση" />
+    <meta name="language" content="greek" />
+    <meta name="author" content="MatchCenter" />
+    <meta name="web_author" content="Lazaros T" />
+    <link rel="icon" href="favicon.ico" />
+
+    <title>Διοργανώσεις Πρωταθλημάτων</title>
+
+    <!-- Google Fonts: Krona One for titles, Inter for body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS and JS Bundle -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Charts Library for data visualization -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+        // Ensure Google Charts is loaded and ready before calling drawchart
+        google.charts.load('current', {packages:['corechart']});
+        google.charts.setOnLoadCallback(drawchart);
+
+        /**
+         * Parses URL query parameters.
+         * @param {string} variable The name of the query parameter to retrieve.
+         * @returns {string|boolean} The value of the parameter or false if not found.
+         */
+        function getQueryVariable(variable){
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0; i<vars.length; i++) {
+                var pair = vars[i].split("=");
+                if(pair[0] === variable){return pair[1];}
+            }
+            return(false);
+        }
+
+        // Default values for parameters if not provided in URL
+        var defaultPower = "ΕΚΑΣΘ";
+        var defaultPowerDiorganvtriaArxh = "1bURffybc07Eel69CZu1WKpGj_DIRA8gaE6rQUBtg5WI"; // Google Sheet ID
+
+        /**
+         * Initializes the chart drawing and sets the championship title.
+         * This function is called as the callback for google.load to ensure Google Charts API is ready.
+         */
+        function drawchart(){
+            var pPower = getQueryVariable("pPower") ? decodeURIComponent(getQueryVariable("pPower")) : defaultPower;
+            // Update the combined title with the organizing authority
+            document.getElementById("combined-header-title").innerHTML = `ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ ${pPower}`;
+            drawDiorganvseis();
+        }
+
+        /**
+         * Fetches championship data from the Google Sheet using Google Visualization API.
+         */
+        function drawDiorganvseis() {
+            var strQueryForURI;
+            var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) : defaultPowerDiorganvtriaArxh;
+
+            // Construct the query based on pPower parameter
+            if(getQueryVariable("pPower")){
+                strQueryForURI = 'select * where H="'+decodeURIComponent(getQueryVariable("pPower")) +'" order by D desc';
+            } else {
+                strQueryForURI = 'select * where H="'+defaultPower+'" order by D desc'; // Apply default filter if no pPower
+            }
+
+            var queryString = encodeURIComponent(strQueryForURI);
+            var query = new google.visualization.Query(
+                'https://docs.google.com/spreadsheets/d/'+ pPowerDiorganvtriaArxh +'/gviz/tq?gid=0&headers=1&tq=' + queryString);
+            query.send(handle_DrawDiorganvseis_DataQueryResponse);
+        }
+
+        /**
+         * Handles the data response from the Google Sheet query and renders the championships.
+         * It creates Bootstrap cards for each championship.
+         * @param {object} response The Google Visualization API query response.
+         */
+        function handle_DrawDiorganvseis_DataQueryResponse(response) {
+            if (response.isError()) {
+                console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                // Using a custom message instead of alert for better UX
+                document.getElementById("list-diorganvsevn-id").innerHTML = '<div class="col-12"><p class="text-center text-danger">Προέκυψε σφάλμα κατά τη φόρτωση των διοργανώσεων: ' + response.getMessage() + '. Παρακαλώ δοκιμάστε ξανά αργότερα.</p></div>';
+                // Remove loading spinner
+                var loadingSpinner = document.getElementById("loading-spinner");
+                if (loadingSpinner) {
+                    loadingSpinner.remove();
+                }
+                return;
+            }
+
+            var data = response.getDataTable();
+            var posesEggrafes = data.getNumberOfRows();
+            var containerDiv = document.getElementById("list-diorganvsevn-id");
+
+            // Remove loading spinner
+            var loadingSpinner = document.getElementById("loading-spinner");
+            if (loadingSpinner) {
+                loadingSpinner.remove();
+            }
+            // Clear existing content in case of re-render
+            containerDiv.innerHTML = '';
+
+            if (posesEggrafes === 0) {
+                containerDiv.innerHTML = '<div class="col-12"><p class="text-center text-muted">Δεν βρέθηκαν διοργανώσεις για την επιλεγμένη ένωση.</p></div>';
+                return;
+            }
+
+            for (var row = 0; row < posesEggrafes; row++) {
+                // Retrieve data for constructing links and card content
+                var pNameDiorganvtriaArxh = data.getFormattedValue(row, 7); // Column H
+                var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) : defaultPowerDiorganvtriaArxh;
+                var pAgvnistikhPeriodos = data.getFormattedValue(row, 0); // Column A
+                var pNamePrvtathlhmatos = data.getFormattedValue(row, 4); // Column E
+                var pPowerPrvtathlhmatos = data.getFormattedValue(row, 14); // Column O - For mc_02_Kathgories.html (Groups/Categories)
+                var pPowerPrvtathlhmatosOrismoi = data.getFormattedValue(row, 26); // Column AA - For gameCenter_3_orismoi.html (Definitions/Appointments)
+
+                // Create Bootstrap Card structure
+                var cardCol = document.createElement('div');
+                cardCol.className = 'col-md-6 col-lg-4 d-flex'; // Responsive grid columns and d-flex for equal card heights
+
+                var card = document.createElement('div');
+                card.className = 'card card-diorganvsh flex-fill'; // Custom card styling and flex-fill for equal heights
+
+                var cardBody = document.createElement('div');
+                cardBody.className = 'card-body';
+
+                var cardTitle = document.createElement('h5');
+                cardTitle.className = 'card-title mb-2';
+                // Display Year/Season (e.g., "2023-2024")
+                cardTitle.innerHTML = pAgvnistikhPeriodos ;
+
+                var cardText = document.createElement('p');
+                cardText.className = 'card-text text-muted';
+                cardText.innerHTML = 'Αγωνιστική Περίοδος: ' + pAgvnistikhPeriodos + '<br>' +
+                                     'Πρωτάθλημα: ' + pNamePrvtathlhmatos + '<br>' +
+                                     'Διοργανώτρια Αρχή: ' + pNameDiorganvtriaArxh;
+
+                // Container for buttons
+                var divButtons = document.createElement('div');
+                divButtons.className = 'mt-3';
+
+                // Link to Championship Groups/Categories (mc_02_Kathgories.html in html subfolder)
+                var linkPrvtathlhmatos = document.createElement('a');
+                linkPrvtathlhmatos.href = 'html/mc_02_Kathgories.html' +
+                    '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                    '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
+                    '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) + // Pass season
+                    '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
+                    '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos);
+                linkPrvtathlhmatos.className = 'btn btn-primary btn-sm me-2';
+                // Replaced Font Awesome icon with emoji
+                linkPrvtathlhmatos.innerHTML = '🏀 Πρωτάθλημα'; // Emoji for basketball
+                divButtons.appendChild(linkPrvtathlhmatos);
+
+                // Link to Definitions/Appointments (gameCenter_3_orismoi.html) if pPowerPrvtathlhmatosOrismoi exists
+                if(pPowerPrvtathlhmatosOrismoi !== ''){
+                    var linkOrismoi = document.createElement('a');
+                    linkOrismoi.href = 'gameCenter_3_orismoi.html' +
+                        '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                        '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
+                        '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
+                        '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatosOrismoi);
+                    linkOrismoi.className = 'btn btn-info btn-sm';
+                    // Replaced Font Awesome icon with emoji
+                    linkOrismoi.innerHTML = '📄 Ορισμοί'; // Emoji for file/document
+                    divButtons.appendChild(linkOrismoi);
+                }
+
+                // Append elements to the card structure
+                cardBody.appendChild(cardTitle);
+                cardBody.appendChild(cardText);
+                cardBody.appendChild(divButtons);
+                card.appendChild(cardBody);
+                cardCol.appendChild(card);
+                containerDiv.appendChild(cardCol);
+            }
+            
+            // Add the footer elements after all cards have been processed
+            const ekasthDiv = document.createElement('div');
+            ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12'); // Added col-12 for full width
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
+            containerDiv.appendChild(ekasthDiv); // Append to containerDiv
+
+            const versionDiv = document.createElement('div');
+            versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12'); // Added col-12 for full width
+            versionDiv.textContent = `LT v.25.06.17 | mc_01_diorganvseis@myekasth`;
+            containerDiv.appendChild(versionDiv); // Append to containerDiv
+        }
+
+        // Removed the smooth scrolling JavaScript as the navbar is no longer present.
+    </script>
+
+    <style>
+        /* CSS variables for consistent theming */
+        :root {
+            --mc-primary-color: #007bff; /* Bootstrap primary blue */
+            --mc-secondary-color: #6c757d; /* Bootstrap secondary gray */
+            --mc-info-color: #17a2b8; /* Bootstrap info cyan */
+            --mc-light-bg: #f8f9fa; /* Light background */
+            --mc-dark-bg: #212529; /* Dark text for contrast */
+            --mc-text-dark: #212529; /* Dark text for light backgrounds */
+            --mc-timeline-color: #ff4500; /* Orange-red for underline */
+
+            /* Monochromatic white header colors and contrasting text colors */
+            --mc-header-bg-color: #ffffff; /* Pure white background for header */
+            --mc-header-text-color: #212529; /* Dark text for contrast on white */
+            --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
+            --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
+        }
+
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mc-light-bg);
+            color: var(--mc-text-dark);
+            padding-top: 0px; /* Adjusted to 0px as requested */
+        }
+
+        /* Font styling for headings */
+        h1, h5 {
+            font-family: 'Krona One', sans-serif;
+        }
+
+        /* New Sticky Header Styles */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: var(--mc-header-bg-color); /* Monochromatic white background */
+            box-shadow: 0 2px 8px rgba(0,0,0,.1); /* Lighter shadow for 3D effect on white */
+            z-index: 1020; /* Ensures header stays on top */
+            padding: 1rem; /* General padding for the sticky header content */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .MatchcenterHomepageWidget__header {
+            font-family: 'Krona One', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem; /* Space below the main header */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--mc-header-text-color); /* Dark text for contrast */
+        }
+
+        .MatchcenterHomepageWidget__header small {
+            font-size: 0.6em; /* Adjust size of "CENTER" */
+            vertical-align: middle;
+            color: var(--mc-header-small-text-color); /* Secondary gray for smaller text */
+            font-weight: 300;
+        }
+
+        /* New style for the red line below the main header */
+        .header-underline {
+            height: 5px; /* Updated height */
+            width: 100%; /* Occupy full width of the sticky area */
+            background-color: #ff0000; /* Updated to pure red */
+            margin-top: 0.5rem; /* Space above the line */
+            margin-bottom: 1rem; /* Space below the line, to separate it from the combined title */
+        }
+
+                /* New styles for the custom superscript */
+        .MatchcenterHomepageWidget__header .header-superscript {
+            font-size: 0.5em; /* Half the size of the parent header font */
+            vertical-align: super;
+            line-height: 0; /* Adjust line height to prevent affecting vertical spacing */
+            position: relative;
+            top: -0.5em; /* Fine-tune vertical position */
+        }
+
+        .header-pre-title {
+            font-family: 'Inter', sans-serif; /* Χρήση της γραμματοσειράς Inter */
+            font-size: 0.8rem; /* Προσαρμοσμένο μέγεθος γραμματοσειράς */
+            color: var(--mc-header-small-text-color); /* Χρώμα γκρι */
+            text-align: center; /* Κεντρική στοίχιση */
+            width: 100%; /* Για να διασφαλιστεί ότι καταλαμβάνει πλήρες πλάτος για το centering */
+            padding: 0; /* Μηδενικό padding */
+            margin: 0; /* Μηδενικό margin */
+            line-height: 1; /* Συμπαγές ύψος γραμμής */
+        }
+
+        /* Combined header title for "ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ [diorganvtria arxh]" */
+        .combined-header-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: var(--mc-header-combined-title-color); /* Darker gray for contrast */
+            text-align: center;
+        }
+
+
+        /* Card styling for championship entries */
+        .card-diorganvsh {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            margin-bottom: 1.5rem;
+            overflow: hidden; /* For smooth hover effect */
+        }
+
+        .card-diorganvsh:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 1rem 2rem rgba(0,0,0,.1);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-diorganvsh .card-title {
+                color: var(--mc-primary-color);
+            margin-bottom: 0.75rem;
+        }
+
+        .card-diorganvsh .card-text {
+            color: var(--mc-secondary-color);
+            font-size: 0.95rem;
+        }
+
+        .card-diorganvsh .btn {
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Loading spinner progress bar styling */
+        .progress {
+            height: 4px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer specific styles */
+        .ekasth-footer-text, .ekasth-footer-version-text {
+            font-size: 0.55rem; /* Updated font-size */
+            color: var(--mc-secondary-color);
+            padding: 0.1rem 0; /* Updated padding */
+        }
+
+        .ekasth-footer-text {
+            border-top: 1px solid rgba(0,0,0,.1);
+            padding-top: 1.5rem;
+        }
+
+
+
+    </style>
+</head>
+
+<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="80">
+
+    <!-- New Sticky Header Tabs -->
+    <div class="sticky-header-tabs">
+        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
+        <h3 class="MatchcenterHomepageWidget__header">
+            MATCHCENTER<span class="header-superscript">4</span>
+        </h3>
+        <!-- New div for the orange-red line below the main header -->
+        <div class="header-underline"></div>
+        <!-- Combined header title with dynamic organizing authority -->
+        <div class="combined-header-title" id="combined-header-title">
+            ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ
+        </div>
+    </div>
+
+    <!-- Main content section for displaying championships -->
+    <section class="container my-5">
+        <div class="row" id="list-diorganvsevn-id">
+            <!-- Loading spinner displayed until data is fetched -->
+            <div class="col-12 text-center" id="loading-spinner">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                </div>
+                <p>Φόρτωση δεδομένων ...</p>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
