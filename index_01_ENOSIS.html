@@ -150,9 +150,10 @@
                 var divButtons = document.createElement('div');
                 divButtons.className = 'mt-3';
 
-                // Link to Championship Groups/Categories (mc_02_Kathgories.html in html subfolder)
+                // Link to Championship Groups/Categories (mc_02_Kathgories_ENOSIS.html in html subfolder)
                 var linkPrvtathlhmatos = document.createElement('a');
-                linkPrvtathlhmatos.href = 'html/mc_02_Kathgories.html' +
+                // Έγινε αλλαγή του αρχείου προορισμού εδώ
+                linkPrvtathlhmatos.href = 'html/mc_02_Kathgories_ENOSIS.html' +
                     '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
                     '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
                     '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) + // Pass season
@@ -202,7 +203,8 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12'); // Added col-12 for full width
-            versionDiv.textContent = `LT v.25.06.17 | mc_01_diorganvseis@myekasth`;
+            // Έγινε αλλαγή του κειμένου της έκδοσης εδώ
+            versionDiv.textContent = `LT v.25.06.23 | mc_01_diorganvseis_ENOSIS@myekasth`;
             containerDiv.appendChild(versionDiv); // Append to containerDiv
         }
 
@@ -218,10 +220,10 @@
             --mc-light-bg: #f8f9fa; /* Light background */
             --mc-dark-bg: #212529; /* Dark text for contrast */
             --mc-text-dark: #212529; /* Dark text for light backgrounds */
-            --mc-timeline-color: #ff4500; /* Orange-red for underline */
+            --mc-timeline-color: #008000; /* Πράσινο για την υπογράμμιση */
 
             /* Monochromatic white header colors and contrasting text colors */
-            --mc-header-bg-color: #ffffff; /* Pure white background for header */
+            --mc-header-bg-color: #e6ffe6; /* Πολύ ελαφρύ πράσινο για το header */
             --mc-header-text-color: #212529; /* Dark text for contrast on white */
             --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
             --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
@@ -245,7 +247,7 @@
             position: sticky;
             top: 0;
             width: 100%;
-            background: var(--mc-header-bg-color); /* Monochromatic white background */
+            background: var(--mc-header-bg-color); /* Χρήση της νέας μεταβλητής για το ελαφρύ πράσινο */
             box-shadow: 0 2px 8px rgba(0,0,0,.1); /* Lighter shadow for 3D effect on white */
             z-index: 1020; /* Ensures header stays on top */
             padding: 1rem; /* General padding for the sticky header content */
@@ -275,7 +277,7 @@
         .header-underline {
             height: 5px; /* Updated height */
             width: 100%; /* Occupy full width of the sticky area */
-            background-color: #ff0000; /* Updated to pure red */
+            background-color: var(--mc-timeline-color); /* Χρήση της νέας μεταβλητής για το πράσινο */
             margin-top: 0.5rem; /* Space above the line */
             margin-bottom: 1rem; /* Space below the line, to separate it from the combined title */
         }
@@ -363,7 +365,12 @@
             border-top: 1px solid rgba(0,0,0,.1);
             padding-top: 1.5rem;
         }
-
+        /* Custom style for the main content section background */
+        .container.my-5 {
+            background-color: #f0fff0; /* Πολύ ελαφρύ πρασινάκι */
+            border-radius: 0.75rem; /* Διατήρηση των στρογγυλεμένων γωνιών */
+            padding: 1.5rem; /* Ελαφρύ padding για καλύτερη εμφάνιση */
+        }
 
 
     </style>
@@ -373,7 +380,8 @@
 
     <!-- New Sticky Header Tabs -->
     <div class="sticky-header-tabs">
-        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
+        <!-- Αλλαγή β. του κειμένου στο header-pre-title -->
+        <div class="header-pre-title">web ENOSIS by Ε.ΚΑ.Σ.Θ.</div>
         <h3 class="MatchcenterHomepageWidget__header">
             MATCHCENTER<span class="header-superscript">4</span>
         </h3>
