@@ -125,6 +125,14 @@
                 var pPowerPrvtathlhmatos = data.getFormattedValue(row, 14); // Column O - For mc_02_Kathgories.html (Groups/Categories)
                 var pPowerPrvtathlhmatosOrismoi = data.getFormattedValue(row, 26); // Column AA - For gameCenter_3_orismoi.html (Definitions/Appointments)
 
+                // Retrieve URLs for the new buttons
+                var urlDiaitites = data.getFormattedValue(row, 29); // Column AD
+                var urlKrites = data.getFormattedValue(row, 27); // Column AB
+                var urlKomisarioi = data.getFormattedValue(row, 31); // Column AF
+                var urlGipeda = data.getFormattedValue(row, 33); // Column AH
+                var urlOmades = data.getFormattedValue(row, 35); // Column AJ
+
+
                 // Create Bootstrap Card structure
                 var cardCol = document.createElement('div');
                 cardCol.className = 'col-md-6 col-lg-4 d-flex'; // Responsive grid columns and d-flex for equal card heights
@@ -148,19 +156,17 @@
 
                 // Container for buttons
                 var divButtons = document.createElement('div');
-                divButtons.className = 'mt-3';
+                divButtons.className = 'mt-3 d-flex flex-wrap gap-2'; // Added flex-wrap and gap for spacing
 
                 // Link to Championship Groups/Categories (mc_02_Kathgories_ENOSIS.html in html subfolder)
                 var linkPrvtathlhmatos = document.createElement('a');
-                // Έγινε αλλαγή του αρχείου προορισμού εδώ
                 linkPrvtathlhmatos.href = 'html/mc_02_Kathgories_ENOSIS.html' +
                     '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
                     '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
                     '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) + // Pass season
                     '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
                     '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos);
-                linkPrvtathlhmatos.className = 'btn btn-primary btn-sm me-2';
-                // Replaced Font Awesome icon with emoji
+                linkPrvtathlhmatos.className = 'btn btn-primary btn-sm';
                 linkPrvtathlhmatos.innerHTML = '🏀 Πρωτάθλημα'; // Emoji for basketball
                 divButtons.appendChild(linkPrvtathlhmatos);
 
@@ -173,9 +179,59 @@
                         '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
                         '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatosOrismoi);
                     linkOrismoi.className = 'btn btn-info btn-sm';
-                    // Replaced Font Awesome icon with emoji
                     linkOrismoi.innerHTML = '📄 Ορισμοί'; // Emoji for file/document
                     divButtons.appendChild(linkOrismoi);
+                }
+
+                // New Buttons based on user request:
+                // ΔΙΑΙΤΗΤΕΣ -> Column AD (index 29)
+                if (urlDiaitites) {
+                    var linkDiaitites = document.createElement('a');
+                    linkDiaitites.href = urlDiaitites;
+                    linkDiaitites.target = '_blank';
+                    linkDiaitites.className = 'btn btn-secondary btn-sm';
+                    linkDiaitites.innerHTML = '🧑‍⚖️ ΔΙΑΙΤΗΤΕΣ'; // Emoji for judge/referee
+                    divButtons.appendChild(linkDiaitites);
+                }
+
+                // ΚΡΙΤΕΣ -> Column AB (index 27)
+                if (urlKrites) {
+                    var linkKrites = document.createElement('a');
+                    linkKrites.href = urlKrites;
+                    linkKrites.target = '_blank';
+                    linkKrites.className = 'btn btn-secondary btn-sm';
+                    linkKrites.innerHTML = '📝 ΚΡΙΤΕΣ'; // Emoji for pencil/writing
+                    divButtons.appendChild(linkKrites);
+                }
+
+                // ΚΟΜΙΣΑΡΙΟΙ -> Column AF (index 31)
+                if (urlKomisarioi) {
+                    var linkKomisarioi = document.createElement('a');
+                    linkKomisarioi.href = urlKomisarioi;
+                    linkKomisarioi.target = '_blank';
+                    linkKomisarioi.className = 'btn btn-secondary btn-sm';
+                    linkKomisarioi.innerHTML = '👮 ΚΟΜΙΣΑΡΙΟΙ'; // Emoji for police officer/official
+                    divButtons.appendChild(linkKomisarioi);
+                }
+
+                // ΓΗΠΕΔΑ -> Column AH (index 33)
+                if (urlGipeda) {
+                    var linkGipeda = document.createElement('a');
+                    linkGipeda.href = urlGipeda;
+                    linkGipeda.target = '_blank';
+                    linkGipeda.className = 'btn btn-secondary btn-sm';
+                    linkGipeda.innerHTML = '🏟️ ΓΗΠΕΔΑ'; // Emoji for stadium
+                    divButtons.appendChild(linkGipeda);
+                }
+
+                // ΟΜΑΔΕΣ -> Column AJ (index 35)
+                if (urlOmades) {
+                    var linkOmades = document.createElement('a');
+                    linkOmades.href = urlOmades;
+                    linkOmades.target = '_blank';
+                    linkOmades.className = 'btn btn-secondary btn-sm';
+                    linkOmades.innerHTML = '👥 ΟΜΑΔΕΣ'; // Emoji for group of people/teams
+                    divButtons.appendChild(linkOmades);
                 }
 
                 // Append elements to the card structure
@@ -203,7 +259,6 @@
 
             const versionDiv = document.createElement('div');
             versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12'); // Added col-12 for full width
-            // Έγινε αλλαγή του κειμένου της έκδοσης εδώ
             versionDiv.textContent = `LT v.25.06.23 | mc_01_diorganvseis_ENOSIS@myekasth`;
             containerDiv.appendChild(versionDiv); // Append to containerDiv
         }
