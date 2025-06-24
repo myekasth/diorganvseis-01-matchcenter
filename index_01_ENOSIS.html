@@ -119,11 +119,15 @@
             for (var row = 0; row < posesEggrafes; row++) {
                 // Retrieve data for constructing links and card content
                 var pNameDiorganvtriaArxh = data.getFormattedValue(row, 7); // Column H
+
+
                 var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) : defaultPowerDiorganvtriaArxh;
                 var pAgvnistikhPeriodos = data.getFormattedValue(row, 0); // Column A
                 var pNamePrvtathlhmatos = data.getFormattedValue(row, 4); // Column E
                 var pPowerPrvtathlhmatos = data.getFormattedValue(row, 14); // Column O - For mc_02_Kathgories.html (Groups/Categories)
                 var pPowerPrvtathlhmatosOrismoi = data.getFormattedValue(row, 26); // Column AA - For gameCenter_3_orismoi.html (Definitions/Appointments)
+
+                var urlCentralOmilon = data.getFormattedValue(row, 49); // Column AX (index 49)
 
                 // Retrieve URLs for the new buttons
                 var urlDiaitites = data.getFormattedValue(row, 29); // Column AD (index 29)
@@ -134,12 +138,12 @@
 
                 // New URLs for new buttons
                 var urlOikonomikesApoziomioseis = data.getFormattedValue(row, 37); // Column AL (index 37)
-                var urlCentralOmilon = data.getFormattedValue(row, 38); // Column AM (index 38)
                 var urlBig01ProgrammaAgonon = data.getFormattedValue(row, 39); // Column AN (index 39)
                 var urlBig02DiaititesOrismoi = data.getFormattedValue(row, 41); // Column AP (index 41)
                 var urlBig03KritesOrismoi = data.getFormattedValue(row, 43); // Column AR (index 43)
                 var urlBig04KomisarioiOrismoi = data.getFormattedValue(row, 45); // Column AT (index 45)
                 var urlBig05AllagesAgonon = data.getFormattedValue(row, 47); // Column AV (index 47)
+
 
 
                 // Create Bootstrap Card structure
@@ -165,154 +169,97 @@
 
                 // Container for buttons
                 var divButtons = document.createElement('div');
-                divButtons.className = 'mt-3 d-flex flex-wrap gap-2'; // Added flex-wrap and gap for spacing
+                divButtons.className = 'mt-3 d-flex flex-column gap-2'; // Changed to flex-column for stacking, gap for spacing
 
-                // Link to Championship Groups/Categories (mc_02_Kathgories_ENOSIS.html in html subfolder)
-                var linkPrvtathlhmatos = document.createElement('a');
-                linkPrvtathlhmatos.href = 'html/mc_02_Kathgories_ENOSIS.html' +
+                let buttonCounter = 0; // Initialize button counter for enumeration
+
+                // Helper function to create a button
+                function createButton(url, emoji, text1, text2 = '', text3 = '', buttonStyleClass = 'btn-secondary') {
+                    if (url) {
+                        const button = document.createElement('a');
+                        button.href = url;
+                        button.target = '_blank';
+                        button.className = `btn ${buttonStyleClass} btn-sm`; // Use provided style class
+                        let buttonText = `${String(buttonCounter).padStart(2, '0')} ${emoji}<br>${text1}`;
+                        if (text2) buttonText += `<br>${text2}`;
+                        if (text3) buttonText += `<br>${text3}`;
+                        button.innerHTML = buttonText;
+                        buttonCounter++;
+                        return button;
+                    }
+                    return null;
+                }
+
+                // Group 1: Πρωτάθλημα
+                // No heading for the first group as it's a single item
+                const linkPrvtathlhmatos = createButton(
+                    'html/mc_02_Kathgories_ENOSIS.html' +
                     '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
                     '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
-                    '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) + // Pass season
+                    '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) +
                     '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
-                    '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos);
-                linkPrvtathlhmatos.className = 'btn btn-primary btn-sm';
-                linkPrvtathlhmatos.innerHTML = '🏀<br>Πρωτάθλημα'; // Emoji for basketball, two lines
-                divButtons.appendChild(linkPrvtathlhmatos);
+                    '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos),
+                    '🏀', 'Πρωτάθλημα', '', '', 'btn-primary' // Specific style for this button
+                );
+                if (linkPrvtathlhmatos) {
+                    divButtons.appendChild(linkPrvtathlhmatos);
+                }
 
-                // Link to Definitions/Appointments (gameCenter_3_orismoi.html) if pPowerPrvtathlhmatosOrismoi exists
-                if(pPowerPrvtathlhmatosOrismoi !== ''){
-                    var linkOrismoi = document.createElement('a');
-                    linkOrismoi.href = 'gameCenter_3_orismoi.html' +
-                        '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
-                        '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
-                        '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
-                        '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatosOrismoi);
-                    linkOrismoi.className = 'btn btn-info btn-sm';
-                    linkOrismoi.innerHTML = '📄<br>Ορισμοί'; // Emoji for file/document, two lines
+                // Group 2: ΜΗΤΡΩΑ
+                divButtons.appendChild(createGroupHeading('ΜΗΤΡΩΑ'));
+
+                const linkOrismoi = createButton(
+                    pPowerPrvtathlhmatosOrismoi ? 'gameCenter_3_orismoi.html' +
+                    '?pNameDiorganvtriaArxh=' + encodeURIComponent(pNameDiorganvtriaArxh) +
+                    '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
+                    '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
+                    '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatosOrismoi) : null,
+                    '📄', 'Ορισμοί', '', '', 'btn-info' // Specific style for this button
+                );
+                if (linkOrismoi) {
                     divButtons.appendChild(linkOrismoi);
                 }
 
-                // New Buttons based on user request:
-                // ΔΙΑΙΤΗΤΕΣ -> Column AD (index 29)
-                if (urlDiaitites) {
-                    var linkDiaitites = document.createElement('a');
-                    linkDiaitites.href = urlDiaitites;
-                    linkDiaitites.target = '_blank';
-                    linkDiaitites.className = 'btn btn-secondary btn-sm';
-                    linkDiaitites.innerHTML = '🧑‍⚖️<br>ΔΙΑΙΤΗΤΕΣ'; // Emoji for judge/referee, two lines
-                    divButtons.appendChild(linkDiaitites);
-                }
+                const linkDiaitites = createButton(urlDiaitites, '🧑‍⚖️', 'ΔΙΑΙΤΗΤΕΣ', '', '', 'btn-warning'); // Group 'ΜΗΤΡΩΑ' color
+                if (linkDiaitites) divButtons.appendChild(linkDiaitites);
 
-                // ΚΡΙΤΕΣ -> Column AB (index 27)
-                if (urlKrites) {
-                    var linkKrites = document.createElement('a');
-                    linkKrites.href = urlKrites;
-                    linkKrites.target = '_blank';
-                    linkKrites.className = 'btn btn-secondary btn-sm';
-                    linkKrites.innerHTML = '📝<br>ΚΡΙΤΕΣ'; // Emoji for pencil/writing, two lines
-                    divButtons.appendChild(linkKrites);
-                }
+                const linkKrites = createButton(urlKrites, '📝', 'ΚΡΙΤΕΣ', '', '', 'btn-warning'); // Group 'ΜΗΤΡΩΑ' color
+                if (linkKrites) divButtons.appendChild(linkKrites);
 
-                // ΚΟΜΙΣΑΡΙΟΙ -> Column AF (index 31)
-                if (urlKomisarioi) {
-                    var linkKomisarioi = document.createElement('a');
-                    linkKomisarioi.href = urlKomisarioi;
-                    linkKomisarioi.target = '_blank';
-                    linkKomisarioi.className = 'btn btn-secondary btn-sm';
-                    linkKomisarioi.innerHTML = '👮<br>ΚΟΜΙΣΑΡΙΟΙ'; // Emoji for police officer/official, two lines
-                    divButtons.appendChild(linkKomisarioi);
-                }
+                const linkKomisarioi = createButton(urlKomisarioi, '👮', 'ΚΟΜΙΣΑΡΙΟΙ', '', '', 'btn-warning'); // Group 'ΜΗΤΡΩΑ' color
+                if (linkKomisarioi) divButtons.appendChild(linkKomisarioi);
 
-                // ΓΗΠΕΔΑ -> Column AH (index 33)
-                if (urlGipeda) {
-                    var linkGipeda = document.createElement('a');
-                    linkGipeda.href = urlGipeda;
-                    linkGipeda.target = '_blank';
-                    linkGipeda.className = 'btn btn-secondary btn-sm';
-                    linkGipeda.innerHTML = '🏟️<br>ΓΗΠΕΔΑ-ΟΔΟΙΠ.'; // Emoji for stadium, two lines (shortened for better fit)
-                    divButtons.appendChild(linkGipeda);
-                }
+                // Ενημέρωση τίτλου για το κουμπί ΓΗΠΕΔΑ
+                const linkGipeda = createButton(urlGipeda, '🏟️', 'ΓΗΠΕΔΑ', 'ΟΔΟΙΠΟΡΙΚΑ', '', 'btn-warning'); // Group 'ΜΗΤΡΩΑ' color, updated text
+                if (linkGipeda) divButtons.appendChild(linkGipeda);
 
-                // ΟΜΑΔΕΣ -> Column AJ (index 35)
-                if (urlOmades) {
-                    var linkOmades = document.createElement('a');
-                    linkOmades.href = urlOmades;
-                    linkOmades.target = '_blank';
-                    linkOmades.className = 'btn btn-secondary btn-sm';
-                    linkOmades.innerHTML = '👥<br>ΟΜΑΔΕΣ'; // Emoji for group of people/teams, two lines
-                    divButtons.appendChild(linkOmades);
-                }
+                const linkOmades = createButton(urlOmades, '�', 'ΟΜΑΔΕΣ', '', '', 'btn-warning'); // Group 'ΜΗΤΡΩΑ' color
+                if (linkOmades) divButtons.appendChild(linkOmades);
 
-                // Νέα κουμπιά που ζητήθηκαν
-                // α. "ΟΙΚΟΝΟΜΙΚΕΣ ΑΠΟΖΗΜΙΩΣΕΙΣ Δ.Κ.Π." -> Column AL (index 37)
-                if (urlOikonomikesApoziomioseis) {
-                    var linkOikonomikes = document.createElement('a');
-                    linkOikonomikes.href = urlOikonomikesApoziomioseis;
-                    linkOikonomikes.target = '_blank';
-                    linkOikonomikes.className = 'btn btn-secondary btn-sm';
-                    linkOikonomikes.innerHTML = '💰<br>ΟΙΚΟΝΟΜΙΚΕΣ<br>ΑΠΟΖΗΜΙΩΣΕΙΣ Δ.Κ.Π.'; // Three lines for better fit
-                    divButtons.appendChild(linkOikonomikes);
-                }
+                // Μετακίνηση του κουμπιού ΟΙΚΟΝΟΜΙΚΕΣ ΑΠΟΖΗΜΙΩΣΕΙΣ Δ.Κ.Π. στην ομάδα ΜΗΤΡΩΑ
+                const linkOikonomikes = createButton(urlOikonomikesApoziomioseis, '💰', 'ΟΙΚΟΝΟΜΙΚΕΣ', 'ΑΠΟΖΗΜΙΩΣΕΙΣ Δ.Κ.Π.', '', 'btn-warning'); // Group 'ΜΗΤΡΩΑ' color
+                if (linkOikonomikes) divButtons.appendChild(linkOikonomikes);
 
-                // β. "CENTRAL ΟΜΙΛΩΝ" -> Column AM (index 38)
-                if (urlCentralOmilon) {
-                    var linkCentral = document.createElement('a');
-                    linkCentral.href = urlCentralOmilon;
-                    linkCentral.target = '_blank';
-                    linkCentral.className = 'btn btn-secondary btn-sm';
-                    linkCentral.innerHTML = '🎯<br>CENTRAL<br>ΟΜΙΛΩΝ'; // Two lines
-                    divButtons.appendChild(linkCentral);
-                }
+                // Group 3: BIG
+                divButtons.appendChild(createGroupHeading('BIG'));
 
-                // γ. "BIG 01 ΠΡΟΓΡΑΜΜΑ ΑΓΩΝΩΝ" -> Column AN (index 39)
-                if (urlBig01ProgrammaAgonon) {
-                    var linkBig01 = document.createElement('a');
-                    linkBig01.href = urlBig01ProgrammaAgonon;
-                    linkBig01.target = '_blank';
-                    linkBig01.className = 'btn btn-secondary btn-sm';
-                    linkBig01.innerHTML = '📅<br>BIG 01<br>ΠΡΟΓΡΑΜΜΑ ΑΓΩΝΩΝ'; // Three lines for better fit
-                    divButtons.appendChild(linkBig01);
-                }
+                const linkCentral = createButton(urlCentralOmilon, '🎯', 'CENTRAL', 'ΟΜΙΛΩΝ', '', 'btn-danger'); // Group 'BIG' color
+                if (linkCentral) divButtons.appendChild(linkCentral);
 
-                // δ. "BIG 02 ΔΙΑΙΤΗΤΕΣ ΟΡΙΣΜΟΙ" -> Column AP (index 41)
-                if (urlBig02DiaititesOrismoi) {
-                    var linkBig02 = document.createElement('a');
-                    linkBig02.href = urlBig02DiaititesOrismoi;
-                    linkBig02.target = '_blank';
-                    linkBig02.className = 'btn btn-secondary btn-sm';
-                    linkBig02.innerHTML = '🧑‍⚖️<br>BIG 02<br>ΔΙΑΙΤΗΤΕΣ ΟΡΙΣΜΟΙ'; // Three lines for better fit
-                    divButtons.appendChild(linkBig02);
-                }
+                const linkBig01 = createButton(urlBig01ProgrammaAgonon, '📅', 'BIG 01', 'ΠΡΟΓΡΑΜΜΑ ΑΓΩΝΩΝ', '', 'btn-danger'); // Group 'BIG' color
+                if (linkBig01) divButtons.appendChild(linkBig01);
 
-                // ε. "BIG 03 ΚΡΙΤΕΣ ΟΡΙΣΜΟΙ" -> Column AR (index 43)
-                if (urlBig03KritesOrismoi) {
-                    var linkBig03 = document.createElement('a');
-                    linkBig03.href = urlBig03KritesOrismoi;
-                    linkBig03.target = '_blank';
-                    linkBig03.className = 'btn btn-secondary btn-sm';
-                    linkBig03.innerHTML = '📝<br>BIG 03<br>ΚΡΙΤΕΣ ΟΡΙΣΜΟΙ'; // Three lines for better fit
-                    divButtons.appendChild(linkBig03);
-                }
+                const linkBig02 = createButton(urlBig02DiaititesOrismoi, '🧑‍⚖️', 'BIG 02', 'ΔΙΑΙΤΗΤΕΣ ΟΡΙΣΜΟΙ', '', 'btn-danger'); // Group 'BIG' color
+                if (linkBig02) divButtons.appendChild(linkBig02);
 
-                // στ. "BIG 04 ΚΟΜΙΣΑΡΙΟΙ ΟΡΙΣΜΟΙ" -> Column AT (index 45)
-                if (urlBig04KomisarioiOrismoi) {
-                    var linkBig04 = document.createElement('a');
-                    linkBig04.href = urlBig04KomisarioiOrismoi;
-                    linkBig04.target = '_blank';
-                    linkBig04.className = 'btn btn-secondary btn-sm';
-                    linkBig04.innerHTML = '👮<br>BIG 04<br>ΚΟΜΙΣΑΡΙΟΙ ΟΡΙΣΜΟΙ'; // Three lines for better fit
-                    divButtons.appendChild(linkBig04);
-                }
+                const linkBig03 = createButton(urlBig03KritesOrismoi, '📝', 'BIG 03', 'ΚΡΙΤΕΣ ΟΡΙΣΜΟΙ', '', 'btn-danger'); // Group 'BIG' color
+                if (linkBig03) divButtons.appendChild(linkBig03);
 
-                // η. "BIG 05 ΑΛΛΑΓΕΣ ΑΓΩΝΩΝ ΜΕΤΑ ΑΠΟ ΟΡΙΣΜΟΥΣ" -> Column AV (index 47)
-                if (urlBig05AllagesAgonon) {
-                    var linkBig05 = document.createElement('a');
-                    linkBig05.href = urlBig05AllagesAgonon;
-                    linkBig05.target = '_blank';
-                    linkBig05.className = 'btn btn-secondary btn-sm';
-                    linkBig05.innerHTML = '🔄<br>BIG 05<br>ΑΛΛΑΓΕΣ ΑΓΩΝΩΝ ΜΕΤ\' ΟΡΙΣΜΟΥΣ'; // Three lines for better fit
-                    divButtons.appendChild(linkBig05);
-                }
+                const linkBig04 = createButton(urlBig04KomisarioiOrismoi, '👮', 'BIG 04', 'ΚΟΜΙΣΑΡΙΟΙ ΟΡΙΣΜΟΙ', '', 'btn-danger'); // Group 'BIG' color
+                if (linkBig04) divButtons.appendChild(linkBig04);
+
+                const linkBig05 = createButton(urlBig05AllagesAgonon, '🔄', 'BIG 05', 'ΑΛΛΑΓΕΣ ΑΓΩΝΩΝ', 'ΜΕΤ\' ΟΡΙΣΜΟΥΣ', 'btn-danger'); // Group 'BIG' color
+                if (linkBig05) divButtons.appendChild(linkBig05);
 
 
                 // Append elements to the card structure
@@ -322,6 +269,14 @@
                 card.appendChild(cardBody);
                 cardCol.appendChild(card);
                 containerDiv.appendChild(cardCol);
+            }
+
+            // Helper function to create group heading
+            function createGroupHeading(title) {
+                const headingDiv = document.createElement('div');
+                headingDiv.className = 'button-group-heading';
+                headingDiv.textContent = title;
+                return headingDiv;
             }
             
             // Add the footer elements after all cards have been processed
@@ -479,11 +434,9 @@
         }
 
         .card-diorganvsh .btn {
-            /* Remove min-width or adjust as needed for multi-line text */
-            /* min-width: 120px; */ 
-            margin-top: 0.5rem; /* Adjusted margin-top for multi-line buttons */
-            margin-right: 0.5rem;
-            /* Ensure buttons align well vertically with content */
+            width: 100%; /* Full width */
+            margin-bottom: 0.5rem; /* Add some vertical spacing between stacked buttons */
+            margin-right: 0 !important; /* Remove right margin if any, as they will stack */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -495,21 +448,29 @@
             font-size: 0.8rem; /* Slightly smaller font to fit more text */
         }
 
-        /* Specific style for buttons in divButtons to ensure uniform appearance */
-        .divButtons .btn {
-            flex: 1 1 auto; /* Allow buttons to grow and shrink, and wrap */
-            max-width: 48%; /* Adjust max-width to allow two buttons per row on larger screens */
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
-        }
+        /* Remove any previous responsive max-width rules for .divButtons .btn */
         @media (min-width: 768px) {
             .divButtons .btn {
-                max-width: calc(33.333% - 0.5rem); /* Three buttons per row on medium screens */
+                max-width: none; /* Remove previous max-width to allow full width */
             }
         }
         @media (min-width: 992px) {
             .divButtons .btn {
-                max-width: calc(25% - 0.5rem); /* Four buttons per row on large screens */
+                max-width: none; /* Remove previous max-width to allow full width */
             }
+        }
+
+        /* Style for button group headings */
+        .button-group-heading {
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 1.5rem; /* Space above the group heading */
+            margin-bottom: 0.8rem; /* Space below the group heading */
+            color: var(--mc-text-dark);
+            font-size: 1.1rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid rgba(0,0,0,.1);
         }
 
 
@@ -574,3 +535,4 @@
 
 </body>
 </html>
+�
