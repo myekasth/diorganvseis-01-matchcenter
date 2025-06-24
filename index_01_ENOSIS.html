@@ -126,11 +126,20 @@
                 var pPowerPrvtathlhmatosOrismoi = data.getFormattedValue(row, 26); // Column AA - For gameCenter_3_orismoi.html (Definitions/Appointments)
 
                 // Retrieve URLs for the new buttons
-                var urlDiaitites = data.getFormattedValue(row, 29); // Column AD
-                var urlKrites = data.getFormattedValue(row, 27); // Column AB
-                var urlKomisarioi = data.getFormattedValue(row, 31); // Column AF
-                var urlGipeda = data.getFormattedValue(row, 33); // Column AH
-                var urlOmades = data.getFormattedValue(row, 35); // Column AJ
+                var urlDiaitites = data.getFormattedValue(row, 29); // Column AD (index 29)
+                var urlKrites = data.getFormattedValue(row, 27); // Column AB (index 27)
+                var urlKomisarioi = data.getFormattedValue(row, 31); // Column AF (index 31)
+                var urlGipeda = data.getFormattedValue(row, 33); // Column AH (index 33)
+                var urlOmades = data.getFormattedValue(row, 35); // Column AJ (index 35)
+
+                // New URLs for new buttons
+                var urlOikonomikesApoziomioseis = data.getFormattedValue(row, 37); // Column AL (index 37)
+                var urlCentralOmilon = data.getFormattedValue(row, 38); // Column AM (index 38)
+                var urlBig01ProgrammaAgonon = data.getFormattedValue(row, 39); // Column AN (index 39)
+                var urlBig02DiaititesOrismoi = data.getFormattedValue(row, 41); // Column AP (index 41)
+                var urlBig03KritesOrismoi = data.getFormattedValue(row, 43); // Column AR (index 43)
+                var urlBig04KomisarioiOrismoi = data.getFormattedValue(row, 45); // Column AT (index 45)
+                var urlBig05AllagesAgonon = data.getFormattedValue(row, 47); // Column AV (index 47)
 
 
                 // Create Bootstrap Card structure
@@ -167,7 +176,7 @@
                     '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
                     '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos);
                 linkPrvtathlhmatos.className = 'btn btn-primary btn-sm';
-                linkPrvtathlhmatos.innerHTML = '🏀 Πρωτάθλημα'; // Emoji for basketball
+                linkPrvtathlhmatos.innerHTML = '🏀<br>Πρωτάθλημα'; // Emoji for basketball, two lines
                 divButtons.appendChild(linkPrvtathlhmatos);
 
                 // Link to Definitions/Appointments (gameCenter_3_orismoi.html) if pPowerPrvtathlhmatosOrismoi exists
@@ -179,7 +188,7 @@
                         '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
                         '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatosOrismoi);
                     linkOrismoi.className = 'btn btn-info btn-sm';
-                    linkOrismoi.innerHTML = '📄 Ορισμοί'; // Emoji for file/document
+                    linkOrismoi.innerHTML = '📄<br>Ορισμοί'; // Emoji for file/document, two lines
                     divButtons.appendChild(linkOrismoi);
                 }
 
@@ -190,7 +199,7 @@
                     linkDiaitites.href = urlDiaitites;
                     linkDiaitites.target = '_blank';
                     linkDiaitites.className = 'btn btn-secondary btn-sm';
-                    linkDiaitites.innerHTML = '🧑‍⚖️ ΔΙΑΙΤΗΤΕΣ'; // Emoji for judge/referee
+                    linkDiaitites.innerHTML = '🧑‍⚖️<br>ΔΙΑΙΤΗΤΕΣ'; // Emoji for judge/referee, two lines
                     divButtons.appendChild(linkDiaitites);
                 }
 
@@ -200,7 +209,7 @@
                     linkKrites.href = urlKrites;
                     linkKrites.target = '_blank';
                     linkKrites.className = 'btn btn-secondary btn-sm';
-                    linkKrites.innerHTML = '📝 ΚΡΙΤΕΣ'; // Emoji for pencil/writing
+                    linkKrites.innerHTML = '📝<br>ΚΡΙΤΕΣ'; // Emoji for pencil/writing, two lines
                     divButtons.appendChild(linkKrites);
                 }
 
@@ -210,7 +219,7 @@
                     linkKomisarioi.href = urlKomisarioi;
                     linkKomisarioi.target = '_blank';
                     linkKomisarioi.className = 'btn btn-secondary btn-sm';
-                    linkKomisarioi.innerHTML = '👮 ΚΟΜΙΣΑΡΙΟΙ'; // Emoji for police officer/official
+                    linkKomisarioi.innerHTML = '👮<br>ΚΟΜΙΣΑΡΙΟΙ'; // Emoji for police officer/official, two lines
                     divButtons.appendChild(linkKomisarioi);
                 }
 
@@ -220,7 +229,7 @@
                     linkGipeda.href = urlGipeda;
                     linkGipeda.target = '_blank';
                     linkGipeda.className = 'btn btn-secondary btn-sm';
-                    linkGipeda.innerHTML = '🏟️ ΓΗΠΕΔΑ'; // Emoji for stadium
+                    linkGipeda.innerHTML = '🏟️<br>ΓΗΠΕΔΑ-ΟΔΟΙΠ.'; // Emoji for stadium, two lines (shortened for better fit)
                     divButtons.appendChild(linkGipeda);
                 }
 
@@ -230,9 +239,81 @@
                     linkOmades.href = urlOmades;
                     linkOmades.target = '_blank';
                     linkOmades.className = 'btn btn-secondary btn-sm';
-                    linkOmades.innerHTML = '👥 ΟΜΑΔΕΣ'; // Emoji for group of people/teams
+                    linkOmades.innerHTML = '👥<br>ΟΜΑΔΕΣ'; // Emoji for group of people/teams, two lines
                     divButtons.appendChild(linkOmades);
                 }
+
+                // Νέα κουμπιά που ζητήθηκαν
+                // α. "ΟΙΚΟΝΟΜΙΚΕΣ ΑΠΟΖΗΜΙΩΣΕΙΣ Δ.Κ.Π." -> Column AL (index 37)
+                if (urlOikonomikesApoziomioseis) {
+                    var linkOikonomikes = document.createElement('a');
+                    linkOikonomikes.href = urlOikonomikesApoziomioseis;
+                    linkOikonomikes.target = '_blank';
+                    linkOikonomikes.className = 'btn btn-secondary btn-sm';
+                    linkOikonomikes.innerHTML = '💰<br>ΟΙΚΟΝΟΜΙΚΕΣ<br>ΑΠΟΖΗΜΙΩΣΕΙΣ Δ.Κ.Π.'; // Three lines for better fit
+                    divButtons.appendChild(linkOikonomikes);
+                }
+
+                // β. "CENTRAL ΟΜΙΛΩΝ" -> Column AM (index 38)
+                if (urlCentralOmilon) {
+                    var linkCentral = document.createElement('a');
+                    linkCentral.href = urlCentralOmilon;
+                    linkCentral.target = '_blank';
+                    linkCentral.className = 'btn btn-secondary btn-sm';
+                    linkCentral.innerHTML = '🎯<br>CENTRAL<br>ΟΜΙΛΩΝ'; // Two lines
+                    divButtons.appendChild(linkCentral);
+                }
+
+                // γ. "BIG 01 ΠΡΟΓΡΑΜΜΑ ΑΓΩΝΩΝ" -> Column AN (index 39)
+                if (urlBig01ProgrammaAgonon) {
+                    var linkBig01 = document.createElement('a');
+                    linkBig01.href = urlBig01ProgrammaAgonon;
+                    linkBig01.target = '_blank';
+                    linkBig01.className = 'btn btn-secondary btn-sm';
+                    linkBig01.innerHTML = '📅<br>BIG 01<br>ΠΡΟΓΡΑΜΜΑ ΑΓΩΝΩΝ'; // Three lines for better fit
+                    divButtons.appendChild(linkBig01);
+                }
+
+                // δ. "BIG 02 ΔΙΑΙΤΗΤΕΣ ΟΡΙΣΜΟΙ" -> Column AP (index 41)
+                if (urlBig02DiaititesOrismoi) {
+                    var linkBig02 = document.createElement('a');
+                    linkBig02.href = urlBig02DiaititesOrismoi;
+                    linkBig02.target = '_blank';
+                    linkBig02.className = 'btn btn-secondary btn-sm';
+                    linkBig02.innerHTML = '🧑‍⚖️<br>BIG 02<br>ΔΙΑΙΤΗΤΕΣ ΟΡΙΣΜΟΙ'; // Three lines for better fit
+                    divButtons.appendChild(linkBig02);
+                }
+
+                // ε. "BIG 03 ΚΡΙΤΕΣ ΟΡΙΣΜΟΙ" -> Column AR (index 43)
+                if (urlBig03KritesOrismoi) {
+                    var linkBig03 = document.createElement('a');
+                    linkBig03.href = urlBig03KritesOrismoi;
+                    linkBig03.target = '_blank';
+                    linkBig03.className = 'btn btn-secondary btn-sm';
+                    linkBig03.innerHTML = '📝<br>BIG 03<br>ΚΡΙΤΕΣ ΟΡΙΣΜΟΙ'; // Three lines for better fit
+                    divButtons.appendChild(linkBig03);
+                }
+
+                // στ. "BIG 04 ΚΟΜΙΣΑΡΙΟΙ ΟΡΙΣΜΟΙ" -> Column AT (index 45)
+                if (urlBig04KomisarioiOrismoi) {
+                    var linkBig04 = document.createElement('a');
+                    linkBig04.href = urlBig04KomisarioiOrismoi;
+                    linkBig04.target = '_blank';
+                    linkBig04.className = 'btn btn-secondary btn-sm';
+                    linkBig04.innerHTML = '👮<br>BIG 04<br>ΚΟΜΙΣΑΡΙΟΙ ΟΡΙΣΜΟΙ'; // Three lines for better fit
+                    divButtons.appendChild(linkBig04);
+                }
+
+                // η. "BIG 05 ΑΛΛΑΓΕΣ ΑΓΩΝΩΝ ΜΕΤΑ ΑΠΟ ΟΡΙΣΜΟΥΣ" -> Column AV (index 47)
+                if (urlBig05AllagesAgonon) {
+                    var linkBig05 = document.createElement('a');
+                    linkBig05.href = urlBig05AllagesAgonon;
+                    linkBig05.target = '_blank';
+                    linkBig05.className = 'btn btn-secondary btn-sm';
+                    linkBig05.innerHTML = '🔄<br>BIG 05<br>ΑΛΛΑΓΕΣ ΑΓΩΝΩΝ ΜΕΤ\' ΟΡΙΣΜΟΥΣ'; // Three lines for better fit
+                    divButtons.appendChild(linkBig05);
+                }
+
 
                 // Append elements to the card structure
                 cardBody.appendChild(cardTitle);
@@ -398,9 +479,39 @@
         }
 
         .card-diorganvsh .btn {
-            margin-top: 1rem;
+            /* Remove min-width or adjust as needed for multi-line text */
+            /* min-width: 120px; */ 
+            margin-top: 0.5rem; /* Adjusted margin-top for multi-line buttons */
             margin-right: 0.5rem;
+            /* Ensure buttons align well vertically with content */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: auto; /* Allow height to adjust based on content */
+            text-align: center;
+            white-space: normal; /* Allow text to wrap */
+            padding: 0.5rem 0.8rem; /* Adjust padding for multi-line text */
+            font-size: 0.8rem; /* Slightly smaller font to fit more text */
         }
+
+        /* Specific style for buttons in divButtons to ensure uniform appearance */
+        .divButtons .btn {
+            flex: 1 1 auto; /* Allow buttons to grow and shrink, and wrap */
+            max-width: 48%; /* Adjust max-width to allow two buttons per row on larger screens */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        @media (min-width: 768px) {
+            .divButtons .btn {
+                max-width: calc(33.333% - 0.5rem); /* Three buttons per row on medium screens */
+            }
+        }
+        @media (min-width: 992px) {
+            .divButtons .btn {
+                max-width: calc(25% - 0.5rem); /* Four buttons per row on large screens */
+            }
+        }
+
 
         /* Loading spinner progress bar styling */
         .progress {
