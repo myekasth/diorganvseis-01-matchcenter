@@ -69,10 +69,11 @@
             var pPowerDiorganvtriaArxh = getQueryVariable("pPowerDiorganvtriaArxh") ? decodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) : defaultPowerDiorganvtriaArxh;
 
             // Construct the query based on pPower parameter
+            // Selecting all relevant columns up to AH (index 33)
             if(getQueryVariable("pPower")){
-                strQueryForURI = 'select * where H="'+decodeURIComponent(getQueryVariable("pPower")) +'" order by D desc';
+                strQueryForURI = 'select A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, AB, AC, AD, AE, AF, AG, AH where H="'+decodeURIComponent(getQueryVariable("pPower")) +'" order by D desc';
             } else {
-                strQueryForURI = 'select * where H="'+defaultPower+'" order by D desc'; // Apply default filter if no pPower
+                strQueryForURI = 'select A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, AB, AC, AD, AE, AF, AG, AH where H="'+defaultPower+'" order by D desc'; // Apply default filter if no pPower
             }
 
             var queryString = encodeURIComponent(strQueryForURI);
@@ -124,6 +125,7 @@
                 var pNamePrvtathlhmatos = data.getFormattedValue(row, 4); // Column E
                 var pPowerPrvtathlhmatos = data.getFormattedValue(row, 14); // Column O - For mc_02_Kathgories.html (Groups/Categories)
                 var pPowerPrvtathlhmatosOrismoi = data.getFormattedValue(row, 26); // Column AA - For gameCenter_3_orismoi.html (Definitions/Appointments)
+                var pGhpedaSheetId = data.getFormattedValue(row, 33); // Column AH - For mc_02_Ghpeda.html (Stadiums)
 
                 // Create Bootstrap Card structure
                 var cardCol = document.createElement('div');
@@ -171,10 +173,20 @@
                         '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
                         '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
                         '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatosOrismoi);
-                    linkOrismoi.className = 'btn btn-info btn-sm';
+                    linkOrismoi.className = 'btn btn-info btn-sm me-2'; // Added me-2 for spacing
                     // Replaced Font Awesome icon with emoji
                     linkOrismoi.innerHTML = '📄 Ορισμοί'; // Emoji for file/document
                     divButtons.appendChild(linkOrismoi);
+                }
+
+                // Link to Ghpeda (mc_02_Ghpeda.html) if pGhpedaSheetId exists (Column AH)
+                if(pGhpedaSheetId !== ''){
+                    var linkGhpeda = document.createElement('a');
+                    linkGhpeda.href = 'html/mc_02_Ghpeda.html' +
+                        '?pID=' + encodeURIComponent(pGhpedaSheetId);
+                    linkGhpeda.className = 'btn btn-success btn-sm'; // Green color for success/new functionality
+                    linkGhpeda.innerHTML = '🏟️ Γήπεδα'; // Stadium emoji
+                    divButtons.appendChild(linkGhpeda);
                 }
 
                 // Append elements to the card structure
