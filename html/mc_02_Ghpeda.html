@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="description" content="MatchCenter - Γήπεδα Μπάσκετ" />
+    <meta name="keywords" content="MatchCenter, games, results, ranking, referes, table offcers, champions, μπάσκετ, πρωτάθλημα, διοργάνωση, γήπεδα" />
+    <meta name="language" content="greek" />
+    <meta name="author" content="MatchCenter" />
+    <meta name="web_author" content="Lazaros T" />
+    <link rel="icon" href="../favicon.ico" />
+
+    <title>Γήπεδα</title>
+
+    <!-- Google Fonts: Krona One for titles, Inter for body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS and JS Bundle -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Charts Library for data visualization -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+        // Ensure Google Charts is loaded and ready before calling drawchart
+        google.charts.load('current', {packages:['corechart']});
+        google.charts.setOnLoadCallback(drawchart); 
+
+        /**
+         * Parses URL query parameters.
+         * @param {string} variable The name of the query parameter to retrieve.
+         * @returns {string|boolean} The value of the parameter or false if not found.
+         */
+        function getQueryVariable(variable){
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0; i<vars.length; i++) {
+                var pair = vars[i].split("=");
+                if(pair[0] === variable){return pair[1];}
+            }
+            return(false);
+        }
+
+        // Default Google Sheet URL for "Γήπεδα" if pID parameter is not provided
+        var defaultGhpedaSheetUrl = "https://docs.google.com/spreadsheets/d/19cYG7Ko_XLgVKN03VkWGsiXBEYhKLzTWKplv2bttI4s/edit?gid=0#gid=0";
+
+        /**
+         * Initializes the chart drawing and sets the header title.
+         * This function is called as the callback for google.load to ensure Google Charts API is ready.
+         * It retrieves parameters from the URL and updates the header title.
+         */
+        function drawchart(){
+            // Get the pID parameter from URL, or use the default URL if not present
+            var pID = getQueryVariable("pID") ? decodeURIComponent(getQueryVariable("pID")) : defaultGhpedaSheetUrl;
+
+            // Update the combined header title
+            document.getElementById("combined-header-title").innerHTML = `ΓΗΠΕΔΑ ΜΠΑΣΚΕΤ`;
+
+            // Extract the Google Sheet ID and GID from the pID URL
+            const sheetMatch = pID.match(/d\/([a-zA-Z0-9_-]+)(?:\/edit)?(?:.*gid=([0-9]+))?/);
+            let sheetId = '';
+            let gid = '0'; // Default to gid=0 if not found in URL
+
+            if (sheetMatch) {
+                sheetId = sheetMatch[1];
+                if (sheetMatch[2]) {
+                    gid = sheetMatch[2];
+                }
+            } else {
+                console.error("Could not extract Sheet ID from URL:", pID);
+                document.getElementById("list-ghpeda-id").innerHTML = '<div class="col-12"><p class="text-center text-danger">Προέκυψε σφάλμα: Δεν βρέθηκε έγκυρο ID φύλλου.</p></div>';
+                var loadingSpinner = document.getElementById("loading-spinner");
+                if (loadingSpinner) {
+                    loadingSpinner.remove();
+                }
+                return;
+            }
+            
+            drawGhpeda(sheetId, gid);
+        }
+
+        /**
+         * Fetches stadium data from the Google Sheet using Google Visualization API.
+         * It uses the provided sheetId and gid to query the specific sheet.
+         * @param {string} sheetId The Google Sheet ID containing the stadium data.
+         * @param {string} gid The GID of the specific sheet (tab) within the Google Sheet.
+         */
+        function drawGhpeda(sheetId, gid) {
+            // Query for stadiums from the Google Sheet, ordered alphabetically by Column A (Όνομα Γηπέδου)
+            // Select A (Name), B (Type), C (Address), D (TK), E (Phone), I (Map URL)
+            var strQueryForURI = 'select A, B, C, D, E, I order by A'; 
+            var queryString = encodeURIComponent(strQueryForURI);
+
+            var query = new google.visualization.Query(
+                'https://docs.google.com/spreadsheets/d/'+ sheetId +'/gviz/tq?gid=' + gid + '&headers=1&tq=' + queryString);
+            query.send(handle_DrawGhpeda_DataQueryResponse);
+        }
+
+        /**
+         * Handles the data response from the Google Sheet query and renders the stadiums.
+         * @param {object} response The Google Visualization API query response.
+         */
+        function handle_DrawGhpeda_DataQueryResponse(response) {
+            if (response.isError()) {
+                console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                document.getElementById("list-ghpeda-id").innerHTML = '<div class="col-12"><p class="text-center text-danger">Προέκυψε σφάλμα κατά τη φόρτωση των γηπέδων: ' + response.getMessage() + '. Παρακαλώ δοκιμάστε ξανά αργότερα.</p></div>';
+                var loadingSpinner = document.getElementById("loading-spinner");
+                if (loadingSpinner) {
+                    loadingSpinner.remove();
+                }
+                return;
+            }
+
+            var data = response.getDataTable();
+            var posesEggrafes = data.getNumberOfRows();
+            var containerDiv = document.getElementById("list-ghpeda-id");
+
+            var loadingSpinner = document.getElementById("loading-spinner");
+            if (loadingSpinner) {
+                    loadingSpinner.remove();
+            }
+            containerDiv.innerHTML = ''; // Clear existing content
+
+            if (posesEggrafes === 0) {
+                containerDiv.innerHTML = '<div class="col-12"><p class="text-center text-muted">Δεν βρέθηκαν καταχωρημένα γήπεδα.</p></div>';
+                return;
+            }
+
+            for (var row = 0; row < posesEggrafes; row++) {
+                var ghpedoName = data.getFormattedValue(row, 0); // Column A: Όνομα Γηπέδου
+                var ghpedoType = data.getFormattedValue(row, 1); // Column B: Είδος γηπέδου
+                var ghpedoAddress = data.getFormattedValue(row, 2); // Column C: ΔΙΕΥΘΥΝΣΗ
+                var ghpedoTK = data.getFormattedValue(row, 3); // Column D: TK
+                var ghpedoPhone = data.getFormattedValue(row, 4); // Column E: ΤΗΛΕΦΩΝΟ
+                var ghpedoMapUrl = data.getFormattedValue(row, 5); // Column I: URL
+
+                // Create a div for each stadium entry
+                var ghpedoDiv = document.createElement('div');
+                ghpedoDiv.className = 'col-12 mb-3'; // Full width, margin below
+
+                var cardDiv = document.createElement('div');
+                cardDiv.className = 'card shadow-sm h-100'; // Bootstrap card styling
+
+                var cardBody = document.createElement('div');
+                cardBody.className = 'card-body d-flex flex-column';
+
+                // Top row for stadium name and map button
+                var nameRow = document.createElement('div');
+                nameRow.className = 'd-flex justify-content-between align-items-center mb-2';
+
+                var nameSpan = document.createElement('span');
+                nameSpan.className = 'fw-bold text-dark ghpedo-name'; // Custom class for styling
+                nameSpan.textContent = ghpedoName;
+
+                var mapButton = document.createElement('a');
+                if (ghpedoMapUrl) {
+                    mapButton.href = ghpedoMapUrl;
+                    mapButton.target = '_blank';
+                    mapButton.className = 'btn btn-outline-info btn-sm ms-3';
+                    mapButton.innerHTML = '🗺️ Χάρτης';
+                } else {
+                    mapButton.className = 'btn btn-outline-secondary btn-sm ms-3 disabled';
+                    mapButton.innerHTML = '🗺️ Χάρτης';
+                    mapButton.setAttribute('aria-disabled', 'true');
+                }
+                
+                nameRow.appendChild(nameSpan);
+                nameRow.appendChild(mapButton);
+                cardBody.appendChild(nameRow);
+
+                // Second row for type, address, TK, phone
+                var detailsDiv = document.createElement('div');
+                detailsDiv.className = 'ghpedo-details'; // Custom class for styling
+                
+                // Type of stadium (Col B)
+                if (ghpedoType) {
+                    var typeP = document.createElement('p');
+                    typeP.className = 'mb-0 ghpedo-detail-item';
+                    typeP.textContent = `Είδος: ${ghpedoType}`;
+                    detailsDiv.appendChild(typeP);
+                }
+
+                // Address (Col C) with link to map if available
+                var addressP = document.createElement('p');
+                addressP.className = 'mb-0 ghpedo-detail-item';
+                if (ghpedoMapUrl) {
+                    var addressLink = document.createElement('a');
+                    addressLink.href = ghpedoMapUrl;
+                    addressLink.target = '_blank';
+                    addressLink.textContent = `Διεύθυνση: ${ghpedoAddress}`;
+                    addressP.appendChild(addressLink);
+                } else {
+                    addressP.textContent = `Διεύθυνση: ${ghpedoAddress}`;
+                }
+                detailsDiv.appendChild(addressP);
+
+                // TK (Col D)
+                if (ghpedoTK) {
+                    var tkP = document.createElement('p');
+                    tkP.className = 'mb-0 ghpedo-detail-item';
+                    tkP.textContent = `Τ.Κ.: ${ghpedoTK}`;
+                    detailsDiv.appendChild(tkP);
+                }
+
+                // Phone (Col E)
+                if (ghpedoPhone) {
+                    var phoneP = document.createElement('p');
+                    phoneP.className = 'mb-0 ghpedo-detail-item';
+                    phoneP.textContent = `Τηλέφωνο: ${ghpedoPhone}`;
+                    detailsDiv.appendChild(phoneP);
+                }
+                
+                cardBody.appendChild(detailsDiv);
+                cardDiv.appendChild(cardBody);
+                ghpedoDiv.appendChild(cardDiv);
+                containerDiv.appendChild(ghpedoDiv);
+            }
+            
+            // Add the common footer buttons and text as in mc_02_Kathgories.html
+            const footerButtonsContainer = document.createElement('div');
+            footerButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3');
+            
+            const announcementsLink = document.createElement('a');
+            announcementsLink.href = 'https://www.ekasth1976.gr/2024/07/2024-25.html';
+            announcementsLink.target = '_blank';
+            announcementsLink.classList.add('btn', 'btn-sm', 'btn-back-custom');
+            announcementsLink.textContent = 'Προκηρύξεις';
+            footerButtonsContainer.appendChild(announcementsLink);
+            
+            containerDiv.appendChild(footerButtonsContainer);
+
+            const ekasthDiv = document.createElement('div');
+            ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12');
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
+            containerDiv.appendChild(ekasthDiv);
+
+            const versionDiv = document.createElement('div');
+            versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
+            versionDiv.textContent = `LT v.25.06.17 | mc_02_ghpeda@myekasth`; // Updated version text
+            containerDiv.appendChild(versionDiv);
+        }
+    </script>
+
+    <style>
+        /* CSS variables for consistent theming */
+        :root {
+            --mc-primary-color: #007bff; /* Bootstrap primary blue */
+            --mc-secondary-color: #6c757d; /* Bootstrap secondary gray */
+            --mc-info-color: #17a2b8; /* Bootstrap info cyan */
+            --mc-light-bg: #f8f9fa; /* Light background */
+            --mc-dark-bg: #212529; /* Dark text for contrast */
+            --mc-text-dark: #212529; /* Dark text for light backgrounds */
+            --mc-timeline-color: #ff0000; /* Pure red for underline */
+
+            /* Monochromatic white header colors and contrasting text colors */
+            --mc-header-bg-color: #ffffff; /* Pure white background for header */
+            --mc-header-text-color: #212529; /* Dark text for contrast on white */
+            --mc-header-small-text-color: #6c757d; /* Secondary gray for smaller text */
+            --mc-header-combined-title-color: #343a40; /* Darker gray for combined title */
+        }
+
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mc-light-bg);
+            color: var(--mc-text-dark);
+            padding-top: 0px;
+        }
+
+        /* Font styling for headings */
+        h1, h5 {
+            font-family: 'Krona One', sans-serif;
+        }
+
+        /* New Sticky Header Styles */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: var(--mc-header-bg-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            z-index: 1020;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .MatchcenterHomepageWidget__header {
+            font-family: 'Krona One', sans-serif;
+            font-size: 2.2rem; /* Keep consistent size */
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--mc-header-text-color);
+        }
+
+        .MatchcenterHomepageWidget__header small {
+            font-size: 0.6em;
+            vertical-align: middle;
+            color: var(--mc-header-small-text-color);
+            font-weight: 300;
+        }
+
+        /* New style for the red line below the main header */
+        .header-underline {
+            height: 5px; /* Updated height */
+            width: 100%; /* Occupy full width of the sticky area */
+            background-color: var(--mc-timeline-color);
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+                /* New styles for the custom superscript */
+        .MatchcenterHomepageWidget__header .header-superscript {
+            font-size: 0.5em; /* Half the size of the parent header font */
+            vertical-align: super;
+            line-height: 0; /* Adjust line height to prevent affecting vertical spacing */
+            position: relative;
+            top: -0.5em; /* Fine-tune vertical position */
+        }
+
+        .header-pre-title {
+            font-family: 'Inter', sans-serif; /* Χρήση της γραμματοσειράς Inter */
+            font-size: 0.8rem; /* Προσαρμοσμένο μέγεθος γραμματοσειράς */
+            color: var(--mc-header-small-text-color); /* Χρώμα γκρι */
+            text-align: center; /* Κεντρική στοίχιση */
+            width: 100%; /* Για να διασφαλιστεί ότι καταλαμβάνει πλήρες πλάτος για το centering */
+            padding: 0; /* Μηδενικό padding */
+            margin: 0; /* Μηδενικό margin */
+            line-height: 1; /* Συμπαγές ύψος γραμμής */
+        }        
+
+        /* Combined header title for "ΔΙΟΡΓΑΝΩΣΕΙΣ ΠΡΩΤΑΘΛΗΜΑΤΑ [diorganvtria arxh]" */
+        .combined-header-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: var(--mc-header-combined-title-color);
+            text-align: center;
+        }
+
+        /* Styles for stadium cards */
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.05);
+            transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transition for hover effects */
+        }
+
+        .card:hover {
+            background-color: #f0f0f0; /* Light grey background on hover */
+            box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.1); /* Slightly more prominent shadow on hover */
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .ghpedo-name {
+            font-size: 1.6rem; /* Μεγάλη γραμματοσειρά για το όνομα γηπέδου */
+            text-align: left;
+            flex-grow: 1; /* Allow name to take available space */
+        }
+
+        .ghpedo-details {
+            font-size: 0.8rem; /* Μικρότερη γραμματοσειρά για τις λεπτομέρειες (περίπου 1/2 του ονόματος) */
+            color: var(--mc-secondary-color);
+            margin-top: 0.5rem;
+        }
+        
+        .ghpedo-details a {
+            color: inherit; /* Inherit color from parent */
+            text-decoration: none; /* No underline by default */
+        }
+
+        .ghpedo-details a:hover {
+            text-decoration: underline; /* Underline on hover for links */
+        }
+
+        .ghpedo-detail-item {
+            margin-bottom: 0.2rem; /* Small margin between detail items */
+        }
+
+        .progress {
+            height: 4px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer specific styles */
+        .ekasth-footer-text, .ekasth-footer-version-text {
+            font-size: 0.55rem; /* Updated font-size */
+            color: var(--mc-secondary-color);
+            padding: 0.1rem 0; /* Updated padding */
+        }
+
+        .ekasth-footer-text {
+            border-top: 1px solid rgba(0,0,0,.1);
+            padding-top: 1.5rem;
+        }
+
+        /* Styles for the Back and Announcements buttons (now sharing the same style) */
+        .btn-back-custom {
+            background-color: transparent; /* Initially transparent */
+            color: rgba(33, 37, 41, 0.5); /* Semi-transparent dark grey */
+            border: 1px solid rgba(33, 37, 41, 0.2); /* Very subtle border */
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+            padding: 0.5rem 1rem; /* Standard padding for these buttons */
+            border-radius: 0.5rem; /* Standard border-radius */
+            font-size: 0.85rem; /* Standard font-size */
+            text-decoration: none; /* No underline */
+        }
+
+        .btn-back-custom:hover,
+        .btn-back-custom:focus {
+            background-color: rgba(33, 37, 41, 0.1); /* Light transparent dark grey on hover */
+            color: var(--mc-header-text-color); /* Full dark text on hover */
+            border-color: var(--mc-header-text-color); /* Visible dark border on hover */
+            box-shadow: none; /* Remove default Bootstrap focus shadow if any */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767.98px) {
+            .sticky-header-tabs {
+                padding-left: 1rem;
+            }
+            .MatchcenterHomepageWidget__header {
+                font-size: 2.2rem;
+            }
+            .combined-header-title {
+                font-size: 1.1rem;
+            }
+            .ghpedo-name {
+                font-size: 1.4rem; /* Slightly smaller on small screens */
+            }
+            .ghpedo-details {
+                font-size: 0.75rem; /* Slightly smaller on small screens */
+            }
+        }
+    </style>
+</head>
+
+<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="80">
+
+    <!-- New Sticky Header Tabs -->
+    <div class="sticky-header-tabs">
+        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
+        <h3 class="MatchcenterHomepageWidget__header">
+            MATCHCENTER<span class="header-superscript">4</span>
+        </h3>
+        <!-- New div for the orange-red line below the main header -->
+        <div class="header-underline"></div>
+        <!-- Combined header title with dynamic content -->
+        <div class="combined-header-title" id="combined-header-title">
+            ΓΗΠΕΔΑ
+        </div>
+    </div>
+
+    <!-- Main content section for displaying stadiums -->
+    <section class="container my-5">
+        <div class="row" id="list-ghpeda-id">
+            <!-- Loading spinner displayed until data is fetched -->
+            <div class="col-12 text-center" id="loading-spinner">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                </div>
+                <p>Φόρτωση δεδομένων ...</p>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
