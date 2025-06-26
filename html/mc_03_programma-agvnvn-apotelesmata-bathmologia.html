@@ -160,23 +160,32 @@
          * @param {object} response The Google Visualization API query response.
          */
         function handle_DrawGamesAndStandings_DataQueryResponse(response) {
+            // Get reference to the loading spinner
+            var loadingSpinnerDiv = document.getElementById("loading-spinner");
+            var contentDiv = document.getElementById("list-content-id");
+
             if (response.isError()) {
-                console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
-                document.getElementById("list-content-id").innerHTML = '<div class="col-12"><p class="text-center text-danger">Προέκυψε σφάλμα κατά τη φόρτωση δεδομένων: ' + response.getMessage() + '. Παρακαλώ δοκιμάστε ξανά αργότερα.</p></div>';
-                var loadingSpinner = document.getElementById("loading-spinner");
-                if (loadingSpinner) {
-                    loadingSpinner.remove();
+                console.error('Error in Google Charts query:', response.getMessage(), response.getDetailedMessage(), response);
+                let errorMessage = 'Προέκυψε σφάλμα κατά τη φόρτωση δεδομένων. ';
+                if (response.getMessage().includes('timed out')) {
+                    errorMessage += 'Η αίτηση χρονόληξε. Παρακαλώ ελέγξτε τη σύνδεσή σας στο διαδίκτυο και δοκιμάστε ξανά.';
+                } else {
+                    errorMessage += 'Λεπτομέρειες: ' + response.getMessage() + '. Παρακαλώ δοκιμάστε ξανά αργότερα.';
+                }
+                
+                contentDiv.innerHTML = `<div class="col-12"><p class="text-center text-danger">${errorMessage}</p></div>`;
+                
+                if (loadingSpinnerDiv) {
+                    loadingSpinnerDiv.remove(); // Ensure spinner is removed on error
                 }
                 return;
             }
 
             var data = response.getDataTable();
             var totalRows = data.getNumberOfRows();
-            var contentDiv = document.getElementById("list-content-id");
-
-            var loadingSpinner = document;
-            if (loadingSpinner) {
-                loadingSpinner.getElementById("loading-spinner").remove();
+            
+            if (loadingSpinnerDiv) {
+                loadingSpinnerDiv.remove(); // Ensure spinner is removed on success
             }
             contentDiv.innerHTML = ''; // Clear existing content
 
@@ -239,7 +248,10 @@
                         commissioner: data.getFormattedValue(row, 55), // Column BD (index 55)
                         scorer1: data.getFormattedValue(row, 13), // Column N (index 13)
                         scorer2: data.getFormattedValue(row, 14), // Column O (index 14)
-                        scorer3: data.getFormattedValue(row, 15)  // Column P (index 15)
+                        scorer3: data.getFormattedValue(row, 15),  // Column P (index 15)
+                        // Add stadium map URLs from columns BE (56) and BF (57)
+                        arenaMapUrl1: data.getFormattedValue(row, 56), // Column BE
+                        arenaMapUrl2: data.getFormattedValue(row, 57)  // Column BF
                     };
                     gamesByRound[roundForGame].push(gameData);
 
@@ -488,6 +500,8 @@
                         var arena = gameRow.arena;
                         var date = gameRow.date;
                         var time = gameRow.time;
+                        var arenaMapUrl1 = gameRow.arenaMapUrl1; // First map URL
+                        var arenaMapUrl2 = gameRow.arenaMapUrl2; // Second map URL
 
                         var gameDiv = document.createElement('div');
                         // Part β: Changed mb-3 and p-3 to mb-1 and p-1
@@ -541,9 +555,34 @@
 
                         center_div.appendChild(score_div);
 
+                        // Arena info with map button
                         var info_div = document.createElement('div');
                         info_div.className = 'game-info text-muted small mt-1';
-                        info_div.innerHTML = `${arena}<br>${date} ${time}`;
+                        
+                        // Prioritize arenaMapUrl1, then arenaMapUrl2
+                        const currentArenaMapUrl = arenaMapUrl1 || arenaMapUrl2;
+
+                        if (currentArenaMapUrl) {
+                            let arenaLink = document.createElement('a');
+                            arenaLink.classList.add('MatchListItem__ghpedoButton');
+                            arenaLink.href = currentArenaMapUrl;
+                            arenaLink.target = '_blank';
+                            arenaLink.rel = 'noopener noreferrer';
+                            arenaLink.textContent = arena;
+                            
+                            let externalLinkIcon = document.createElement('span');
+                            externalLinkIcon.classList.add('ghpedo-external-link-icon');
+                            externalLinkIcon.textContent = ' ↗️';
+                            arenaLink.appendChild(externalLinkIcon);
+                            info_div.appendChild(arenaLink);
+                        } else {
+                            let arenaNameSpan = document.createElement('span');
+                            arenaNameSpan.classList.add('MatchListItem__ghpedoName');
+                            arenaNameSpan.textContent = arena;
+                            info_div.appendChild(arenaNameSpan);
+                        }
+                        
+                        info_div.innerHTML += `<br>${date} ${time}`;
                         center_div.appendChild(info_div);
                         
                         // New: Officials Toggle Button (3 dots button)
@@ -1388,6 +1427,42 @@
             color: var(--mc-text-dark); /* Make labels slightly darker */
         }
 
+        /* Styling for the new arena map button */
+        .MatchListItem__ghpedoButton {
+            display: inline-flex; /* To align text and icon */
+            align-items: center; /* Vertically center content */
+            padding: 3px 8px; /* Small padding for button-like appearance */
+            font-size: 0.7em; /* Smaller font size */
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            background-color: transparent; /* Transparent background for a subtle look */
+            border: 1px solid rgba(0,0,0,0.1); /* Light border */
+            border-radius: 4px;
+            text-decoration: none; /* Remove underline */
+            color: #003e5e; /* Text color */
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .MatchListItem__ghpedoButton:hover {
+            background-color: #e2e4e6; /* Slightly darker on hover */
+            border-color: #d0d0d0;
+            cursor: pointer;
+        }
+
+        .ghpedo-external-link-icon {
+            margin-left: 5px; /* Space between text and icon */
+            font-size: 0.8em; /* Smaller icon */
+            line-height: 1;
+            vertical-align: middle;
+            color: #666;
+        }
+
+        .MatchListItem__ghpedoName {
+            font-size: 0.7em; /* Original font size if no URL */
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
         /* Standings Table Styling */
         .standings-table {
             width: 100%;
@@ -1527,13 +1602,6 @@
                 padding: 0 0.5rem; 
             }
 
-            .team-side-left {
-                justify-content: flex-start !important;
-            }
-            .team-side-right {
-                justify-content: flex-end !important; 
-            }
-            
             .team-logo-container {
                  display: flex !important; 
                  width: 40px !important; 
