@@ -249,9 +249,8 @@
                         scorer1: data.getFormattedValue(row, 13), // Column N (index 13)
                         scorer2: data.getFormattedValue(row, 14), // Column O (index 14)
                         scorer3: data.getFormattedValue(row, 15),  // Column P (index 15)
-                        // Add stadium map URL from column BE (58, which is BF based on 0-indexed data table)
-                        // Using column 58 (BF) as specified in week.html for arenaMapUrl
-                        arenaMapUrl: data.getFormattedValue(row, 58) 
+                        // Use column 56 (BF) for arenaMapUrl as specified by the user, without any alternative logic
+                        arenaMapUrl: data.getFormattedValue(row, 56) 
                     };
                     gamesByRound[roundForGame].push(gameData);
 
@@ -500,7 +499,8 @@
                         var arena = gameRow.arena;
                         var date = gameRow.date;
                         var time = gameRow.time;
-                        var arenaMapUrl = gameRow.arenaMapUrl; // Single arena map URL
+                        // Single arena map URL, now from column 56 (BE) as per user's request
+                        var arenaMapUrl = gameRow.arenaMapUrl; 
 
                         var gameDiv = document.createElement('div');
                         // Part β: Changed mb-3 and p-3 to mb-1 and p-1
@@ -822,24 +822,6 @@
             // Add the footer buttons container
             const footerButtonsContainer = document.createElement('div');
             footerButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3');
-
-            // Add "Πίσω" button
-            /* ----             
-            /* ---- για να μην εχει πολλες οχλησεις---
-            /* ---- 
-
-            const backLink = document.createElement('a');
-            backLink.href = 'mc_02_Kathgories.html' + // Link back to categories
-                '?pNameDiorganvtriaArxh=' + encodeURIComponent(getQueryVariable("pNameDiorganvtriaArxh")) +
-                '&pPowerDiorganvtriaArxh=' + encodeURIComponent(getQueryVariable("pPowerDiorganvtriaArxh")) +
-                '&pAgvnistikhPeriodos=' + encodeURIComponent(getQueryVariable("pAgvnistikhPeriodos")) +
-                '&pNamePrvtathlhmatos=' + encodeURIComponent(getQueryVariable("pNamePrvtathlhmatos")) +
-                '&pPowerPrvtathlhmatos=' + encodeURIComponent(getQueryVariable("pPowerPrvtathlhmatos"));
-            backLink.classList.add('btn', 'btn-sm', 'btn-back-custom');
-            backLink.textContent = '← Πίσω';
-            footerButtonsContainer.appendChild(backLink);
-
-           ----  */
 
             // Add "Προκηρύξεις" button
             const announcementsLink = document.createElement('a');
@@ -1682,5 +1664,7 @@
             <!-- Content will be injected here by JavaScript -->
         </div>
     </section>
+
+
 </body>
 </html>
