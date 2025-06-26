@@ -249,9 +249,9 @@
                         scorer1: data.getFormattedValue(row, 13), // Column N (index 13)
                         scorer2: data.getFormattedValue(row, 14), // Column O (index 14)
                         scorer3: data.getFormattedValue(row, 15),  // Column P (index 15)
-                        // Add stadium map URLs from columns BE (56) and BF (57)
-                        arenaMapUrl1: data.getFormattedValue(row, 56), // Column BE
-                        arenaMapUrl2: data.getFormattedValue(row, 57)  // Column BF
+                        // Add stadium map URL from column BE (58, which is BF based on 0-indexed data table)
+                        // Using column 58 (BF) as specified in week.html for arenaMapUrl
+                        arenaMapUrl: data.getFormattedValue(row, 58) 
                     };
                     gamesByRound[roundForGame].push(gameData);
 
@@ -500,8 +500,7 @@
                         var arena = gameRow.arena;
                         var date = gameRow.date;
                         var time = gameRow.time;
-                        var arenaMapUrl1 = gameRow.arenaMapUrl1; // First map URL
-                        var arenaMapUrl2 = gameRow.arenaMapUrl2; // Second map URL
+                        var arenaMapUrl = gameRow.arenaMapUrl; // Single arena map URL
 
                         var gameDiv = document.createElement('div');
                         // Part β: Changed mb-3 and p-3 to mb-1 and p-1
@@ -559,25 +558,26 @@
                         var info_div = document.createElement('div');
                         info_div.className = 'game-info text-muted small mt-1';
                         
-                        // Prioritize arenaMapUrl1, then arenaMapUrl2
-                        const currentArenaMapUrl = arenaMapUrl1 || arenaMapUrl2;
-
-                        if (currentArenaMapUrl) {
+                        // Use arenaMapUrl directly
+                        if (arenaMapUrl) {
                             let arenaLink = document.createElement('a');
-                            arenaLink.classList.add('MatchListItem__ghpedoButton');
-                            arenaLink.href = currentArenaMapUrl;
+                            arenaLink.classList.add('MatchListItem__ghpedoButton'); // Class for the button style
+                            arenaLink.href = arenaMapUrl;
                             arenaLink.target = '_blank';
                             arenaLink.rel = 'noopener noreferrer';
-                            arenaLink.textContent = arena;
                             
+                            let arenaNameSpan = document.createElement('span'); // Span for the arena name
+                            arenaNameSpan.textContent = arena;
+                            arenaLink.appendChild(arenaNameSpan);
+
                             let externalLinkIcon = document.createElement('span');
                             externalLinkIcon.classList.add('ghpedo-external-link-icon');
-                            externalLinkIcon.textContent = ' ↗️';
+                            externalLinkIcon.textContent = ' ↗️'; // External link emoji
                             arenaLink.appendChild(externalLinkIcon);
                             info_div.appendChild(arenaLink);
                         } else {
                             let arenaNameSpan = document.createElement('span');
-                            arenaNameSpan.classList.add('MatchListItem__ghpedoName');
+                            arenaNameSpan.classList.add('MatchListItem__ghpedoName'); // Original class if no URL
                             arenaNameSpan.textContent = arena;
                             info_div.appendChild(arenaNameSpan);
                         }
@@ -1427,7 +1427,7 @@
             color: var(--mc-text-dark); /* Make labels slightly darker */
         }
 
-        /* Styling for the new arena map button */
+        /* Styling for the new arena map button (from week.html) */
         .MatchListItem__ghpedoButton {
             display: inline-flex; /* To align text and icon */
             align-items: center; /* Vertically center content */
@@ -1435,8 +1435,8 @@
             font-size: 0.7em; /* Smaller font size */
             font-weight: 500;
             letter-spacing: 0.05em;
-            background-color: transparent; /* Transparent background for a subtle look */
-            border: 1px solid rgba(0,0,0,0.1); /* Light border */
+            background-color: #f0f0f000; /* Transparent background for a subtle look */
+            border: 1px solid #e0e0e0; /* Light border */
             border-radius: 4px;
             text-decoration: none; /* Remove underline */
             color: #003e5e; /* Text color */
@@ -1684,7 +1684,5 @@
     </section>
 
 
-
-    
 </body>
 </html>
