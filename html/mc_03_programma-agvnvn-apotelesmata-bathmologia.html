@@ -401,7 +401,7 @@
                         }
                     }
                     
-                    // Part α: Add class for past rounds
+                    // Add class for past rounds
                     if (maxGameDate < today) {
                         accordionButton.classList.add('past-round-accordion');
                     }
@@ -503,6 +503,24 @@
                         // Single arena map URL, now from column 56 (BE) as per user's request
                         var arenaMapUrl = gameRow.arenaMapUrl; 
 
+                        // New: Logic for highlighting game time
+                        let timeClass = '';
+                        try {
+                            const [gDay, gMonth, gYear] = gameRow.date.split('/').map(Number);
+                            const [gHour, gMinute] = gameRow.time.split('.').map(Number);
+                            const gameStartDateTime = new Date(gYear, gMonth - 1, gDay, gHour, gMinute, 0, 0);
+
+                            const now = new Date();
+                            const twoHoursAfterStart = new Date(gameStartDateTime.getTime() + (2 * 60 * 60 * 1000));
+
+                            if (now >= gameStartDateTime && now < twoHoursAfterStart) {
+                                timeClass = 'highlight-time';
+                            }
+                        } catch (e) {
+                            console.error("Error parsing game date/time for highlighting:", gameRow.date, gameRow.time, e);
+                            timeClass = ''; // Default to no class on error
+                        }
+
                         var gameDiv = document.createElement('div');
                         // Part β: Changed mb-3 and p-3 to mb-1 and p-1
                         gameDiv.className = 'game-item d-flex flex-md-row align-items-center mb-1 p-1 rounded shadow-sm bg-white'; 
@@ -583,7 +601,8 @@
                             info_div.appendChild(arenaNameSpan);
                         }
                         
-                        info_div.innerHTML += `<br>${date} ${time}`;
+                        // Apply highlight-time class to the time span
+                        info_div.innerHTML += `<br>${date} <span class="${timeClass}">${time}</span>`;
                         center_div.appendChild(info_div);
                         
                         // New: Officials Toggle Button (3 dots button)
@@ -1187,7 +1206,6 @@
         .accordion-item {
             border-radius: 0.75rem;
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,.03);
-            /* Part α: Changed margin-bottom */
             margin-bottom: 0.3rem;
             border: none;
             overflow: hidden;
@@ -1355,14 +1373,11 @@
         /* Officials Toggle Button (new styling) */
         .btn-officials-toggle {
             background-color: transparent; /* Same as btn-back-custom */
-            /* Part γ: Changed color */
             color: rgba(33, 37, 41, 0.2);
-            /* Part γ: Changed border */
             border: 1px solid rgba(33, 37, 41, 0.3);
             transition: all 0.3s ease; /* Smooth transition for hover effects */
             padding: 0.1rem 0.6rem; /* Smaller padding for minimal height */
             border-radius: 0.5rem; /* Standard border-radius */
-            /* Part γ: Changed font-size */
             font-size: 0.6rem;
             line-height: 1; /* Minimal height by adjusting line-height */
             text-decoration: none; /* No underline */
@@ -1621,6 +1636,23 @@
             }
             .officials-info-collapse {
                 margin-top: 0.5rem; /* Reduce top margin on mobile */
+            }
+        }
+        
+        /* New CSS for time highlighting */
+        .highlight-time {
+            color: red;
+            font-weight: bold; /* Προαιρετικά, για να τονιστεί περισσότερο */
+            animation: gentle-blink 1.2s infinite alternate; /* Ορισμός animation */
+        }
+
+        /* Keyframes για το animation */
+        @keyframes gentle-blink {
+            0% {
+                opacity: 1; /* Πλήρης αδιαφάνεια στην αρχή */
+            }
+            100% {
+                opacity: 0.4; /* Ελαφρώς πιο αχνό στο τέλος */
             }
         }
     </style>
