@@ -168,7 +168,8 @@
                 console.error('Error in Google Charts query:', response.getMessage(), response.getDetailedMessage(), response);
                 let errorMessage = 'Προέκυψε σφάλμα κατά τη φόρτωση δεδομένων. ';
                 if (response.getMessage().includes('timed out')) {
-                    errorMessage += 'Η αίτηση χρονόληξε. Παρακαλώ ελέγξτε τη σύνδεσή σας στο διαδίκτυο και δοκιμάστε ξανά.';
+                    // Enhanced error message for timeout issues
+                    errorMessage += 'Η αίτηση χρονόληξε. Παρακαλώ ελέγξτε τη σύνδεσή σας στο διαδίκτυο και βεβαιωθείτε ότι το Google Sheet είναι δημόσια προσβάσιμο. Δοκιμάστε ξανά.';
                 } else {
                     errorMessage += 'Λεπτομέρειες: ' + response.getMessage() + '. Παρακαλώ δοκιμάστε ξανά αργότερα.';
                 }
@@ -249,7 +250,7 @@
                         scorer1: data.getFormattedValue(row, 13), // Column N (index 13)
                         scorer2: data.getFormattedValue(row, 14), // Column O (index 14)
                         scorer3: data.getFormattedValue(row, 15),  // Column P (index 15)
-                        // Use column 56 (BF) for arenaMapUrl as specified by the user, without any alternative logic
+                        // Use column 56 (BE) for arenaMapUrl as specified by the user, without any alternative logic
                         arenaMapUrl: data.getFormattedValue(row, 56) 
                     };
                     gamesByRound[roundForGame].push(gameData);
@@ -856,6 +857,8 @@
 
         /**
          * Populates the round and team filter dropdowns.
+         * @param {Array<string>} uniqueRounds - An array of unique round numbers.
+         * @param {Array<string>} sortedUniqueTeams - An array of unique and sorted team names.
          */
         function setupFilters() {
             const roundFilter = document.getElementById('roundFilter');
