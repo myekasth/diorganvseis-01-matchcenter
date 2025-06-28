@@ -189,12 +189,21 @@
                     divButtons.appendChild(linkGhpeda);
                 }
 
-                // NEW: Link to Συμμετοχές Συλλόγων (mc_03_symmetoxes_se_omiloys.html)
+                // Link to Συμμετοχές Συλλόγων (mc_02_symmetoxes_se_omiloys.html)
                 var linkSymmetoxes = document.createElement('a');
                 linkSymmetoxes.href = 'html/mc_02_symmetoxes_se_omiloys.html'; // Path to the new file
-                linkSymmetoxes.className = 'btn btn-secondary btn-sm'; // Changed to btn-secondary
+                linkSymmetoxes.className = 'btn btn-secondary btn-sm me-2'; // Changed to btn-secondary, added me-2 for spacing
                 linkSymmetoxes.innerHTML = '👥 Συμμετοχές Συλλόγων'; // People/group emoji
                 divButtons.appendChild(linkSymmetoxes);
+
+                // NEW: Link to Πρόοδος Διοργανώσεων (mc_02_proodos_diorganvsevn.html)
+                // Pass the current spreadsheet ID (pPowerDiorganvtriaArxh) to the new page
+                var linkProodos = document.createElement('a');
+                linkProodos.href = 'html/mc_02_proodos_diorganvsevn.html' + 
+                                    '?pID=' + encodeURIComponent(pPowerDiorganvtriaArxh); 
+                linkProodos.className = 'btn btn-info btn-sm'; // Use info color for progress
+                linkProodos.innerHTML = '📈 Πρόοδος Διοργανώσεων'; // Chart/progress emoji
+                divButtons.appendChild(linkProodos);
 
 
                 // Append elements to the card structure
