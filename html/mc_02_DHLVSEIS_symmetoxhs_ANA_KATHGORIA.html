@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="description" content="Δηλώσεις συμμετοχής ομάδων σε ομίλους ανά κατηγορία" />
+    <meta name="keywords" content="MatchCenter, teams, groups, championships, δηλώσεις, συμμετοχές, κατηγορία" />
+    <meta name="language" content="greek" />
+    <meta name="author" content="MatchCenter" />
+    <meta name="web_author" content="Lazaros T" />
+    <link rel="icon" href="../favicon.ico" />
+
+    <title>Δηλώσεις Συμμετοχής Ομάδων σε Ομίλους ανά Κατηγορία</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <!-- Νέα γραμματοσειρά για τα accordions και τον τίτλο header -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400;600&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous" />
+    
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <style>
+        /* General widget settings */
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            background-color: #f0f2f5;
+        }
+
+        .MatchcenterWidgetContainer {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        /* Sticky Header */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background-color: #ff9800; /* Orange background */
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Center content in the sticky header */
+            padding-bottom: 5px; /* Add some padding at the bottom for spacing */
+        }
+
+        /* Styles for the new header elements */
+        .header-pre-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8em;
+            color: #fff; /* Changed for contrast on orange background */
+            padding-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .MatchcenterHomepageWidget__header {
+            color: #fff; /* Changed for contrast on orange background */
+            font-family: "Krona One", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+            letter-spacing: .12em;
+            padding: 5px 0; /* Reduced padding */
+            margin-bottom: 0; /* Remove default margin */
+        }
+
+        .header-superscript {
+            font-size: 0.5em; /* Smaller font for the superscript */
+            vertical-align: super;
+            margin-left: 2px;
+            color: #fff; /* Changed for contrast on orange background */
+        }
+
+        .header-underline {
+            width: 100%; /* Full width of the sticky area */
+            height: 5px;
+            background-color: #81d4fa; /* Changed to light blue */
+            margin: 0 auto 10px auto; /* Centered with margin below */
+            border-radius: 0; /* Remove border-radius for full width */
+        }
+
+        .combined-header-title {
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Font changed */
+            font-weight: 700;
+            font-size: 1.2em;
+            color: #fff; /* Changed for contrast on orange background */
+            padding: 5px 0 10px 0; /* Padding for spacing */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+
+        /* Padding for content below sticky header */
+        .content-area {
+            padding-top: 10px; /* Adjust as needed based on header height */
+        }
+
+        /* Accordion Custom Styles */
+        .accordion-button {
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+            background-color: #ffe0b2; /* Light orange */
+            color: #e65100; /* Dark orange */
+            font-weight: 600; /* Bolder font */
+            font-size: 1.1em;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .accordion-button:hover {
+            background-color: #ffcc80; /* Lighter orange on hover */
+            color: #bf360c; /* Darker orange text on hover */
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #ff9800; /* Primary orange when open */
+            color: #fff; /* White text when open */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23e65100'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            transform: rotate(0deg);
+        }
+
+        .accordion-button:not(.collapsed)::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            transform: rotate(-180deg);
+        }
+
+        .accordion-body {
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 10px; /* Space between accordion items */
+        }
+
+        .accordion-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .accordion-body ul li {
+            padding: 5px 0;
+            border-bottom: 1px dashed #e9ecef;
+            color: #555;
+            font-size: 1.3em; /* New font size */
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* Align items to center vertically */
+            transition: background-color 0.2s ease; /* Add transition for hover */
+        }
+
+        .accordion-body ul li:last-child {
+            border-bottom: none;
+        }
+
+        .accordion-body ul li:hover { /* Hover effect for list items */
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .group-info-wrapper { /* For accordion button content */
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .group-number { /* For serial number in accordion button */
+            font-weight: bold;
+            margin-right: 10px;
+            color: rgba(230, 81, 0, 0.35); /* Dark orange with 35% transparency */
+            font-size: 0.7em; 
+        }
+
+        .accordion-button:not(.collapsed) .group-number {
+            color: rgba(255, 255, 255, 0.65); /* White text with 65% transparency when accordion is open */
+        }
+
+        .group-name-accordion { /* For group name in accordion button */
+            flex-grow: 1;
+            text-align: left;
+            font-size: 0.7em; 
+            color: #e65100; /* Ensure good contrast */
+        }
+        .accordion-button:not(.collapsed) .group-name-accordion {
+            color: #fff; /* White text when accordion is open */
+        }
+
+        .team-count-accordion { /* For count of teams in accordion button */
+            flex-shrink: 0;
+            margin-left: auto;
+            padding: 2px 8px;
+            background-color: #bf360c; /* Darker orange for count */
+            color: white;
+            border-radius: 25%; 
+            font-size: 0.7em; 
+        }
+        .accordion-button:not(.collapsed) .team-count-accordion {
+            background-color: #e65100; /* Even darker orange when accordion is open */
+        }
+
+        .team-detail-wrapper { /* Wrapper for team name and logo in accordion body */
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .team-logo {
+            width: 40px; /* Slightly smaller logo in body */
+            height: 40px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-right: 10px; /* Space between logo and text */
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .team-name-body {
+            font-size: 1em; /* Same as timestamp-text */
+            color: #333;
+        }
+
+        .timestamp-text {
+            font-size: 1em; /* Same font size as .accordion-body ul li */
+            color: #555; /* Solid color for timestamp */
+            margin-left: 10px;
+            white-space: nowrap; /* Prevent timestamp from wrapping */
+        }
+
+        /* Loading Spinner */
+        #loadingSpinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        /* Footer styles */
+        .ekasth-footer-text {
+            font-size: 0.75em;
+            color: #888;
+            margin-top: 15px;
+            margin-bottom: 1px !important;
+            text-align: center;
+        }
+
+        .ekasth-footer-version-text {
+            font-size: 0.50em;
+            color: #aaa;
+            margin-top: 0px;
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .MatchcenterWidgetContainer {
+                margin: 10px;
+            }
+            .accordion-button {
+                font-size: 1em;
+                padding: 12px 15px;
+            }
+            .team-count-accordion {
+                font-size: 0.85em;
+                padding: 2px 6px;
+            }
+            .header-pre-title {
+                font-size: 0.7em;
+            }
+            .combined-header-title {
+                font-size: 1em;
+            }
+            .team-logo {
+                width: 30px; /* Even smaller logo on mobile for body */
+                height: 30px;
+                margin-right: 8px;
+            }
+            .group-name-accordion {
+                font-size: 0.7em; /* Adjust font size on smaller screens */
+            }
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="MatchCenterWidgetContainer">
+    <div class="MatchcenterWidget MatchcenterWidget--hp" id="matchcenter-homepage-widget">
+        <section class="MatchcenterHomepageWidget">
+            <div class="sticky-header-tabs">
+                <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
+                <h3 class="MatchcenterHomepageWidget__header">
+                    MATCHCENTER<span class="header-superscript">4</span>
+                </h3>
+                <!-- New div for the light blue line below the main header -->
+                <div class="header-underline"></div>
+                <!-- Combined header title with dynamic content -->
+                <div class="combined-header-title" id="combined-header-title">ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ΣΥΛΛΟΓΩΝ ΑΝΑ ΚΑΤΗΓΟΡΙΑ</div>
+            </div>
+            
+            <div class="content-area container text-center">
+                <div id="loadingSpinner" class="my-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Φόρτωση...</span>
+                    </div>
+                    <p class="mt-2">Φόρτωση δεδομένων...</p>
+                </div>
+
+                <div class="accordion" id="groupsAccordion" style="display:none;">
+                    <!-- Accordion items will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Footer Section -->
+            <div class="ekasth-footer-section">
+                <div class="ekasth-footer-text">
+                    Ε.ΚΑ.Σ.Θ. 1976 - <span id="currentDateTime"></span>
+                </div>
+                <div class="ekasth-footer-version-text">
+                    LT v.25.06.15 | mc_02_DHLVSEIS_symmetoxhs_ANA_KATHGORIA@myekasth
+                </div>
+            </div>
+
+        </section>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.setOnLoadCallback(drawGroupsInfo);
+
+    let data; // Global variable to store data table
+    let teamLogos = new Map(); // Map to store team logos
+
+    /**
+     * Helper function to get query parameters from the URL.
+     * @param {string} variable - The name of the query parameter.
+     * @returns {string|null} The value of the parameter, or null if not found.
+     */
+    function getQueryVariable(variable) {
+        const query = window.location.search.substring(1);
+        const vars = query.split("&");
+        for (let i = 0; i < vars.length; i++) {
+            const pair = vars[i].split("=");
+            if (pair[0] === variable) {
+                return decodeURIComponent(pair[1]);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Main function to draw groups information.
+     */
+    function drawGroupsInfo() {
+        const pID_data = getQueryVariable("pID_data");
+        const pID_logos = getQueryVariable("pID_logos");
+
+        const spreadsheetID_data = pID_data || "1SP91UyWtcDvEJE_JHxZA1mlVVtLm94Ya49RA-cX4Pqc"; // Data spreadsheet ID
+        const gid_data = "746543978"; // GID for data sheet
+
+        const spreadsheetID_logos = pID_logos || "1qHPmKRE0pem5AWZmAFmUdKBKqIN2T6SsyGqAQUowkfo"; // Logos spreadsheet ID
+        const gid_logos = "0"; // GID for logos sheet
+
+        // Query to select Timestamp (A), Group (C), Team Name (D) from data sheet
+        let strQueryForURI_data = `SELECT A,C,D`;
+        const encodedQueryString_data = encodeURIComponent(strQueryForURI_data);
+
+        const spreadsheetUrl_data = `https://docs.google.com/spreadsheets/d/${spreadsheetID_data}/gviz/tq?gid=${gid_data}&headers=1&tq=${encodedQueryString_data}`;
+
+        // Query to select Team Name (A), Logo URL (B) from logos sheet
+        let strQueryForURI_logos = `SELECT A,B`;
+        const encodedQueryString_logos = encodeURIComponent(strQueryForURI_logos);
+
+        const spreadsheetUrl_logos = `https://docs.google.com/spreadsheets/d/${spreadsheetID_logos}/gviz/tq?gid=${gid_logos}&headers=1&tq=${encodedQueryString_logos}`;
+
+        // Fetch logos first, then data
+        try {
+            const queryLogos = new google.visualization.Query(spreadsheetUrl_logos);
+            queryLogos.send(handleLogosQueryResponse);
+        } catch (error) {
+            console.error("Error initiating Google Sheets Query for logos:", error);
+            alert("Προέκυψε σφάλμα κατά την έναρξη του query δεδομένων λογοτύπων.");
+        }
+
+        function handleLogosQueryResponse(response) {
+            if (response.isError()) {
+                console.error('Error in logos query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                alert('Προέκυψε σφάλμα κατά την ανάκτηση δεδομένων λογοτύπων: ' + response.getMessage());
+                return;
+            }
+            const logosDataTable = response.getDataTable();
+            for (let row = 0; row < logosDataTable.getNumberOfRows(); row++) {
+                const teamName = logosDataTable.getFormattedValue(row, 0); // Column A: Team Name
+                const logoUrl = logosDataTable.getFormattedValue(row, 1); // Column B: Logo URL
+                if (teamName && logoUrl) {
+                    teamLogos.set(teamName, logoUrl);
+                }
+            }
+            // Once logos are fetched, fetch the main data
+            try {
+                const queryData = new google.visualization.Query(spreadsheetUrl_data);
+                queryData.send(handleDataQueryResponse);
+            } catch (error) {
+                console.error("Error initiating Google Sheets Query for data:", error);
+                alert("Προέκυψε σφάλμα κατά την έναρξη του query δεδομένων.");
+            }
+        }
+    }
+
+    /**
+     * Handles the data query response from Google Sheets.
+     * @param {object} response - The response object from the Google Visualization API.
+     */
+    function handleDataQueryResponse(response) {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const groupsAccordion = document.getElementById('groupsAccordion'); // Changed ID
+        
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'none';
+        }
+
+        if (response.isError()) {
+            console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+            alert('Προέκυψε σφάλμα κατά την ανάκτηση δεδομένων: ' + response.getMessage());
+            return;
+        }
+
+        data = response.getDataTable();
+        try {
+            processAndDisplayGroups(); // Changed function call
+        } catch (error) {
+            console.error("Error processing and displaying groups:", error);
+            alert("Προέκυψε σφάλμα κατά την επεξεργασία και εμφάνιση των ομίλων.");
+        }
+
+
+        if (groupsAccordion) {
+            groupsAccordion.style.display = 'block';
+        }
+
+        // Update footer date/time
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('currentDateTime').textContent = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    };
+
+    /**
+     * Processes the fetched data to extract unique groups and their participating teams,
+     * along with their logos and timestamps, then displays them in an accordion structure.
+     */
+    function processAndDisplayGroups() {
+        // Map to store groupName -> { teams: [{teamName: string, timestamp: string, logoUrl: string}] }
+        const groupsMap = new Map(); 
+
+        for (let row = 0; row < data.getNumberOfRows(); row++) {
+            const timestamp = data.getFormattedValue(row, 0); // Column A: Χρονική σήμανση (index 0)
+            const omilos = data.getFormattedValue(row, 1); // Column C: Όμιλος (index 1)
+            const teamName = data.getFormattedValue(row, 2); // Column D: Ονοματεπώνυμο (index 2)
+
+            if (omilos && omilos !== "-") {
+                if (!groupsMap.has(omilos)) {
+                    groupsMap.set(omilos, { teams: [] });
+                }
+                const logoUrl = teamLogos.get(teamName) || ''; // Get logo for the team
+                groupsMap.get(omilos).teams.push({ teamName: teamName, timestamp: timestamp, logoUrl: logoUrl });
+            }
+        }
+
+        // Convert map to array for sorting groups by name
+        const sortedGroups = Array.from(groupsMap.entries()).sort((a, b) => {
+            const groupNameA = a[0];
+            const groupNameB = b[0];
+            return groupNameA.localeCompare(groupNameB, 'el', { sensitivity: 'base' });
+        });
+
+        const groupsAccordionContainer = document.getElementById('groupsAccordion'); // Changed ID
+        groupsAccordionContainer.innerHTML = ''; // Clear previous content
+
+        sortedGroups.forEach(([groupName, groupData], index) => {
+            // Sort teams within each group by team name
+            groupData.teams.sort((a, b) => a.teamName.localeCompare(b.teamName, 'el', { sensitivity: 'base' }));
+            const teamCount = groupData.teams.length;
+            const collapseId = `collapseGroup-${index}`;
+            const headingId = `headingGroup-${index}`;
+            
+            const accordionItem = document.createElement('div');
+            accordionItem.classList.add('accordion-item');
+
+            // Construct list items with team name, logo, and timestamp
+            let teamListHtml = groupData.teams.map((team, teamIndex) => {
+                const logoStyle = (team.logoUrl && typeof team.logoUrl === 'string' && team.logoUrl.trim() !== '') ? `background-image: url('${team.logoUrl}');` : `background-image: url('https://placehold.co/40x40/cccccc/ffffff?text=Logo');`;
+                return `
+                    <li>
+                        <div class="team-detail-wrapper">
+                            <span class="group-number">${teamIndex + 1}.</span> <!-- Αύξων αριθμός ομάδας εντός ομίλου -->
+                            <div class="team-logo" style="${logoStyle}"></div>
+                            <span class="team-name-body">${team.teamName}</span>
+                        </div>
+                        <span class="timestamp-text">${team.timestamp}</span>
+                    </li>
+                `;
+            }).join('');
+
+            accordionItem.innerHTML = `
+                <h2 class="accordion-header" id="${headingId}">
+                    <button class="accordion-button collapsed d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" aria-controls="${collapseId}">
+                        <div class="group-info-wrapper">
+                            <span class="group-number">${index + 1}.</span> <!-- Serial number for group -->
+                            <span class="group-name-accordion">${groupName}</span>
+                        </div>
+                        <span class="team-count-accordion">${teamCount}</span>
+                    </button>
+                </h2>
+                <div id="${collapseId}" class="accordion-collapse collapse" aria-labelledby="${headingId}" data-bs-parent="#groupsAccordion">
+                    <div class="accordion-body">
+                        <ul>
+                            ${teamListHtml}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            groupsAccordionContainer.appendChild(accordionItem);
+        });
+    }
+
+    // Initial call to set current date and time in footer
+    document.addEventListener('DOMContentLoaded', () => {
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('currentDateTime').textContent = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    });
+
+</script>
+</body>
+</html>
