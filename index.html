@@ -201,9 +201,16 @@
                 var linkProodos = document.createElement('a');
                 linkProodos.href = 'html/mc_02_proodos_diorganvsevn.html' + 
                                     '?pID=' + encodeURIComponent("17qZ43Fd2oYEV_lESKjOrqIOMurNDg5prJkyFuUH4aJA"); 
-                linkProodos.className = 'btn btn-info btn-sm'; // Use info color for progress
+                linkProodos.className = 'btn btn-info btn-sm me-2'; // Use info color for progress, added me-2 for spacing
                 linkProodos.innerHTML = '📈 Πρόοδος Διοργανώσεων'; // Chart/progress emoji
                 divButtons.appendChild(linkProodos);
+
+                // NEW: Button for ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ΣΥΛΛΟΓΩΝ (mc_02_DHLVSEIS_symmetoxhs.html)
+                var linkDiloseisSymmetoxis = document.createElement('a');
+                linkDiloseisSymmetoxis.href = 'html/mc_02_DHLVSEIS_symmetoxhs.html'; // Path to the new file
+                linkDiloseisSymmetoxis.className = 'btn btn-warning btn-sm'; // Using btn-warning for a distinct color
+                linkDiloseisSymmetoxis.innerHTML = '📝 ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ΣΥΛΛΟΓΩΝ'; // Clipboard/document emoji
+                divButtons.appendChild(linkDiloseisSymmetoxis);
 
 
                 // Append elements to the card structure
@@ -247,7 +254,7 @@
             --mc-light-bg: #f8f9fa; /* Light background */
             --mc-dark-bg: #212529; /* Dark text for contrast */
             --mc-text-dark: #212529; /* Dark text for light backgrounds */
-            --mc-timeline-color: #ff4500; /* Orange-red for underline */
+            --mc-timeline-color: #ff0000; /* Pure red for underline */
 
             /* Monochromatic white header colors and contrasting text colors */
             --mc-header-bg-color: #ffffff; /* Pure white background for header */
