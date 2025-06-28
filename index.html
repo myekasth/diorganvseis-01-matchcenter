@@ -184,10 +184,18 @@
                     var linkGhpeda = document.createElement('a');
                     linkGhpeda.href = 'html/mc_02_Ghpeda.html' +
                         '?pID=' + encodeURIComponent(pGhpedaSheetId);
-                    linkGhpeda.className = 'btn btn-success btn-sm'; // Green color for success/new functionality
+                    linkGhpeda.className = 'btn btn-success btn-sm me-2'; // Green color for success/new functionality, added me-2 for spacing
                     linkGhpeda.innerHTML = '🏟️ Γήπεδα'; // Stadium emoji
                     divButtons.appendChild(linkGhpeda);
                 }
+
+                // NEW: Link to Συμμετοχές Συλλόγων (mc_03_symmetoxes_se_omiloys.html)
+                var linkSymmetoxes = document.createElement('a');
+                linkSymmetoxes.href = 'html/mc_03_symmetoxes_se_omiloys.html'; // Path to the new file
+                linkSymmetoxes.className = 'btn btn-secondary btn-sm'; // Changed to btn-secondary
+                linkSymmetoxes.innerHTML = '👥 Συμμετοχές Συλλόγων'; // People/group emoji
+                divButtons.appendChild(linkSymmetoxes);
+
 
                 // Append elements to the card structure
                 cardBody.appendChild(cardTitle);
