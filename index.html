@@ -205,12 +205,19 @@
                 linkProodos.innerHTML = '📈 Πρόοδος Διοργανώσεων'; // Chart/progress emoji
                 divButtons.appendChild(linkProodos);
 
-                // NEW: Button for ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ΣΥΛΛΟΓΩΝ (mc_02_DHLVSEIS_symmetoxhs.html)
+                // Button for ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ΣΥΛΛΟΓΩΝ (mc_02_DHLVSEIS_symmetoxhs.html)
                 var linkDiloseisSymmetoxis = document.createElement('a');
                 linkDiloseisSymmetoxis.href = 'html/mc_02_DHLVSEIS_symmetoxhs.html'; // Path to the new file
-                linkDiloseisSymmetoxis.className = 'btn btn-warning btn-sm'; // Using btn-warning for a distinct color
+                linkDiloseisSymmetoxis.className = 'btn btn-warning btn-sm me-2'; // Added me-2 for spacing
                 linkDiloseisSymmetoxis.innerHTML = '📝 ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ΣΥΛΛΟΓΩΝ'; // Clipboard/document emoji
                 divButtons.appendChild(linkDiloseisSymmetoxis);
+
+                // NEW BUTTON: ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ανα ΚΑΤΗΓΟΡΙΑ
+                var linkDiloseisSymmetoxisAnakategoria = document.createElement('a');
+                linkDiloseisSymmetoxisAnakategoria.href = 'html/mc_02_DHLVSEIS_symmetoxhs_ANA_KATHGORIA.html'; // Path to the new file
+                linkDiloseisSymmetoxisAnakategoria.className = 'btn btn-warning btn-sm'; // Using btn-warning for a distinct color
+                linkDiloseisSymmetoxisAnakategoria.innerHTML = '🗂️ ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ανα ΚΑΤΗΓΟΡΙΑ'; // Folder/category emoji
+                divButtons.appendChild(linkDiloseisSymmetoxisAnakategoria);
 
 
                 // Append elements to the card structure
