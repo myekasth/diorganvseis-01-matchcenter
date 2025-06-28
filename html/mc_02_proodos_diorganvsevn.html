@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="description" content="Πρόοδος Διοργανώσεων Ομίλων" />
+    <meta name="keywords" content="MatchCenter, progress, groups, championships, πρόοδος" />
+    <meta name="language" content="greek" />
+    <meta name="author" content="MatchCenter" />
+    <meta name="web_author" content="Lazaros T" />
+    <link rel="icon" href="../favicon.ico" />
+
+    <title>Πρόοδος Διοργανώσεων Ομίλων</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <!-- Νέα γραμματοσειρά για τα accordions και τον τίτλο header -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400;600&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous" />
+    
+    <!-- Χρειάζεται το google.charts.loader.js για το google.visualization.Query -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <style>
+        /* Γενικές ρυθμίσεις για όλο το widget */
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            background-color: #f0f2f5;
+        }
+
+        .MatchcenterWidgetContainer {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        /* Sticky Header */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background-color: #fff;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Κεντράρισμα περιεχομένου στην κολλητή κεφαλίδα */
+            padding-bottom: 5px; /* Προσθήκη κενού στο κάτω μέρος για καλύτερη εμφάνιση */
+        }
+
+        /* Στυλ για τα νέα στοιχεία της κεφαλίδας */
+        .header-pre-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8em;
+            color: #666;
+            padding-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .MatchcenterHomepageWidget__header {
+            color: #0f253a; /* Ίδιο χρώμα για MATCHCENTER και 4 */
+            font-family: "Krona One", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+            letter-spacing: .12em;
+            padding: 5px 0; /* Μειωμένο padding */
+            margin-bottom: 0; /* Αφαίρεση default margin */
+        }
+
+        .header-superscript {
+            font-size: 0.5em; /* Μικρότερο μέγεθος γραμματοσειράς για τον εκθέτη */
+            vertical-align: super;
+            margin-left: 2px;
+            color: #0f253a; /* Ίδιο χρώμα με MATCHCENTER */
+        }
+
+        .header-underline {
+            width: 100%; /* Πλήρες πλάτος της κολλητής περιοχής */
+            height: 5px;
+            background-color: #ff0040; /* Πορτοκαλο-κόκκινο χρώμα */
+            margin: 0 auto 10px auto; /* Κεντραρισμένο με περιθώριο κάτω */
+            border-radius: 0; /* Αφαίρεση border-radius για πλήρες πλάτος */
+        }
+
+        .combined-header-title {
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Αλλαγή γραμματοσειράς */
+            font-weight: 700;
+            font-size: 1.2em;
+            color: #003e5e;
+            padding: 5px 0 10px 0; /* Padding για κενό */
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Padding για περιεχόμενο κάτω από την κολλητή κεφαλίδα */
+        .content-area {
+            padding-top: 10px; /* Προσαρμόζεται ανάλογα με το ύψος της κεφαλίδας */
+        }
+
+        /* Accordion Custom Styles */
+        .accordion-button {
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+            color: #003e5e; /* Dark blue */
+            font-weight: 600; /* Bolder font */
+            font-size: 1.1em;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: color 0.2s ease, box-shadow 0.2s ease; /* Διατηρούμε το transition για το χρώμα του κειμένου */
+            /* Το background θα οριστεί δυναμικά με linear-gradient */
+        }
+
+        .accordion-button:hover {
+            color: #002840; /* Darker blue text on hover */
+        }
+
+        .accordion-button:not(.collapsed) {
+            color: #fff; /* White text when open */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* SVG icon colors adjusted for gradient background */
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23003e5e'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            transform: rotate(0deg);
+        }
+
+        .accordion-button:not(.collapsed)::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            transform: rotate(-180deg);
+        }
+
+        .accordion-body {
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 10px; /* Space between accordion items */
+        }
+
+        .accordion-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Νέα στυλ για τα στοιχεία της λίστας εντός accordion-body */
+        .accordion-body ul li {
+            padding: 0; /* Αφαιρέστε το padding εδώ, θα εφαρμοστεί στα εσωτερικά spans */
+            display: flex; /* Χρησιμοποιήστε flexbox για οριζόντια διάταξη */
+            align-items: stretch; /* Τεντώστε τα στοιχεία για να γεμίσουν το ύψος */
+            border-bottom: 1px dashed #e9ecef;
+            font-size: 1.1em; /* Προσαρμοσμένο μέγεθος γραμματοσειράς */
+            text-align: left;
+            position: relative;
+            overflow: hidden; /* Διασφαλίστε ότι το περιεχόμενο δεν θα ξεχειλίσει */
+            background-color: #f8f9fa; /* Ελαφρύ default background για το li */
+            line-height: 1.5; /* Καλύτερη αναγνωσιμότητα */
+        }
+
+        .accordion-body ul li:last-child {
+            border-bottom: none;
+        }
+
+        .li-index-wrapper {
+            flex-shrink: 0; /* Αποτρέψτε τη συρρίκνωση */
+            background-color: #fff; /* Λευκό φόντο για το τμήμα του αριθμού */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 10px; /* Padding για τον αριθμό */
+            border-right: 1px solid #e9ecef; /* Διαχωριστική γραμμή */
+            min-width: 50px; /* Σταθερό πλάτος για 2-ψήφιο αριθμό + padding */
+            box-sizing: border-box; /* Συμπεριλάβετε padding και border στο πλάτος */
+        }
+
+        .li-index {
+            font-weight: bold;
+            color: #003e5e; /* Σκούρο χρώμα για τον αριθμό */
+            font-size: 0.9em; /* Ελαφρώς μικρότερο μέγεθος για τον αριθμό */
+        }
+
+        .li-content {
+            flex-grow: 1; /* Πάρτε τον υπόλοιπο χώρο */
+            padding: 5px 10px; /* Padding για το περιεχόμενο */
+            /* το background θα οριστεί δυναμικά μέσω linear-gradient */
+            display: flex; /* Χρησιμοποιήστε flex για στοίχιση περιεχομένου αν χρειαστεί */
+            align-items: center;
+            /* το color θα οριστεί δυναμικά για αντίθεση */
+        }
+
+        .group-name-wrapper {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .group-number {
+            font-weight: bold;
+            margin-right: 10px;
+            color: rgba(0, 62, 94, 0.35); /* Dark blue with 35% transparency */
+            font-size: 0.9em;
+        }
+
+        .accordion-button:not(.collapsed) .group-number {
+            color: rgba(255, 255, 255, 0.65); /* White text with 65% transparency when accordion is open */
+        }
+
+        .group-title-accordion {
+            flex-grow: 1;
+            text-align: left;
+            font-size: 0.9em; /* Μικρότερο μέγεθος γραμματοσειράς */
+            color: #003e5e; /* Ensure good contrast */
+        }
+        .accordion-button:not(.collapsed) .group-title-accordion {
+            color: #fff; /* White text when accordion is open */
+        }
+
+        .total-count-accordion {
+            flex-shrink: 0;
+            margin-left: auto;
+            padding: 2px 8px;
+            background-color: #0056b3; /* Darker blue for count */
+            color: white;
+            border-radius: 25%; /* Νέο border-radius */
+            font-size: 0.8em; /* Νέο μέγεθος γραμματοσειράς */
+        }
+        .accordion-button:not(.collapsed) .total-count-accordion {
+            background-color: #002840; /* Even darker blue when accordion is open */
+        }
+
+        /* Loading Spinner */
+        #loadingSpinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        /* Color Legend Styles */
+        #colorLegend {
+            display: flex;
+            flex-wrap: wrap; /* Να πηγαίνει σε νέα γραμμή αν δεν χωράει */
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 15px;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .legend-color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 8px;
+            border: 1px solid rgba(0,0,0,0.1); /* Ελαφρύ περίγραμμα για καλύτερη διάκριση */
+        }
+
+        /* Footer styles */
+        .ekasth-footer-text {
+            font-size: 0.75em;
+            color: #888;
+            margin-top: 15px;
+            margin-bottom: 1px !important;
+            text-align: center;
+        }
+
+        .ekasth-footer-version-text {
+            font-size: 0.50em;
+            color: #aaa;
+            margin-top: 0px;
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
+        /* Custom styles for General Overview accordion */
+        #headingGeneralOverview button {
+            padding: 30px 20px !important; /* Διπλάσιο ύψος */
+            font-size: 1.3em !important; /* Μεγαλύτερο κείμενο */
+        }
+
+        #collapseGeneralOverview.accordion-collapse {
+            margin-bottom: 20px; /* Απόσταση από τον επόμενο όμιλο */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .MatchcenterWidgetContainer {
+                margin: 10px;
+            }
+            .header-pre-title {
+                font-size: 0.7em;
+            }
+            .combined-header-title {
+                font-size: 1em;
+            }
+            .group-title-accordion {
+                font-size: 0.8em; /* Adjust font size on smaller screens */
+            }
+            .total-count-accordion {
+                font-size: 0.7em;
+            }
+            .legend-item {
+                font-size: 0.8em;
+                margin: 3px 10px;
+            }
+            .legend-color-box {
+                width: 15px;
+                height: 15px;
+            }
+            .li-index-wrapper {
+                min-width: 40px; /* Adjust for smaller screens */
+                padding: 3px 5px;
+            }
+            .li-content {
+                padding: 3px 5px;
+            }
+            #headingGeneralOverview button {
+                padding: 20px 15px !important; /* Προσαρμογή ύψους για μικρότερες οθόνες */
+                font-size: 1.1em !important;
+            }
+            #collapseGeneralOverview.accordion-collapse {
+                margin-bottom: 15px; /* Προσαρμογή απόστασης */
+            }
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="MatchCenterWidgetContainer">
+    <div class="MatchcenterWidget MatchcenterWidget--hp" id="matchcenter-homepage-widget">
+        <section class="MatchcenterHomepageWidget">
+            <div class="sticky-header-tabs">
+                <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
+                <h3 class="MatchcenterHomepageWidget__header">
+                    MATCHCENTER<span class="header-superscript">4</span>
+                </h3>
+                <div class="header-underline"></div>
+                <div class="combined-header-title" id="combined-header-title">ΠΡΟΟΔΟΣ ΑΓΩΝΩΝ ΑΝΑ ΟΜΙΛΟ</div>
+            </div>
+            
+            <div class="content-area container text-center">
+                <div id="loadingSpinner" class="my-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Φόρτωση...</span>
+                    </div>
+                    <p class="mt-2">Φόρτωση δεδομένων...</p>
+                </div>
+
+                <!-- Επεξήγηση Χρωμάτων -->
+                <div id="colorLegend" style="display:none;"></div>
+
+                <div class="accordion" id="progressAccordion" style="display:none;">
+                    <!-- Τα στοιχεία του ακορντεόν θα εισαχθούν δυναμικά εδώ -->
+                </div>
+            </div>
+
+            <div class="ekasth-footer-section">
+                <div class="ekasth-footer-text">
+                    Ε.ΚΑ.Σ.Θ. 1976 - <span id="currentDateTime"></span>
+                </div>
+                <div class="ekasth-footer-version-text">
+                    LT v.25.06.15 | mc_02_proodos_diorganvsevn@myekasth
+                </div>
+            </div>
+
+        </section>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+    // Καθορισμός της συνάρτησης που θα εκτελεστεί όταν φορτώσει το DOM
+    document.addEventListener('DOMContentLoaded', () => {
+        // Φορτώνουμε το βασικό πακέτο του Google Charts για το google.visualization.Query
+        google.charts.load('current', { 'packages': ['corechart'] }); 
+        // Καθορισμός της συνάρτησης που θα εκτελεστεί όταν φορτώσουν τα Google Charts
+        // Αυτό διασφαλίζει ότι το αντικείμενο 'google' είναι διαθέσιμο.
+        google.charts.setOnLoadCallback(drawProgressAccordion); 
+
+        // Αρχική ρύθμιση της τρέχουσας ημερομηνίας και ώρας στο υποσέλιδο
+        updateFooterDateTime();
+    });
+
+    let data; // Καθολική μεταβλητή για αποθήκευση του πίνακα δεδομένων
+    let statusColorMap = new Map(); // Καθολικός χάρτης για χρώματα καταστάσεων
+
+    /**
+     * Βοηθητική συνάρτηση για τη μετατροπή χρώματος hex σε RGB.
+     * @param {string} hex - Το χρώμα σε μορφή hex (π.χ., '#RRGGBB').
+     * @returns {number[]} Ένας πίνακας [R, G, B].
+     */
+    function hexToRgb(hex) {
+        var r = parseInt(hex.substring(1, 3), 16);
+        var g = parseInt(hex.substring(3, 5), 16);
+        var b = parseInt(hex.substring(5, 7), 16);
+        return [r, g, b];
+    }
+
+    /**
+     * Βοηθητική συνάρτηση για τον καθορισμό του χρώματος κειμένου (μαύρο ή λευκό)
+     * με βάση τη φωτεινότητα του χρώματος φόντου.
+     * @param {string} hexColor - Το χρώμα φόντου σε μορφή hex.
+     * @returns {string} '#000000' (μαύρο) ή '#FFFFFF' (λευκό).
+     */
+    function getContrastTextColor(hexColor) {
+        const rgb = hexToRgb(hexColor);
+        // Υπολογισμός αντιληπτής φωτεινότητας (ITU-R BT.709)
+        const luminosity = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255;
+        // Χρησιμοποιήστε ένα όριο για να αποφασίσετε μεταξύ μαύρου και λευκού
+        return luminosity > 0.5 ? '#000000' : '#FFFFFF';
+    }
+
+
+    /**
+     * Βοηθητική συνάρτηση για τη λήψη παραμέτρων από τη διεύθυνση URL.
+     * @param {string} variable - Το όνομα της παραμέτρου query.
+     * @returns {string|null} Η τιμή της παραμέτρου ή null αν δεν βρεθεί.
+     */
+    function getQueryVariable(variable) {
+        const query = window.location.search.substring(1);
+        const vars = query.split("&");
+        for (let i = 0; i < vars.length; i++) {
+            const pair = vars[i].split("=");
+            if (pair[0] === variable) {
+                return decodeURIComponent(pair[1]);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Κύρια συνάρτηση για τη σχεδίαση του ακορντεόν προόδου.
+     * Λαμβάνει δεδομένα από το Google Sheet και ξεκινά τη διαδικασία οπτικοποίησης.
+     */
+    function drawProgressAccordion() {
+        const pID = getQueryVariable("pID");
+        // Προεπιλεγμένο ID υπολογιστικού φύλλου αν δεν δοθεί μέσω URL
+        const spreadsheetID = pID || "17qZ43Fd2oYEV_lESKjOrqIOMurNDg5prJkyFuUH4aJA"; 
+        const gid = "0"; // Προεπιλεγμένο gid για το φύλλο
+
+        // Ερώτημα για επιλογή Ομίλου (στήλη A), Κατάστασης (στήλη C) και Στήλης F
+        let strQueryForURI = `SELECT A, C, F`; // Προσθήκη στήλης F
+        const encodedQueryString = encodeURIComponent(strQueryForURI);
+
+        const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetID}/gviz/tq?gid=${gid}&headers=1&tq=${encodedQueryString}`;
+
+        try {
+            const query = new google.visualization.Query(spreadsheetUrl);
+            // Αποστολή του ερωτήματος και καθορισμός της συνάρτησης επανάκλησης
+            query.send(handleProgressDataQueryResponseForAccordion); 
+        } catch (error) {
+            console.error("Σφάλμα κατά την έναρξη του Google Sheets Query:", error);
+            alert("Προέκυψε σφάλμα κατά την έναρξη του query δεδομένων.");
+        }
+    }
+
+    /**
+     * Χειρίζεται την απάντηση δεδομένων από το Google Sheets για την πρόοδο.
+     * @param {object} response - Το αντικείμενο απάντησης από το Google Visualization API.
+     */
+    function handleProgressDataQueryResponseForAccordion(response) {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const progressAccordion = document.getElementById('progressAccordion');
+        const colorLegend = document.getElementById('colorLegend');
+        
+        // Απόκρυψη του spinner φόρτωσης
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'none';
+        }
+
+        // Έλεγχος για σφάλματα στην απάντηση
+        if (response.isError()) {
+            console.error('Σφάλμα στο ερώτημα: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+            alert('Προέκυψε σφάλμα κατά την ανάκτηση δεδομένων: ' + response.getMessage());
+            return;
+        }
+
+        // Αποθήκευση του DataTable
+        data = response.getDataTable();
+        try {
+            // Επεξεργασία, δημιουργία χάρτη χρωμάτων και εμφάνιση της προόδου στο ακορντεόν
+            processAndDisplayGroupProgressInAccordion();
+            displayColorLegend(); // Εμφάνιση επεξήγησης χρωμάτων
+        } catch (error) {
+            console.error("Σφάλμα κατά την επεξεργασία και εμφάνιση της προόδου στο ακορντεόν:", error);
+            alert("Προέκυψε σφάλμα κατά την επεξεργασία και εμφάνιση της προόδου στο ακορντεόν.");
+        }
+
+        // Εμφάνιση των containers
+        if (progressAccordion) {
+            progressAccordion.style.display = 'block';
+        }
+        if (colorLegend) {
+            colorLegend.style.display = 'flex'; // Χρησιμοποιούμε flex για οριζόντια στοίχιση
+        }
+
+        // Ενημέρωση της τρέχουσας ημερομηνίας/ώρας στο υποσέλιδο
+        updateFooterDateTime();
+    };
+
+    /**
+     * Επεξεργάζει τα ληφθέντα δεδομένα για να μετρήσει τις καταστάσεις ανά όμιλο
+     * και δημιουργεί τα στοιχεία του ακορντεόν.
+     */
+    function processAndDisplayGroupProgressInAccordion() {
+        // Χάρτης για αποθήκευση: όνομα_ομίλου -> { status1: count, status2: count, ..., total: count }
+        const groupProgressMap = new Map();
+        const uniqueStatuses = new Set(); // Χρησιμοποιείται για να λάβουμε όλες τις μοναδικές καταστάσεις
+
+        // Νέοι χάρτες για συνολικά δεδομένα (ΓΕΝΙΚΗ ΕΙΚΟΝΑ)
+        const overallProgressMap = new Map();
+        let overallTotalMatches = 0;
+
+        // Επανάληψη στις γραμμές των δεδομένων για καταμέτρηση
+        for (let row = 0; row < data.getNumberOfRows(); row++) {
+            const omilos = data.getFormattedValue(row, 0); // Στήλη A: Όμιλος
+            let statusC = data.getFormattedValue(row, 1); // Στήλη C: Κατάσταση
+            let statusF = data.getFormattedValue(row, 2); // Στήλη F: Νέα στήλη για λογική
+
+            let finalStatus;
+
+            // Λογική ταξινόμησης
+            if (statusC === null || statusC === "") {
+                finalStatus = "ΑΔΙΕΥΚΡΙΝΙΣΤΟ";
+            } else if (statusC === '*') {
+                if (statusF === '-' || statusF === null || statusF === "") { // Εάν F είναι '-' ή κενό, τότε ΡΕΠΟ
+                    finalStatus = "ΡΕΠΟ";
+                } else { // Εάν F δεν είναι '-'
+                    finalStatus = "ΠΡΟΓΡΑΜΜΑΤΙΣΜΕΝΑ";
+                }
+            } else {
+                finalStatus = statusC; // Διατηρείται η τιμή της στήλης C
+            }
+
+            if (omilos && omilos !== "-") {
+                // Επεξεργασία για τον τρέχοντα όμιλο
+                if (!groupProgressMap.has(omilos)) {
+                    groupProgressMap.set(omilos, { total: 0 });
+                }
+                const currentGroupData = groupProgressMap.get(omilos);
+                currentGroupData[finalStatus] = (currentGroupData[finalStatus] || 0) + 1;
+                currentGroupData.total++;
+
+                // Επεξεργασία για τη ΓΕΝΙΚΗ ΕΙΚΟΝΑ
+                overallProgressMap.set(finalStatus, (overallProgressMap.get(finalStatus) || 0) + 1);
+                overallTotalMatches++;
+
+                uniqueStatuses.add(finalStatus); // Προσθήκη της κατάστασης στα μοναδικά statuses
+            }
+        }
+
+        // Ορισμός μιας παλέτας χρωμάτων
+        const colorPalette = [
+            '#4CAF50', // Green
+            '#2196F3', // Blue
+            '#FFC107', // Amber (Yellow-Orange)
+            '#E91E63', // Pink
+            '#9C27B0', // Purple
+            '#00BCD4', // Cyan
+            '#FF5722', // Deep Orange
+            '#795548', // Brown
+            '#607D8B', // Blue Grey
+            '#FFEB3B'  // Yellow
+        ];
+
+        // Δημιουργία χάρτη αντιστοίχισης καταστάσεων σε χρώματα (global statusColorMap)
+        statusColorMap = new Map(); 
+        Array.from(uniqueStatuses).sort().forEach((status, index) => {
+            statusColorMap.set(status, colorPalette[index % colorPalette.length]);
+        });
+
+
+        // Μετατροπή του map σε ταξινομημένο πίνακα για τη σειρά των ακορντεόν
+        const sortedGroups = Array.from(groupProgressMap.entries()).sort((a, b) => {
+            const groupNameA = a[0];
+            const groupNameB = b[0];
+            return groupNameA.localeCompare(groupNameB, 'el', { sensitivity: 'base' });
+        });
+
+        const progressAccordionContainer = document.getElementById('progressAccordion');
+        progressAccordionContainer.innerHTML = ''; // Εκκαθάριση προηγούμενου περιεχομένου
+
+        // --- ΔΗΜΙΟΥΡΓΙΑ ΑΚΟΡΝΤΕΟΝ "ΓΕΝΙΚΗ ΕΙΚΟΝΑ" ---
+        const generalOverviewId = 'collapseGeneralOverview';
+        const generalOverviewHeadingId = 'headingGeneralOverview';
+        
+        let generalOverviewStatusListHtml = '';
+        const sortedOverallStatuses = Array.from(overallProgressMap.keys()).sort(); // Ταξινόμηση για σταθερή σειρά
+        let generalListItemIndex = 0;
+
+        for (const status of sortedOverallStatuses) {
+            const count = overallProgressMap.get(status);
+            const percentage = (overallTotalMatches > 0) ? (count / overallTotalMatches) * 100 : 0;
+            const statusColor = statusColorMap.get(status);
+            const textColor = getContrastTextColor(statusColor);
+            
+            const liContentBackground = `linear-gradient(to right, ${statusColor} ${percentage.toFixed(2)}%, #f5f5f5 ${percentage.toFixed(2)}%)`;
+            
+            generalOverviewStatusListHtml += `
+                <li class="d-flex align-items-stretch">
+                    <span class="li-index-wrapper">
+                        <span class="li-index">${++generalListItemIndex}.</span>
+                    </span>
+                    <span class="li-content" style="background: ${liContentBackground}; color: ${textColor};">
+                        ${status}: ${count} (${percentage.toFixed(2)}%)
+                    </span>
+                </li>
+            `;
+        }
+
+        // Δημιουργία linear-gradient για το κουμπί της ΓΕΝΙΚΗΣ ΕΙΚΟΝΑΣ
+        let generalGradientCss = 'linear-gradient(to right';
+        let currentGeneralPercentageValue = 0;
+        const generalGradientColors = [];
+
+        for (const status of sortedOverallStatuses) {
+            const count = overallProgressMap.get(status);
+            const percentage = (overallTotalMatches > 0) ? (count / overallTotalMatches) * 100 : 0;
+            const color = statusColorMap.get(status);
+            
+            if (percentage > 0) {
+                generalGradientColors.push(`${color} ${currentGeneralPercentageValue.toFixed(2)}%`);
+                currentGeneralPercentageValue += percentage;
+                generalGradientColors.push(`${color} ${currentGeneralPercentageValue.toFixed(2)}%`);
+            }
+        }
+        // Προσθήκη προεπιλεγμένου χρώματος φόντου για το υπόλοιπο μέρος αν το συνολικό ποσοστό είναι μικρότερο από 100%
+        if (currentGeneralPercentageValue < 100) {
+            generalGradientColors.push(`#e0f2f7 ${currentGeneralPercentageValue.toFixed(2)}%`);
+            generalGradientColors.push(`#e0f2f7 100%`);
+        } else if (generalGradientColors.length === 0) {
+            // Fallback αν δεν υπάρχουν καθόλου δεδομένα
+            generalGradientColors.push(`#e0f2f7 0%`, `#e0f2f7 100%`);
+        }
+        generalGradientCss += ', ' + generalGradientColors.join(', ') + ')';
+
+        const generalOverviewAccordionItem = document.createElement('div');
+        generalOverviewAccordionItem.classList.add('accordion-item');
+        // Προσθήκη custom κλάσης για να εφαρμόσουμε το margin-bottom
+        generalOverviewAccordionItem.classList.add('general-overview-accordion-item'); 
+        generalOverviewAccordionItem.innerHTML = `
+            <h2 class="accordion-header" id="${generalOverviewHeadingId}">
+                <button class="accordion-button collapsed d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#${generalOverviewId}" aria-expanded="false" aria-controls="${generalOverviewId}" style="background: ${generalGradientCss} !important;">
+                    <div class="group-name-wrapper">
+                        <span class="group-title-accordion">ΓΕΝΙΚΗ ΕΙΚΟΝΑ</span>
+                    </div>
+                    <span class="total-count-accordion">${overallTotalMatches}</span>
+                </button>
+            </h2>
+            <div id="${generalOverviewId}" class="accordion-collapse collapse" aria-labelledby="${generalOverviewHeadingId}" data-bs-parent="#progressAccordion">
+                <div class="accordion-body">
+                    <ul>
+                        ${generalOverviewStatusListHtml}
+                    </ul>
+                </div>
+            </div>
+        `;
+        progressAccordionContainer.appendChild(generalOverviewAccordionItem);
+
+
+        // --- ΔΗΜΙΟΥΡΓΙΑ ΑΚΟΡΝΤΕΟΝ ΑΝΑ ΟΜΙΛΟ ---
+        sortedGroups.forEach(([groupName, groupData], index) => {
+            const collapseId = `collapseGroup-${index}`;
+            const headingId = `headingGroup-${index}`;
+            const totalMatches = groupData.total;
+
+            // Δημιουργία λίστας με τις καταστάσεις και τα πλήθη τους
+            let statusListHtml = '';
+            // Λαμβάνουμε τις καταστάσεις (εκτός του 'total') και τις ταξινομούμε
+            const currentStatuses = Object.keys(groupData).filter(key => key !== 'total').sort();
+            
+            let listItemIndex = 0; // Αύξων αριθμός για τα στοιχεία της λίστας
+            for (const status of currentStatuses) {
+                const count = groupData[status];
+                const percentage = (totalMatches > 0) ? (count / totalMatches) * 100 : 0;
+                const statusColor = statusColorMap.get(status);
+                const textColor = getContrastTextColor(statusColor); // Επιλέξτε χρώμα κειμένου για αντίθεση
+                
+                // Δημιουργία linear-gradient για το background του li-content
+                const liContentBackground = `linear-gradient(to right, ${statusColor} ${percentage.toFixed(2)}%, #f5f5f5 ${percentage.toFixed(2)}%)`;
+                
+                statusListHtml += `
+                    <li class="d-flex align-items-stretch">
+                        <span class="li-index-wrapper">
+                            <span class="li-index">${++listItemIndex}.</span>
+                        </span>
+                        <span class="li-content" style="background: ${liContentBackground}; color: ${textColor};">
+                            ${status}: ${count} (${percentage.toFixed(2)}%)
+                        </span>
+                    </li>
+                `;
+            }
+
+            // Δημιουργία του linear-gradient background για το accordion button
+            let gradientCss = 'linear-gradient(to right';
+            let currentPercentageValue = 0;
+            const gradientColors = [];
+
+            for (const status of currentStatuses) {
+                const count = groupData[status];
+                const percentage = (totalMatches > 0) ? (count / totalMatches) * 100 : 0; // Αποφυγή διαίρεσης με το μηδέν
+                const color = statusColorMap.get(status);
+                
+                if (percentage > 0) { // Προσθέτουμε μόνο αν υπάρχει ποσοστό
+                    gradientColors.push(`${color} ${currentPercentageValue.toFixed(2)}%`);
+                    currentPercentageValue += percentage;
+                    gradientColors.push(`${color} ${currentPercentageValue.toFixed(2)}%`); // Τέλος αυτού του τμήματος
+                }
+            }
+
+            // Προσθήκη προεπιλεγμένου χρώματος φόντου για το υπόλοιπο μέρος αν το συνολικό ποσοστό είναι μικρότερο από 100%
+            if (currentPercentageValue < 100) {
+                gradientColors.push(`#e0f2f7 ${currentPercentageValue.toFixed(2)}%`); // Έναρξη προεπιλεγμένου χρώματος από το τρέχον ποσοστό
+                gradientColors.push(`#e0f2f7 100%`); // Επέκταση προεπιλεγμένου χρώματος στο 100%
+            } else if (gradientColors.length === 0) {
+                // Fallback αν δεν υπάρχουν καθόλου δεδομένα
+                gradientColors.push(`#e0f2f7 0%`, `#e0f2f7 100%`);
+            }
+
+            gradientCss += ', ' + gradientColors.join(', ') + ')';
+
+
+            const accordionItem = document.createElement('div');
+            accordionItem.classList.add('accordion-item');
+
+            // Εφαρμογή του δυναμικού background στο button
+            accordionItem.innerHTML = `
+                <h2 class="accordion-header" id="${headingId}">
+                    <button class="accordion-button collapsed d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false" aria-controls="${collapseId}" style="background: ${gradientCss} !important;">
+                        <div class="group-name-wrapper">
+                            <span class="group-number">${index + 1}.</span> <!-- Αύξων αριθμός ομίλου -->
+                            <span class="group-title-accordion">${groupName}</span>
+                        </div>
+                        <span class="total-count-accordion">${totalMatches}</span>
+                    </button>
+                </h2>
+                <div id="${collapseId}" class="accordion-collapse collapse" aria-labelledby="${headingId}" data-bs-parent="#progressAccordion">
+                    <div class="accordion-body">
+                        <ul>
+                            ${statusListHtml}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            progressAccordionContainer.appendChild(accordionItem);
+        });
+    }
+
+    /**
+     * Εμφανίζει την επεξήγηση χρωμάτων (legend) δυναμικά.
+     */
+    function displayColorLegend() {
+        const colorLegendContainer = document.getElementById('colorLegend');
+        colorLegendContainer.innerHTML = ''; // Εκκαθάριση προηγούμενου περιεχομένου
+
+        // Ταξινόμηση των καταστάσεων για σταθερή σειρά στην επεξήγηση
+        const sortedStatuses = Array.from(statusColorMap.keys()).sort((a, b) => a.localeCompare(b, 'el', { sensitivity: 'base' }));
+
+        sortedStatuses.forEach(status => {
+            const color = statusColorMap.get(status);
+            const legendItem = document.createElement('div');
+            legendItem.classList.add('legend-item');
+            legendItem.innerHTML = `
+                <div class="legend-color-box" style="background-color: ${color};"></div>
+                <span>${status}</span>
+            `;
+            colorLegendContainer.appendChild(legendItem);
+        });
+    }
+
+    /**
+     * Ενημερώνει την τρέχουσα ημερομηνία και ώρα στο υποσέλιδο.
+     */
+    function updateFooterDateTime() {
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('currentDateTime').textContent = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+
+</script>
+</body>
+</html>
