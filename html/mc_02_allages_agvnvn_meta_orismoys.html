@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="el">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <meta name="description" content="MatchCenter - Αλλαγές σε αγώνες μετά τους ορισμούς" />
+    <meta name="keywords" content="MatchCenter, basketball, games, changes, schedule, μπάσκετ, αγώνες, αλλαγές, πρόγραμμα" />
+    <meta name="language" content="greek" />
+    <meta name="author" content="MatchCenter" />
+    <meta name="web_author" content="Lazaros T" />
+    <link rel="icon" href="../favicon.ico" />
+
+    <title>MatchCenter | Αλλαγές σε αγώνες μετά τους ορισμούς</title>
+
+    <!-- Google Fonts: Krona One for titles, Inter for body text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <!-- Νέα γραμματοσειρά για τα accordions και τον τίτλο header -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@400;600&display=swap" rel="stylesheet">
+
+
+    <!-- Bootstrap 5 CSS and JS Bundle -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Google Charts Library for data visualization -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        // Load Google Charts and set callback immediately after loader script is parsed.
+        // This is a more robust way to ensure google.charts is defined before use.
+        google.charts.load('current', {});
+        google.charts.setOnLoadCallback(initDataFetch);
+
+        // All custom JavaScript functions are defined here to ensure they are available
+        // when google.charts.setOnLoadCallback attempts to call initDataFetch.
+        
+        const DEFAULT_LOGO_URL = "https://lh3.googleusercontent.com/-_r1FEKyvfIA/V5o9rF6kKLI/AAAAAAABNFE/p_lq6O0AKQ8CNJJRJ0jotUb4jGsUthdqgCCo/s36/white-repo-circle.png";
+        let teamLogos = new Map(); // Global map to store team logos
+
+        /**
+         * Parses URL query parameters.
+         * @param {string} variable - The name of the query parameter to retrieve.
+         * @returns {string|boolean} The value of the parameter or false if not found.
+         */
+        function getQueryVariable(variable){
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0; i<vars.length; i++) {
+                var pair = vars[i].split("=");
+                if(pair[0] === variable){
+                    return decodeURIComponent(decodeURIComponent(pair[1]));
+                }
+            }
+            return(false);
+        }
+
+        /**
+         * Initializes data fetching by first getting logos, then game changes.
+         */
+        function initDataFetch() {
+            // Updated title with blinking "ΑΛΛΑΓΕΣ"
+            document.getElementById("combined-header-title").innerHTML = `<span class="blinking-text">ΑΛΛΑΓΕΣ</span> ΣΕ ΑΓΩΝΕΣ ΜΕΤΑ ΑΠΟ ΤΟΥΣ ΟΡΙΣΜΟΥΣ`;
+            fetchTeamLogos();
+        }
+
+        /**
+         * Fetches team logos from the "Omades" sheet.
+         */
+        function fetchTeamLogos() {
+            const spreadsheetID_logos = "1V3R1guvTLySev8Hk8dI1UC5lxV1qQ3pOYC4eSWa8CU0"; // Same spreadsheet as changes for consistency
+            const gid_logos = "980929301"; // GID for "Omades" tab
+
+            const strQueryForURI_logos = `SELECT A,B`; // Column A: Team Name, Column B: Logo URL
+            const queryString_logos = encodeURIComponent(strQueryForURI_logos);
+
+            const queryLogos = new google.visualization.Query(
+                `https://docs.google.com/spreadsheets/d/${spreadsheetID_logos}/gviz/tq?gid=${gid_logos}&headers=1&tq=${queryString_logos}`
+            );
+            queryLogos.send(handleLogosQueryResponse);
+        }
+
+        /**
+         * Handles the logo data response and then proceeds to fetch game changes.
+         * @param {object} response - The response object from the Google Visualization API for logos.
+         */
+        function handleLogosQueryResponse(response) {
+            if (response.isError()) {
+                console.error('Error in logos query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                // Continue without logos if there's an error, but log it
+                fetchChangedGamesData(); 
+                return;
+            }
+            const logosDataTable = response.getDataTable();
+            for (let row = 0; row < logosDataTable.getNumberOfRows(); row++) {
+                const teamName = logosDataTable.getFormattedValue(row, 0); // Column A: Team Name
+                const logoUrl = logosDataTable.getFormattedValue(row, 1); // Column B: Logo URL
+                if (teamName && logoUrl) {
+                    teamLogos.set(teamName, logoUrl);
+                }
+            }
+            // Once logos are fetched, proceed to fetch changed game data
+            fetchChangedGamesData();
+        }
+
+
+        /**
+         * Fetches changed game data from the Google Sheet.
+         */
+        function fetchChangedGamesData() {
+            const spreadsheetID = "1V3R1guvTLySev8Hk8dI1UC5lxV1qQ3pOYC4eSWa8CU0";
+            const gid = "0"; // GID for the specific sheet with game changes
+
+            // Select all relevant columns for game data and change information
+            // A:Πρωτάρχλημα, B:Κατηγορία, C:Αγωνιστική, D:Νέα Ημερομηνία, E:Νέα Ώρα, F:Νέο Γήπεδο, G:Ομάδα Α, H:Ομάδα Β, I:Σκορ Α, J:Σκορ Β, K:Διαιτητής 1, L:Διαιτητής 2, M:Διαιτητής 3, N:Κριτής 1, O:Κριτής 2, P:Κριτής 3, Q:Κωδικός Αγώνα, R:Αρχική ΗΜΕΡΟΜΗΝΙΑ, S:Αρχική ΩΡΑ, T:Αρχικό ΓΗΠΕΔΟ, U:Χρονική σήμανση, V:Παρατηρητής, W:Link Γηπέδου
+            // The query string is updated to reflect the new column assignments.
+            let strQueryForURI = `SELECT A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W`; 
+            const queryString = encodeURIComponent(strQueryForURI);
+
+            const query = new google.visualization.Query(
+                `https://docs.google.com/spreadsheets/d/${spreadsheetID}/gviz/tq?gid=${gid}&headers=1&tq=${queryString}`
+            );
+            query.send(handleChangedGamesDataResponse);
+        }
+
+        const dayNamesShort = ['Κυρ', 'Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ'];
+
+        /**
+         * Formats a Date object into "DDD, DD-MM-YYYY" string.
+         * @param {Date} dateObj The Date object to format.
+         * @returns {string} The formatted date string.
+         */
+        function formatFullDateWithDay(dateObj) {
+            const dayName = dayNamesShort[dateObj.getDay()];
+            const formattedDay = String(dateObj.getDate()).padStart(2, '0');
+            const formattedMonth = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const formattedYear = dateObj.getFullYear(); 
+
+            return `${dayName}, ${formattedDay}-${formattedMonth}-${formattedYear}`;
+        }
+
+        /**
+         * Handles the data response from the Google Sheet query and renders changed games.
+         * @param {object} response - The response object from the Google Visualization API.
+         */
+        function handleChangedGamesDataResponse(response) {
+            const loadingSpinnerDiv = document.getElementById("loading-spinner");
+            const contentDiv = document.getElementById("list-content-id");
+
+            if (loadingSpinnerDiv) {
+                loadingSpinnerDiv.remove();
+            }
+
+            if (response.isError()) {
+                console.error('Error in Google Charts query:', response.getMessage(), response.getDetailedMessage(), response);
+                let errorMessage = 'Προέκυψε σφάλμα κατά τη φόρτωση δεδομένων. ';
+                if (response.getMessage().includes('timed out')) {
+                    errorMessage += 'Η αίτηση χρονόληξε. Παρακαλώ ελέγξτε τη σύνδεσή σας στο διαδίκτυο και βεβαιωθείτε ότι το Google Sheet είναι δημόσια προσβάσιμο. Δοκιμάστε ξανά.';
+                } else {
+                    errorMessage += 'Λεπτομέρειες: ' + response.getMessage() + '. Παρακαλώ δοκιμάστε ξανά αργότερα.';
+                }
+                
+                contentDiv.innerHTML = `<div class="col-12"><p class="text-center text-danger">${errorMessage}</p></div>`;
+                return;
+            }
+
+            const data = response.getDataTable();
+            const totalRows = data.getNumberOfRows();
+            
+            contentDiv.innerHTML = ''; // Clear existing content
+
+            if (totalRows === 0) {
+                contentDiv.innerHTML = '<div class="col-12"><p class="text-center text-muted">Δεν βρέθηκαν αλλαγές αγώνων.</p></div>';
+                return;
+            }
+
+            // Get current date for comparison, ignoring time
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            // Calculate start and end dates for filtering (+/- 7 days)
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 7);
+
+            const sevenDaysFromNow = new Date(today);
+            sevenDaysFromNow.setDate(today.getDate() + 7);
+
+            // Group games by their current date (Column D)
+            const gamesByDate = new Map();
+
+            for (let row = 0; row < totalRows; row++) {
+                const gameDate = data.getFormattedValue(row, 3); // Column D: Νέα Ημερομηνία
+                const timestamp = data.getFormattedValue(row, 20); // Column U: Χρονική σήμανση
+
+                const gameData = {
+                    championship: data.getFormattedValue(row, 0), // A: Πρωτάθλημα
+                    round: data.getFormattedValue(row, 1),        // B: Αγωνιστική
+                    gamestatus: data.getFormattedValue(row, 2),   // C: Κατάσταση αγώνα
+                    newDate: gameDate,                           // D: Νέα Ημερομηνία
+                    newTime: data.getFormattedValue(row, 4),     // E: Νέα Ώρα
+                    newArena: data.getFormattedValue(row, 5),    // F: Νέο Γήπεδο
+                    teamA_name: data.getFormattedValue(row, 6),  // G: Ομάδα Α
+                    teamB_name: data.getFormattedValue(row, 7),  // H: Ομάδα Β
+                    scoreA: data.getFormattedValue(row, 8),      // I: Σκορ Α
+                    scoreB: data.getFormattedValue(row, 9),      // J: Σκορ Β
+                    referee1: data.getFormattedValue(row, 10),   // K: Διαιτητής 1
+                    referee2: data.getFormattedValue(row, 11),   // L: Διαιτητής 2
+                    referee3: data.getFormattedValue(row, 12),   // M: Διαιτητής 3
+                    scorer1: data.getFormattedValue(row, 13),    // N: Κριτής 1
+                    scorer2: data.getFormattedValue(row, 14),    // O: Κριτής 2
+                    scorer3: data.getFormattedValue(row, 15),    // P: Κριτής 3
+                    gameCode: data.getFormattedValue(row, 16),   // Q: Κωδικός Αγώνα
+                    originalDate: data.getFormattedValue(row, 17), // R: Αρχική ΗΜΕΡΟΜΗΝΙΑ
+                    originalTime: data.getFormattedValue(row, 18), // S: Αρχική ΩΡΑ
+                    originalArena: data.getFormattedValue(row, 19), // T: Αρχικό ΓΗΠΕΔΟ
+                    timestamp: timestamp,                        // U: Χρονική σήμανση
+                    commissioner: data.getFormattedValue(row, 21), // V: Παρατηρητής (index 21)
+                    arenaMapUrl: data.getFormattedValue(row, 22) // W: Link Γηπέδου (index 22)
+                };
+
+                // Convert gameDate string to a Date object for comparison
+                const [gameDay, gameMonth, gameYear] = gameData.newDate.split('/').map(Number);
+                const gameDateObj = new Date(gameYear, gameMonth - 1, gameDay);
+
+                // Filter games based on the date range
+                if (gameDateObj >= sevenDaysAgo && gameDateObj <= sevenDaysFromNow) {
+                    if (!gamesByDate.has(gameDate)) {
+                        gamesByDate.set(gameDate, []);
+                    }
+                    gamesByDate.get(gameDate).push(gameData);
+                }
+            }
+
+            // Sort dates in descending order
+            const sortedDates = Array.from(gamesByDate.keys()).sort((dateA, dateB) => {
+                const [d1, m1, y1] = dateA.split('/').map(Number);
+                const [d2, m2, y2] = dateB.split('/').map(Number);
+                const dateObj1 = new Date(y1, m1 - 1, d1);
+                const dateObj2 = new Date(y2, m2 - 1, d2);
+                return dateObj2 - dateObj1; // Descending order
+            });
+
+            const mainAccordion = document.createElement('div');
+            mainAccordion.className = 'accordion';
+            mainAccordion.id = 'mainChangesAccordion'; // Unique ID for this accordion
+
+            sortedDates.forEach((date, index) => {
+                const accordionItemId = `dateAccordionItem_${index}`;
+                const collapseId = `dateCollapse_${index}`;
+
+                const accordionItem = document.createElement('div');
+                accordionItem.className = 'accordion-item';
+                accordionItem.id = accordionItemId;
+
+                const accordionHeader = document.createElement('h2');
+                accordionHeader.className = 'accordion-header';
+                accordionHeader.id = `heading_${index}`;
+
+                const accordionButton = document.createElement('button');
+                accordionButton.className = 'accordion-button collapsed'; 
+                accordionButton.type = 'button';
+                accordionButton.setAttribute('data-bs-toggle', 'collapse');
+                accordionButton.setAttribute('data-bs-target', `#${collapseId}`);
+                accordionButton.setAttribute('aria-controls', collapseId);
+                accordionButton.classList.add('d-flex', 'justify-content-between', 'align-items-center');
+
+                // Determine date relation and apply class/expand
+                const [d, m, y] = date.split('/').map(Number);
+                const accordionDateObj = new Date(y, m - 1, d);
+
+                let isExpanded = false;
+                if (accordionDateObj.getTime() < today.getTime()) {
+                    accordionButton.classList.add('bg-past-grey');
+                    accordionButton.style.color = '#ffffff'; // White text for past grey
+                } else if (accordionDateObj.getTime() === today.getTime()) {
+                    accordionButton.classList.add('bg-current-day-blue');
+                    accordionButton.style.color = '#ffffff'; // White text for current blue
+                    isExpanded = true;
+                } else {
+                    accordionButton.classList.add('bg-future-green');
+                    // Corrected: Use a string literal for color, not a CSS variable directly
+                    accordionButton.style.color = '#212529'; // Dark text for future green (value of --mc-text-dark)
+                }
+
+                accordionButton.setAttribute('aria-expanded', isExpanded);
+                // The `show` class needs to be added to the accordion-collapse div, not the button.
+                // We'll set this property after the accordionCollapse element is created.
+
+                const titleDiv = document.createElement('div'); 
+                // The color will now be inherited from the accordionButton's style.color, based on the background class.
+                titleDiv.classList.add('mb-0', 'flex-grow-1'); 
+                titleDiv.textContent = formatFullDateWithDay(accordionDateObj); // Display full date in header
+
+                accordionButton.appendChild(titleDiv);
+                accordionHeader.appendChild(accordionButton);
+                accordionItem.appendChild(accordionHeader);
+
+                const accordionCollapse = document.createElement('div');
+                accordionCollapse.id = collapseId;
+                accordionCollapse.className = 'accordion-collapse collapse'; 
+                accordionCollapse.setAttribute('aria-labelledby', `heading_${index}`);
+                accordionCollapse.setAttribute('data-bs-parent', '#mainChangesAccordion'); // Still parented for overall accordion behavior
+
+                // Now that accordionCollapse is created, apply the 'show' class if expanded
+                if (isExpanded) {
+                    accordionCollapse.classList.add('show');       // Make the body visible
+                }
+
+                const accordionBody = document.createElement('div');
+                accordionBody.className = 'accordion-body p-3'; // Removed p-0, added p-3
+
+                let gamesForThisDate = gamesByDate.get(date) || []; 
+                // Sort games within this date by Timestamp (col U) in descending order
+                gamesForThisDate.sort((a, b) => {
+                    const tsA = new Date(a.timestamp.split('/').reverse().join('-').replace(' ', 'T'));
+                    const tsB = new Date(b.timestamp.split('/').reverse().join('-').replace(' ', 'T'));
+                    return tsB - tsA; // Descending order based on timestamp
+                });
+
+                if (gamesForThisDate.length > 0) {
+                    gamesForThisDate.forEach((gameRow, gameIndex) => {
+                        const gameDiv = document.createElement('div');
+                        gameDiv.className = 'game-item d-flex flex-column mb-3 p-3 rounded shadow-sm bg-white'; 
+
+                        // Championship, Round, Game Status, Game ID Info - "Κατάσταση" removed
+                        const metaInfoDiv = document.createElement('div');
+                        metaInfoDiv.className = 'text-muted small mb-2 text-start w-100'; // Added w-100 to take full width
+                        metaInfoDiv.innerHTML = `<b>${gameRow.championship} | Αγωνιστική: ${gameRow.round} | ID: ${gameRow.gameCode}</b>`; // Removed Κατάσταση
+                        gameDiv.appendChild(metaInfoDiv);
+
+                        // Line under metaInfoDiv
+                        const lineDiv = document.createElement('div');
+                        lineDiv.className = 'info-line'; // New class for the line
+                        gameDiv.appendChild(lineDiv);
+
+                        // Teams and Score
+                        const teamsScoreDiv = document.createElement('div');
+                        teamsScoreDiv.className = 'd-flex align-items-center justify-content-between w-100 mb-2';
+
+                        const teamA_div = document.createElement('div');
+                        teamA_div.className = 'team-side team-side-left text-start d-flex align-items-center';
+                        const logoA_bg_div = document.createElement('div');
+                        logoA_bg_div.className = 'team-logo-container team-logo-container-left';
+                        const teamA_logo_url = teamLogos.get(gameRow.teamA_name) || DEFAULT_LOGO_URL;
+                        logoA_bg_div.style.backgroundImage = `url('${teamA_logo_url}')`; 
+                        logoA_bg_div.onerror = function() { this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; };
+                        teamA_div.appendChild(logoA_bg_div); 
+                        const spanA = document.createElement('span');
+                        spanA.className = 'team-name fw-bold';
+                        spanA.textContent = gameRow.teamA_name; 
+                        teamA_div.appendChild(spanA);
+                        teamsScoreDiv.appendChild(teamA_div);
+
+                        const score_div = document.createElement('div');
+                        score_div.className = 'game-score d-flex align-items-center justify-content-center mx-2';
+                        const spanScoreA = document.createElement('span');
+                        spanScoreA.className = 'score-number text-primary fw-bold fs-5';
+                        spanScoreA.textContent = gameRow.scoreA;
+                        score_div.appendChild(spanScoreA);
+                        const spanVersus = document.createElement('span');
+                        spanVersus.className = 'versus-text mx-1';
+                        spanVersus.textContent = '-';
+                        score_div.appendChild(spanVersus);
+                        const spanScoreB = document.createElement('span');
+                        spanScoreB.className = 'score-number text-primary fw-bold fs-5';
+                        spanScoreB.textContent = gameRow.scoreB;
+                        score_div.appendChild(spanScoreB);
+                        teamsScoreDiv.appendChild(score_div);
+
+                        const teamB_div = document.createElement('div');
+                        teamB_div.className = 'team-side team-side-right text-end d-flex align-items-center justify-content-end';
+                        const spanB = document.createElement('span');
+                        spanB.className = 'team-name fw-bold';
+                        spanB.textContent = gameRow.teamB_name; 
+                        teamB_div.appendChild(spanB);
+                        const logoB_bg_div = document.createElement('div');
+                        logoB_bg_div.className = 'team-logo-container team-logo-container-right';
+                        const teamB_logo_url = teamLogos.get(gameRow.teamB_name) || DEFAULT_LOGO_URL;
+                        logoB_bg_div.style.backgroundImage = `url('${teamB_logo_url}')`; 
+                        logoB_bg_div.onerror = function() { this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; };
+                        teamB_div.appendChild(logoB_bg_div); 
+                        teamsScoreDiv.appendChild(teamB_div);
+
+                        gameDiv.appendChild(teamsScoreDiv);
+
+                        // Original vs New Details (Date, Time, Arena)
+                        const detailsDiv = document.createElement('div');
+                        detailsDiv.className = 'game-details text-muted small w-100 text-center';
+
+                        // Date
+                        if (gameRow.originalDate) {
+                            detailsDiv.innerHTML += `
+                                <div class="detail-line">
+                                    Ημερομηνία: <span class="strikethrough">${gameRow.originalDate}</span> -> <span class="bold-yellow">${gameRow.newDate}</span>
+                                </div>
+                            `;
+                        } else {
+                            detailsDiv.innerHTML += `<div class="detail-line">Ημερομηνία: ${gameRow.newDate}</div>`;
+                        }
+
+                        // Time
+                        if (gameRow.originalTime) {
+                            detailsDiv.innerHTML += `
+                                <div class="detail-line">
+                                    Ώρα: <span class="strikethrough">${gameRow.originalTime}</span> -> <span class="bold-yellow">${gameRow.newTime}</span>
+                                </div>
+                            `;
+                        } else {
+                            detailsDiv.innerHTML += `<div class="detail-line">Ώρα: ${gameRow.newTime}</div>`;
+                        }
+
+                        // Arena with potential link
+                        const arenaLinkHtml = gameRow.arenaMapUrl && gameRow.arenaMapUrl.trim() !== '' ? 
+                            `<a href="${gameRow.arenaMapUrl}" target="_blank" rel="noopener noreferrer" class="MatchListItem__ghpedoButton">${gameRow.newArena} ↗️</a>` : 
+                            gameRow.newArena;
+
+                        if (gameRow.originalArena) {
+                            detailsDiv.innerHTML += `
+                                <div class="detail-line">
+                                    Γήπεδο: <span class="strikethrough">${gameRow.originalArena}</span> -> <span class="bold-yellow">${arenaLinkHtml}</span>
+                                </div>
+                            `;
+                        } else {
+                            detailsDiv.innerHTML += `<div class="detail-line">Γήπεδο: ${arenaLinkHtml}</div>`;
+                        }
+
+                        // Timestamp of change - text updated
+                        detailsDiv.innerHTML += `<div class="detail-line-timestamp">Η αλλαγή έγινε στις: ${gameRow.timestamp}</div>`;
+
+                        gameDiv.appendChild(detailsDiv);
+                        
+                        // Officials Toggle Button - UPDATED POSITIONING & data-bs-parent removed
+                        const officialsToggleBtn = document.createElement('button');
+                        officialsToggleBtn.className = 'btn btn-sm btn-officials-toggle mt-3 mb-2'; // Added margins
+                        officialsToggleBtn.type = 'button';
+                        officialsToggleBtn.setAttribute('data-bs-toggle', 'collapse');
+                        officialsToggleBtn.setAttribute('data-bs-target', `#officials-collapse-${gameRow.gameCode}`);
+                        officialsToggleBtn.setAttribute('aria-expanded', 'false');
+                        officialsToggleBtn.setAttribute('aria-controls', `officials-collapse-${gameRow.gameCode}`);
+                        officialsToggleBtn.innerHTML = '<span>...</span>'; // Three dots
+                        gameDiv.appendChild(officialsToggleBtn); // Append directly after detailsDiv
+
+                        // Officials Info Collapse below each game item - REMOVE data-bs-parent HERE
+                        const officialsCollapse = document.createElement('div');
+                        officialsCollapse.id = `officials-collapse-${gameRow.gameCode}`;
+                        officialsCollapse.className = 'collapse officials-info-collapse'; // Custom class for styling
+                        // Removed data-bs-parent attribute to allow independent collapse
+                        
+                        const officialsCardBody = document.createElement('div');
+                        officialsCardBody.className = 'card card-body officials-card-body';
+
+                        const officialsList = document.createElement('ul');
+                        officialsList.className = 'list-unstyled small text-muted text-start mb-0';
+
+                        // Helper function to add official if available and not empty/whitespace
+                        const addOfficialToList = (label, value) => {
+                            if (value && value.trim() !== "") {
+                                const listItem = document.createElement('li');
+                                listItem.innerHTML = `<strong>${label}:</strong> ${value}`;
+                                officialsList.appendChild(listItem);
+                            }
+                        };
+                        
+                        addOfficialToList('Διαιτητής 1', gameRow.referee1);
+                        addOfficialToList('Διαιτητής 2', gameRow.referee2);
+                        addOfficialToList('Διαιτητής 3', gameRow.referee3); 
+                        addOfficialToList('Κομισάριος', gameRow.commissioner); // Now from col V
+                        addOfficialToList('Κριτής 1', gameRow.scorer1);
+                        addOfficialToList('Κριτής 2', gameRow.scorer2);
+                        addOfficialToList('Κριτής 3', gameRow.scorer3);
+
+                        if (officialsList.children.length === 0) {
+                            const noOfficialsItem = document.createElement('li');
+                            noOfficialsItem.textContent = 'Δεν υπάρχουν ορισμοί για τον αγώνα.';
+                            officialsList.appendChild(noOfficialsItem);
+                        }
+
+                        officialsCardBody.appendChild(officialsList);
+                        officialsCollapse.appendChild(officialsCardBody);
+                        gameDiv.appendChild(officialsCollapse); // Append after the gameDiv
+                        
+                        accordionBody.appendChild(gameDiv); // Append the gameDiv (which now contains officialsCollapse) to accordionBody
+                    });
+                } else {
+                    const noGamesDiv = document.createElement('div');
+                    noGamesDiv.className = 'alert alert-info text-center mt-3';
+                    noGamesDiv.textContent = 'Δεν βρέθηκαν αλλαγές αγώνων για αυτή την ημερομηνία.';
+                    accordionBody.appendChild(noGamesDiv);
+                }
+
+                accordionCollapse.appendChild(accordionBody);
+                accordionItem.appendChild(accordionCollapse);
+                mainAccordion.appendChild(accordionItem);
+            });
+            contentDiv.appendChild(mainAccordion);
+            
+            // Get computed styles for CSS variables to apply to legend boxes
+            const rootStyles = getComputedStyle(document.documentElement);
+            const pastGreyColor = rootStyles.getPropertyValue('--bg-past-grey').trim();
+            const currentBlueColor = rootStyles.getPropertyValue('--bg-current-day-blue').trim();
+            const futureGreenColor = rootStyles.getPropertyValue('--bg-future-green').trim();
+
+            // Add footer with date range explanation
+            const explanationWrapper = document.createElement('div');
+            explanationWrapper.classList.add('col-12', 'mt-4', 'd-flex', 'flex-column', 'gap-3');
+
+            const dateExplanationCard = document.createElement('div');
+            dateExplanationCard.classList.add('explanation-card', 'bg-light', 'rounded', 'shadow-sm', 'text-start', 'p-3');
+            dateExplanationCard.innerHTML = `
+                <h5 class="mb-2 text-primary date-explanation-title"><span class="emoji">🗓️</span> Εύρος Ημερομηνιών</h5>
+                <p class="small mb-0">Εμφανίζονται αλλαγές αγώνων για τις ημερομηνίες που κυμαίνονται από <b>${formatFullDateWithDay(sevenDaysAgo)}</b> έως <b>${formatFullDateWithDay(sevenDaysFromNow)}</b>.</p>
+            `;
+            explanationWrapper.appendChild(dateExplanationCard);
+
+            const colorExplanationCard = document.createElement('div');
+            colorExplanationCard.classList.add('explanation-card', 'bg-light', 'rounded', 'shadow-sm', 'text-start', 'p-3');
+            colorExplanationCard.innerHTML = `
+                <h5 class="mb-2 text-primary color-explanation-title"><span class="emoji">🎨</span> Επεξήγηση Χρωμάτων</h5>
+                <div class="legend-container">
+                    <div class="legend-item">
+                        <div class="legend-color-box" style="background-color: ${pastGreyColor};"></div>
+                        <span>Ημερομηνίες στο παρελθόν</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color-box" style="background-color: ${currentBlueColor};"></div>
+                        <span>Σημερινή ημερομηνία</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color-box" style="background-color: ${futureGreenColor};"></div>
+                        <span>Ημερομηνίες στο μέλλον</span>
+                    </div>
+                </div>
+            `;
+            explanationWrapper.appendChild(colorExplanationCard);
+            
+            contentDiv.appendChild(explanationWrapper);
+
+
+            // Add original footer content
+            const footerButtonsContainer = document.createElement('div');
+            footerButtonsContainer.classList.add('col-12', 'text-center', 'mt-4', 'mb-2', 'd-flex', 'justify-content-center', 'gap-3');
+            contentDiv.appendChild(footerButtonsContainer);
+
+            const ekasthDiv = document.createElement('div');
+            ekasthDiv.classList.add('ekasth-footer-text', 'text-center', 'mt-3', 'mb-0', 'col-12');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            ekasthDiv.textContent = `Ε.ΚΑ.Σ.Θ. 1976 - ${formattedDateTime}`;
+            contentDiv.appendChild(ekasthDiv);
+
+            const versionDiv = document.createElement('div');
+            versionDiv.classList.add('ekasth-footer-version-text', 'text-center', 'mt-0', 'mb-0', 'col-12');
+            versionDiv.textContent = `LT v.25.06.29 | mc_02_allages_agvnvn_meta_orismoys@myekasth`; 
+            contentDiv.appendChild(versionDiv);
+        }
+
+    </script>
+
+    <style>
+        /* CSS variables for consistent theming */
+        :root {
+            --mc-primary-color: #007bff; /* Bootstrap primary blue */
+            --mc-secondary-color: #6c757d; /* Bootstrap secondary gray */
+            --mc-info-color: #17a2b8; /* Bootstrap info cyan */
+            --mc-light-bg: #f8f9fa; /* Light background */
+            --mc-dark-bg: #212529; /* Dark text for contrast (used for future green) */
+            --mc-timeline-color: #ff0000; /* Pure red for underline */
+
+            /* New colors for accordion headers based on date */
+            --bg-past-grey: #6c757d;    /* Dark grey for past dates */
+            --bg-current-day-blue: #007bff; /* Blue for current date */
+            --bg-future-green: #d4edda; /* Light green for future dates */
+        }
+
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--mc-light-bg);
+            color: var(--mc-text-dark);
+            padding-top: 0; /* No fixed top padding as header is sticky */
+        }
+
+        /* Font styling for headings */
+        h1, h5 {
+            font-family: 'Krona One', sans-serif;
+        }
+
+        /* New Sticky Header Tabs */
+        .sticky-header-tabs {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            background: #ffffff; /* Pure white background for header */
+            box-shadow: 0 2px 8px rgba(0,0,0,.1);
+            z-index: 1020;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .MatchcenterHomepageWidget__header {
+            font-family: 'Krona One', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--mc-text-dark); /* Dark text for contrast on white */
+        }
+
+        .MatchcenterHomepageWidget__header small {
+            font-size: 0.6em;
+            vertical-align: middle;
+            color: var(--mc-secondary-color); /* Secondary gray for smaller text */
+            font-weight: 300;
+        }
+
+        .MatchcenterHomepageWidget__header .header-superscript {
+            font-size: 0.5em; /* Half the size of the parent header font */
+            vertical-align: super;
+            line-height: 0; /* Adjust line height to prevent affecting vertical spacing */
+            position: relative;
+            top: -0.5em; /* Fine-tune vertical position */
+        }
+
+        .header-underline {
+            height: 5px;
+            width: 100%;
+            background-color: var(--mc-timeline-color);
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .combined-header-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: #343a40; /* Darker gray for combined title */
+            text-align: center;
+        }
+
+        /* Blinking text animation - MODIFIED */
+        @keyframes blink {
+            0% { opacity: 0.3; } /* Start with lower opacity */
+            50% { opacity: 1; }  /* Full opacity */
+            100% { opacity: 0.3; } /* Back to lower opacity */
+        }
+
+        .blinking-text {
+            color: #dc3545; /* Always red */
+            font-weight: bold; /* Always bold */
+            animation: blink 3s linear infinite; /* 3 seconds duration, infinite loop */
+        }
+
+
+        /* Accordion specific styles */
+        .accordion-item {
+            border-radius: 0.75rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.03);
+            margin-bottom: 0.3rem;
+            border: none;
+            overflow: hidden;
+        }
+
+        .accordion-button {
+            font-weight: 600;
+            border-radius: 0.75rem !important;
+            padding: 1rem 1.25rem;
+            transition: background-color 0.2s ease, color 0.2s ease; /* Added color transition */
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+        }
+
+        /* New accordion header colors and text contrast */
+        .accordion-button.bg-past-grey {
+            background-color: var(--bg-past-grey);
+            color: #ffffff; /* White text for contrast on dark grey */
+        }
+        .accordion-button.bg-current-day-blue {
+            background-color: var(--bg-current-day-blue);
+            color: #ffffff; /* White text for contrast on blue */
+        }
+        .accordion-button.bg-future-green {
+            background-color: var(--bg-future-green);
+            color: var(--mc-text-dark); /* Dark text for contrast on light green */
+        }
+
+        .accordion-button:not(.collapsed) {
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+        }
+
+        .accordion-body {
+            padding: 1.5rem; 
+            background-color: #f8f9fa;
+            border-top: 1px solid rgba(0,0,0,.05);
+            border-radius: 0 0 0.75rem 0.75rem; 
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02); 
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+        }
+
+        /* Custom class for white text - now unused for accordion title, but kept for general use if needed */
+        .text-matchcenter-white {
+            color: #ffffff; 
+        }
+
+        /* Game item styling */
+        .game-item {
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.02);
+            transition: all 0.2s ease-in-out;
+            background-color: #ffffff !important;
+            flex-wrap: nowrap; 
+            justify-content: center; 
+            position: relative; /* This needs to stay for proper relative positioning of children if needed, but not for the button itself */
+            flex-direction: column; /* Ensure vertical stacking of content */
+            align-items: center; /* Center content horizontally */
+        }
+        .game-item:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.08);
+            transform: translateY(-2px);
+            background-color: #f5f5f5 !important; 
+        }
+
+        /* New class for the line under metaInfoDiv */
+        .info-line {
+            width: 100%;
+            border-bottom: 1px solid rgba(0,0,0,.1); /* Discreet line */
+            margin-top: 0.5rem; /* Space above the line */
+            margin-bottom: 0.5rem; /* Space below the line */
+        }
+
+
+        .teams-score-div { /* A new class for the teams and score section */
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Space out team names and score */
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-side-left, .team-side-right {
+            flex-basis: 40%;
+            flex-grow: 0;
+            flex-shrink: 0;
+            padding: 0 1rem; 
+        }
+
+        .game-center-fixed {
+            flex-basis: 20%;
+            flex-grow: 0;
+            flex-shrink: 0;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .team-logo-container {
+            width: 50px; 
+            height: 50px; 
+            background-size: contain; 
+            background-repeat: no-repeat;
+            display: flex; 
+            align-items: center; 
+        }
+
+        .team-logo-container-left {
+            background-position: center left; 
+            margin-right: 0.5rem; 
+        }
+
+        .team-logo-container-right {
+            background-position: center right; 
+            margin-left: 0; 
+        }
+        
+        .score-number {
+            font-family: 'Krona One', sans-serif;
+            font-size: 1.95rem !important; 
+        }
+        .versus-text {
+            font-size: 1.5rem; 
+            font-weight: bold;
+        }
+        .game-info {
+            font-size: 0.85rem;
+            color: var(--mc-secondary-color);
+        }
+
+        .round-date-display {
+            font-size: 0.85em; 
+            color: inherit; 
+            white-space: nowrap; 
+            text-align: right; 
+        }
+
+        /* Custom styles for original vs new details */
+        .strikethrough {
+            text-decoration: line-through;
+            color: #888; /* Slightly muted color for original values */
+        }
+
+        .bold-yellow {
+            font-weight: bold;
+            background-color: #fff3cd; /* Light yellow background */
+            padding: 2px 4px;
+            border-radius: 4px;
+            color: #856404; /* Darker yellow text for contrast */
+        }
+
+        .detail-line {
+            margin-bottom: 5px;
+        }
+
+        .detail-line-timestamp {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #666;
+            font-style: italic;
+            text-align: center; /* Ensure this is centered */
+            width: 100%; /* Take full width */
+        }
+
+        /* Officials Toggle Button - UPDATED STYLES */
+        .btn-officials-toggle {
+            background-color: transparent;
+            color: rgba(33, 37, 41, 0.5);
+            border: 1px solid rgba(33, 37, 41, 0.2);
+            transition: all 0.3s ease;
+            padding: 0.1rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.6rem;
+            line-height: 1;
+            text-decoration: none;
+            /* Removed positioning properties */
+            margin-top: 15px; /* Space from timestamp, adjust as needed */
+            margin-bottom: 5px; /* Space before the collapse area */
+            display: block; /* Make it a block element to take full width for margin auto centering */
+            width: fit-content; /* Shrink to content width */
+            margin-left: auto; /* Center horizontally */
+            margin-right: auto; /* Center horizontally */
+        }
+        .btn-officials-toggle:hover {
+            background-color: rgba(33, 37, 41, 0.1);
+            color: var(--mc-text-dark);
+            border-color: var(--mc-text-dark);
+        }
+        .btn-officials-toggle:not(.collapsed) {
+            color: var(--mc-primary-color);
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        /* Officials Info Collapse styles */
+        .officials-info-collapse {
+            width: 100%;
+            background-color: #f0f0f0;
+            border-top: 1px solid #e9ecef;
+            border-radius: 0 0 0.75rem 0.75rem;
+            /* margin-top: 0.75rem; Removed, now controlled by button's margin-bottom */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,.03);
+            text-align: left;
+        }
+        .officials-card-body {
+            padding: 0.75rem 1.5rem;
+            background-color: transparent !important;
+            border: none !important;
+        }
+        .officials-card-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+        }
+        .officials-card-body ul li strong {
+            color: var(--mc-text-dark);
+        }
+
+        /* Link for arena */
+        .MatchListItem__ghpedoButton {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            font-size: 0.9em; /* Adjusted for better readability */
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            background-color: transparent;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #003e5e;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+        }
+
+        .MatchListItem__ghpedoButton:hover {
+            background-color: #e2e4e6;
+            border-color: #d0d0d0;
+            cursor: pointer;
+        }
+
+        .ghpedo-external-link-icon {
+            margin-left: 5px;
+            font-size: 0.8em;
+            line-height: 1;
+            vertical-align: middle;
+            color: #666;
+        }
+
+        /* Footer styles */
+        .ekasth-footer-text, .ekasth-footer-version-text {
+            font-size: 0.55rem;
+            color: var(--mc-secondary-color);
+            padding: 0.1rem 0;
+            font-family: 'Fira Sans Extra Condensed', sans-serif; /* Apply new font */
+        }
+
+        .ekasth-footer-text {
+            border-top: 1px solid rgba(0,0,0,.1);
+            padding-top: 1.5rem;
+        }
+
+        /* Styles for explanation cards and legend */
+        .explanation-card {
+            font-family: 'Fira Sans Extra Condensed', sans-serif;
+        }
+        .explanation-card h5 {
+            font-family: 'Fira Sans Extra Condensed', sans-serif;
+            font-weight: 600;
+        }
+        .emoji {
+            margin-right: 8px;
+            font-size: 1.2em;
+            vertical-align: middle;
+        }
+
+        .legend-container {
+            display: flex;
+            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            gap: 15px; /* Space between legend items */
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .legend-color-box {
+            width: 20px; /* Larger box for better visual */
+            height: 20px; /* Larger box for better visual */
+            border-radius: 4px; /* Slightly more rounded */
+            margin-right: 10px; /* Space between box and text */
+            border: 1px solid rgba(0,0,0,0.1); /* Subtle border */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767.98px) {
+            .sticky-header-tabs {
+                padding-left: 1rem;
+            }
+            .MatchcenterHomepageWidget__header {
+                font-size: 2.2rem;
+            }
+            .combined-header-title {
+                font-size: 1.1rem;
+            }
+            .game-item {
+                flex-wrap: wrap; /* Allow wrapping for better mobile layout */
+                justify-content: center;
+            }
+            .team-side-left, .team-side-right {
+                flex-basis: 100%; /* Full width on small screens */
+                justify-content: center; /* Center teams */
+                margin-bottom: 0.5rem;
+            }
+            .game-center-fixed {
+                flex-basis: 100%; /* Full width on small screens */
+                padding: 0 0.5rem;
+                margin: 0;
+            }
+            .team-logo-container {
+                 width: 40px; 
+                 height: 40px; 
+            }
+            .round-date-display {
+                font-size: calc(0.85em - 2px); 
+            }
+            .btn-officials-toggle {
+                position: static; /* Remove absolute positioning */
+                transform: none; /* Remove transform */
+                margin-top: 0.5rem; /* Add some space */
+            }
+            .officials-info-collapse {
+                margin-top: 0.5rem; /* Reduce top margin on mobile */
+            }
+            .detail-line {
+                font-size: 0.9em; /* Adjust font size for details on mobile */
+            }
+            .detail-line-timestamp {
+                font-size: 0.7em; /* Adjust font size for timestamp on mobile */
+            }
+            .legend-item {
+                font-size: 0.8em; /* Smaller font for legend on mobile */
+            }
+            .legend-color-box {
+                width: 18px; /* Slightly smaller boxes on mobile */
+                height: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body id="myPage">
+
+    <!-- Sticky Header Tabs -->
+    <div class="sticky-header-tabs">
+        <div class="header-pre-title">Ε.ΚΑ.Σ.Θ.</div>
+        <h3 class="MatchcenterHomepageWidget__header">
+            MATCHCENTER<span class="header-superscript">4</span>
+        </h3>
+        <div class="header-underline"></div>
+        <div class="combined-header-title" id="combined-header-title">
+            ΑΛΛΑΓΕΣ ΣΕ ΑΓΩΝΕΣ ΜΕΤΑ ΑΠΟ ΤΟΥΣ ΟΡΙΣΜΟΥΣ
+        </div>
+    </div>
+
+    <!-- Main content section for displaying changes -->
+    <section class="container my-2">
+        <div class="row" id="list-content-id">
+            <!-- Loading spinner displayed until data is fetched -->
+            <div class="col-12 text-center" id="loading-spinner">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                </div>
+                <p>Φόρτωση δεδομένων ...</p>
+            </div>
+            <!-- Content will be injected here by JavaScript -->
+        </div>
+    </section>
+
+</body>
+</html>
