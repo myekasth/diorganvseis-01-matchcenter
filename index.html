@@ -148,9 +148,9 @@
                                      'Πρωτάθλημα: ' + pNamePrvtathlhmatos + '<br>' +
                                      'Διοργανώτρια Αρχή: ' + pNameDiorganvtriaArxh;
 
-                // Container for buttons
+                // Container for buttons - Added d-grid and gap-2 for full width and stacking
                 var divButtons = document.createElement('div');
-                divButtons.className = 'mt-3';
+                divButtons.className = 'mt-3 d-grid gap-2';
 
                 // Link to Championship Groups/Categories (mc_02_Kathgories.html in html subfolder)
                 var linkPrvtathlhmatos = document.createElement('a');
@@ -160,9 +160,9 @@
                     '&pAgvnistikhPeriodos=' + encodeURIComponent(pAgvnistikhPeriodos) + // Pass season
                     '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
                     '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatos);
-                linkPrvtathlhmatos.className = 'btn btn-primary btn-sm me-2';
-                // Replaced Font Awesome icon with emoji
-                linkPrvtathlhmatos.innerHTML = '🏀 Πρωτάθλημα'; // Emoji for basketball
+                linkPrvtathlhmatos.className = 'btn btn-primary btn-sm'; // Removed me-2
+                // Updated button text and emoji
+                linkPrvtathlhmatos.innerHTML = '🏀 Όμιλοι πρωταθλημάτων, Πρόγραμμα αγώνων, Βαθμολογίες'; 
                 divButtons.appendChild(linkPrvtathlhmatos);
 
                 // Link to Definitions/Appointments (gameCenter_3_orismoi.html) if pPowerPrvtathlhmatosOrismoi exists
@@ -173,18 +173,25 @@
                         '&pPowerDiorganvtriaArxh=' + encodeURIComponent(pPowerDiorganvtriaArxh) +
                         '&pNamePrvtathlhmatos=' + encodeURIComponent(pNamePrvtathlhmatos) +
                         '&pPowerPrvtathlhmatos=' + encodeURIComponent(pPowerPrvtathlhmatosOrismoi);
-                    linkOrismoi.className = 'btn btn-info btn-sm me-2'; // Added me-2 for spacing
+                    linkOrismoi.className = 'btn btn-info btn-sm'; // Removed me-2
                     // Replaced Font Awesome icon with emoji
                     linkOrismoi.innerHTML = '📄 Ορισμοί'; // Emoji for file/document
                     divButtons.appendChild(linkOrismoi);
                 }
+
+                // NEW BUTTON: Αλλαγές αγώνων μετά τους ορισμούς (mc_02_allages_agvnvn_meta_orismoys.html) - Always visible
+                var linkAllagesAgonon = document.createElement('a');
+                linkAllagesAgonon.href = 'html/mc_02_allages_agvnvn_meta_orismoys.html'; // Path to the new file
+                linkAllagesAgonon.className = 'btn btn-danger btn-sm'; // Changed to btn-danger, removed me-2
+                linkAllagesAgonon.innerHTML = '⚠️ Αλλαγές αγώνων μετά τους ορισμούς'; // Warning emoji
+                divButtons.appendChild(linkAllagesAgonon);
 
                 // Link to Ghpeda (mc_02_Ghpeda.html) if pGhpedaSheetId exists (Column AH)
                 if(pGhpedaSheetId !== ''){
                     var linkGhpeda = document.createElement('a');
                     linkGhpeda.href = 'html/mc_02_Ghpeda.html' +
                         '?pID=' + encodeURIComponent(pGhpedaSheetId);
-                    linkGhpeda.className = 'btn btn-success btn-sm me-2'; // Green color for success/new functionality, added me-2 for spacing
+                    linkGhpeda.className = 'btn btn-success btn-sm'; // Removed me-2
                     linkGhpeda.innerHTML = '🏟️ Γήπεδα'; // Stadium emoji
                     divButtons.appendChild(linkGhpeda);
                 }
@@ -192,7 +199,7 @@
                 // Link to Συμμετοχές Συλλόγων (mc_02_symmetoxes_se_omiloys.html)
                 var linkSymmetoxes = document.createElement('a');
                 linkSymmetoxes.href = 'html/mc_02_symmetoxes_se_omiloys.html'; // Path to the new file
-                linkSymmetoxes.className = 'btn btn-secondary btn-sm me-2'; // Changed to btn-secondary, added me-2 for spacing
+                linkSymmetoxes.className = 'btn btn-secondary btn-sm'; // Removed me-2
                 linkSymmetoxes.innerHTML = '👥 Συμμετοχές Συλλόγων'; // People/group emoji
                 divButtons.appendChild(linkSymmetoxes);
 
@@ -201,14 +208,14 @@
                 var linkProodos = document.createElement('a');
                 linkProodos.href = 'html/mc_02_proodos_diorganvsevn.html' + 
                                     '?pID=' + encodeURIComponent("17qZ43Fd2oYEV_lESKjOrqIOMurNDg5prJkyFuUH4aJA"); 
-                linkProodos.className = 'btn btn-info btn-sm me-2'; // Use info color for progress, added me-2 for spacing
+                linkProodos.className = 'btn btn-info btn-sm'; // Removed me-2
                 linkProodos.innerHTML = '📈 Πρόοδος Διοργανώσεων'; // Chart/progress emoji
                 divButtons.appendChild(linkProodos);
 
                 // Button for ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ΣΥΛΛΟΓΩΝ (mc_02_DHLVSEIS_symmetoxhs.html)
                 var linkDiloseisSymmetoxis = document.createElement('a');
                 linkDiloseisSymmetoxis.href = 'html/mc_02_DHLVSEIS_symmetoxhs.html'; // Path to the new file
-                linkDiloseisSymmetoxis.className = 'btn btn-warning btn-sm me-2'; // Added me-2 for spacing
+                linkDiloseisSymmetoxis.className = 'btn btn-warning btn-sm'; // Removed me-2
                 linkDiloseisSymmetoxis.innerHTML = '📝 ΔΗΛΩΣΕΙΣ ΣΥΜΜΕΤΟΧΗΣ ΣΥΛΛΟΓΩΝ'; // Clipboard/document emoji
                 divButtons.appendChild(linkDiloseisSymmetoxis);
 
