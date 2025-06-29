@@ -340,7 +340,7 @@
                         teamsScoreDiv.className = 'teams-score-div d-flex align-items-center justify-content-between w-100 mb-2'; // Added custom class for flex control
 
                         const teamA_div = document.createElement('div');
-                        teamA_div.className = 'team-side team-side-left text-start d-flex align-items-center';
+                        teamA_div.className = 'team-side team-side-left d-flex align-items-center'; // Removed text-start
                         const logoA_bg_div = document.createElement('div');
                         logoA_bg_div.className = 'team-logo-container team-logo-container-left';
                         const teamA_logo_url = teamLogos.get(gameRow.teamA_name) || DEFAULT_LOGO_URL;
@@ -370,17 +370,20 @@
                         teamsScoreDiv.appendChild(score_div);
 
                         const teamB_div = document.createElement('div');
-                        teamB_div.className = 'team-side team-side-right text-end d-flex align-items-center justify-content-end';
-                        const spanB = document.createElement('span');
-                        spanB.className = 'team-name fw-bold';
-                        spanB.textContent = gameRow.teamB_name; 
-                        teamB_div.appendChild(spanB);
+                        teamB_div.className = 'team-side team-side-right d-flex align-items-center'; 
+
                         const logoB_bg_div = document.createElement('div');
                         logoB_bg_div.className = 'team-logo-container team-logo-container-right';
                         const teamB_logo_url = teamLogos.get(gameRow.teamB_name) || DEFAULT_LOGO_URL;
                         logoB_bg_div.style.backgroundImage = `url('${teamB_logo_url}')`; 
                         logoB_bg_div.onerror = function() { this.style.backgroundImage = `url('${DEFAULT_LOGO_URL}')`; };
-                        teamB_div.appendChild(logoB_bg_div); 
+                        teamB_div.appendChild(logoB_bg_div); // Append logo first
+
+                        const spanB = document.createElement('span');
+                        spanB.className = 'team-name fw-bold';
+                        spanB.textContent = gameRow.teamB_name; 
+                        teamB_div.appendChild(spanB); // Then append name
+
                         teamsScoreDiv.appendChild(teamB_div);
 
                         gameDiv.appendChild(teamsScoreDiv);
@@ -751,36 +754,40 @@
         }
 
         .team-side-left, .team-side-right {
-            /* flex-basis: 40%; REMOVED for more flexibility on small screens */
-            flex-grow: 1; /* Allow teams to grow and take available space */
-            flex-shrink: 1; /* Allow teams to shrink */
-            padding: 0 1rem; 
-            min-width: 0; /* Allow content to shrink below intrinsic size */
+            display: flex; /* Ensure they are flex containers */
+            align-items: center; /* Vertically center logo and name */
+            flex-grow: 1;
+            flex-shrink: 1;
+            min-width: 0;
+            padding: 0 1rem;
         }
-        
-        /* New style for team names to handle overflow and wrap text */
+
+        .team-side-left {
+            justify-content: flex-start; /* Logo then name, aligned left */
+            flex-direction: row; /* Explicitly logo then name */
+            text-align: left; /* Align text within */
+        }
+
+        .team-side-right {
+            justify-content: flex-end; /* Logo then name, aligned right for large screen */
+            flex-direction: row-reverse; /* Visually reverse order for logo after name */
+            text-align: right; /* Align text within */
+        }
+
         .team-name {
-            white-space: normal; /* Allow text to wrap */
-            word-break: break-word; /* Break long words */
-            text-align: center; /* Center team names in their flex item */
-            flex-grow: 1; /* Allow name to take up available space */
+            white-space: normal;
+            word-break: break-word;
+            flex-grow: 1;
         }
-        
+
+        /* Specific text alignment for team names within their flex container */
         .team-side-left .team-name {
             text-align: left; /* Align text to left for left team */
         }
         .team-side-right .team-name {
-            text-align: right; /* Align text to right for right team */
+            text-align: right; /* Align text to right for right team (due to row-reverse) */
         }
-
-        .game-center-fixed {
-            flex-basis: 20%;
-            flex-grow: 0;
-            flex-shrink: 0;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-
+        
         .team-logo-container {
             width: 50px; 
             height: 50px; 
@@ -793,12 +800,13 @@
 
         .team-logo-container-left {
             background-position: center left; 
-            margin-right: 0.5rem; 
+            margin-right: 0.5rem; /* Space after logo for team A */
         }
 
         .team-logo-container-right {
-            background-position: center right; 
-            margin-left: 0.5rem; /* Added margin-left for right logo */
+            background-position: center right; /* Align logo to the right within its reversed container */
+            margin-left: 0.5rem; /* Space after name for team B (due to row-reverse) */
+            margin-right: 0; /* No margin-right when it's before the name */
         }
         
         .score-number {
@@ -997,18 +1005,21 @@
                 justify-content: center;
             }
             .teams-score-div {
-                flex-wrap: wrap; /* Allow team and score elements to wrap */
-                justify-content: center; /* Center content when wrapped */
+                flex-direction: column; /* Stack teams and score vertically */
+                align-items: center; /* Center items horizontally when stacked */
+                flex-wrap: wrap; /* Ensure elements wrap */
             }
             .team-side-left, .team-side-right {
                 flex-basis: 100%; /* Full width on small screens */
-                justify-content: center; /* Center teams */
+                justify-content: center; /* Center contents of team div (logo & name) */
+                flex-direction: row; /* Logo then name for both teams */
                 margin-bottom: 0.5rem;
                 padding: 0 0.5rem; /* Reduced padding */
                 text-align: center; /* Center text within team side */
             }
+            /* Explicitly center team names within their flex container on mobile */
             .team-side-left .team-name, .team-side-right .team-name {
-                text-align: center; /* Center team names when wrapped */
+                text-align: center; 
             }
             .game-score {
                 flex-basis: 100%; /* Score takes full width when wrapped */
@@ -1017,15 +1028,19 @@
             .team-logo-container {
                  width: 35px; /* Slightly smaller logos on mobile */
                  height: 35px; 
-                 margin: 0 0.25rem; /* Reduced margin around logos */
+                 margin: 0 0.25rem; /* Consistent reduced margin around logos */
             }
-            .team-logo-container-left {
+            /* Consistent background position for logos on mobile */
+            .team-logo-container-left, .team-logo-container-right {
                 background-position: center; /* Center logo in container */
-                margin-right: 0.25rem;
+            }
+            /* Ensure consistent margin between logo and name on mobile */
+            .team-logo-container-left {
+                margin-right: 0.5rem; /* Space after logo */
             }
             .team-logo-container-right {
-                background-position: center; /* Center logo in container */
-                margin-left: 0.25rem;
+                margin-right: 0.5rem; /* Space after logo (since direction is row) */
+                margin-left: 0; /* No margin-left here */
             }
             .team-name {
                 font-size: 0.9em; /* Smaller font for team names on mobile */
